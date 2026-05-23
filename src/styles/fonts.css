@@ -1,0 +1,42 @@
+@font-face {
+  font-family: 'Classique Script';
+  src: url('../imports/ClassiqueScript.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Crania';
+  src: url('../imports/Crania.otf') format('opentype'),
+       url('../imports/Crania.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Champagne & Limousines';
+  src: url('../imports/ChampagneLimousines.ttf') format('truetype'),
+       url('../imports/Champagne&Limousines.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Caviar Dreams';
+  src: url('../imports/CaviarDreams.ttf') format('truetype'),
+       url('../imports/CaviarDreams.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Caviar Dreams';
+  src: url('../imports/CaviarDreams_Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
