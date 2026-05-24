@@ -10,7 +10,7 @@ import { LoginPage, SignUpPage } from './components/AuthPages';
 import { StudentDashboard } from './components/StudentDashboard';
 import { LessonViewer } from './components/LessonViewer';
 import { AdminDashboard } from './components/AdminDashboard';
-import { PaymentPage } from './components/PaymentPage';
+import { PaymentPage } from '../components/PaymentPage';
 import { CommunityPage } from './components/CommunityPage';
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
