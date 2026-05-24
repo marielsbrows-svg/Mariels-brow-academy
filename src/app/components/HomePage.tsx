@@ -44,7 +44,7 @@ export const HomePage = () => {
               </p>
 
               <Link
-                to="/courses"
+                to="/payment"
                 className="inline-block px-10 py-4 bg-charcoal text-cream tracking-widest uppercase text-sm hover:bg-mocha transition-all duration-300 shadow-lg"
               >
                 Start Your Journey
@@ -265,7 +265,7 @@ export const HomePage = () => {
                 </div>
 
                 <Link
-                  to="/courses"
+                  to="/payment"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-charcoal text-cream tracking-widest uppercase text-sm hover:bg-mocha transition-all duration-300 shadow-lg hover:shadow-xl justify-center"
                 >
                   Enroll Now
@@ -419,7 +419,7 @@ export const HomePage = () => {
               Join the distinguished community of artists who have elevated their craft and transformed their lives through Mariels Brow Academy.
             </p>
             <Link
-              to="/courses"
+              to="/payment"
               className="inline-flex items-center gap-2 px-10 py-5 bg-cream text-charcoal tracking-widest uppercase text-sm hover:bg-linen transition-all duration-300 shadow-xl"
             >
               Explore Courses
