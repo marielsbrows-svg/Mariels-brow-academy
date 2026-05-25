@@ -2,7 +2,12 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'motion/react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+
+const inputClass =
+  'w-full px-4 py-3.5 bg-cream border border-mocha/20 text-charcoal text-sm outline-none focus:border-charcoal transition-colors placeholder:text-mocha/30';
+
+const labelClass = 'block text-[0.6rem] tracking-[0.2em] uppercase text-mocha/60 mb-2';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -17,9 +22,7 @@ export const LoginPage = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     const { error } = await signIn(email, password);
-
     if (error) {
       setError(error.message);
       setLoading(false);
@@ -29,56 +32,95 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cream via-white to-linen px-6 py-24">
-      <motion.div
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="w-full max-w-md"
-      >
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h1 className="font-serif italic text-4xl text-charcoal mb-2 text-center">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-cream">
+
+      {/* Left — Image Panel */}
+      <div className="hidden lg:flex relative bg-charcoal items-end p-12 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/30 to-transparent z-10" />
+        <div className="relative z-20">
+          <div
+            className="text-5xl text-cream italic font-light mb-3"
+            style={{ fontFamily: 'Playfair Display, serif' }}
+          >
             Welcome Back
-          </h1>
-          <p className="text-mocha-dark text-center mb-8">
-            Continue your journey to brow mastery
+          </div>
+          <p className="text-cream/50 text-sm leading-relaxed max-w-xs">
+            Continue your journey to becoming an elite brow artist and beauty entrepreneur.
           </p>
+        </div>
+      </div>
+
+      {/* Right — Form */}
+      <motion.div
+        initial={{ opacity: 0, x: 30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+        className="flex items-center justify-center px-8 py-24"
+      >
+        <div className="w-full max-w-sm">
+
+          {/* Logo */}
+          <Link to="/">
+            <div
+              className="text-3xl text-charcoal italic font-light mb-1"
+              style={{ fontFamily: 'Playfair Display, serif' }}
+            >
+              Mariels
+            </div>
+            <div className="text-[0.55rem] tracking-[0.3em] uppercase text-mocha/40 mb-10">
+              Brow Academy
+            </div>
+          </Link>
+
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-5 h-px bg-mocha/30" />
+            <span className="text-[0.58rem] tracking-[0.2em] uppercase text-mocha/50">Sign In</span>
+          </div>
+
+          <h1
+            className="text-3xl text-charcoal font-light mb-8 leading-tight"
+            style={{ fontFamily: 'Playfair Display, serif' }}
+          >
+            Good to see<br />
+            <span className="italic">you again</span>
+          </h1>
 
           {error && (
-            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg mb-6">
+            <div className="border border-red-200 bg-red-50 text-red-600 px-4 py-3 text-xs tracking-wide mb-6">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm text-charcoal mb-2">Email Address</label>
+              <label className={labelClass}>Email Address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-cream border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-mocha transition-all"
+                className={inputClass}
                 placeholder="you@example.com"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm text-charcoal mb-2">Password</label>
+              <label className={labelClass}>Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-cream border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-mocha transition-all pr-12"
+                  className={inputClass + ' pr-12'}
                   placeholder="••••••••"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-mocha-dark hover:text-mocha"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-mocha/40 hover:text-mocha transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -86,16 +128,20 @@ export const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-6 py-3 bg-mocha text-white rounded-full hover:bg-mocha-dark transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+              className="w-full py-4 bg-charcoal text-cream text-[0.62rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
-              {loading ? 'Signing In...' : 'Sign In'}
+              {loading ? (
+                <span className="w-4 h-4 border-2 border-cream/30 border-t-cream rounded-full animate-spin" />
+              ) : (
+                <>Sign In <ArrowRight className="w-3.5 h-3.5" /></>
+              )}
             </button>
           </form>
 
-          <p className="text-center text-mocha-dark mt-6">
+          <p className="text-center text-xs text-mocha/50 mt-8">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-mocha hover:text-mocha-dark font-medium">
-              Sign Up
+            <Link to="/signup" className="text-charcoal hover:text-mocha transition-colors underline underline-offset-2">
+              Create one
             </Link>
           </p>
         </div>
@@ -127,7 +173,6 @@ export const SignUpPage = () => {
     }
 
     const { error } = await signUp(email, password, fullName);
-
     if (error) {
       setError(error.message);
       setLoading(false);
@@ -138,74 +183,113 @@ export const SignUpPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cream via-white to-linen px-6 py-24">
-      <motion.div
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="w-full max-w-md"
-      >
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h1 className="font-serif italic text-4xl text-charcoal mb-2 text-center">
-            Begin Your Journey
-          </h1>
-          <p className="text-mocha-dark text-center mb-8">
-            Join thousands of successful brow artists worldwide
+    <div className="min-h-screen grid lg:grid-cols-2 bg-cream">
+
+      {/* Left — Image Panel */}
+      <div className="hidden lg:flex relative bg-charcoal items-end p-12 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/30 to-transparent z-10" />
+        <div className="relative z-20">
+          <div
+            className="text-5xl text-cream italic font-light mb-3"
+            style={{ fontFamily: 'Playfair Display, serif' }}
+          >
+            Begin Your<br />Journey
+          </div>
+          <p className="text-cream/50 text-sm leading-relaxed max-w-xs">
+            Join thousands of successful brow artists who have transformed their passion into a profitable career.
           </p>
+        </div>
+      </div>
+
+      {/* Right — Form */}
+      <motion.div
+        initial={{ opacity: 0, x: 30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+        className="flex items-center justify-center px-8 py-24"
+      >
+        <div className="w-full max-w-sm">
+
+          {/* Logo */}
+          <Link to="/">
+            <div
+              className="text-3xl text-charcoal italic font-light mb-1"
+              style={{ fontFamily: 'Playfair Display, serif' }}
+            >
+              Mariels
+            </div>
+            <div className="text-[0.55rem] tracking-[0.3em] uppercase text-mocha/40 mb-10">
+              Brow Academy
+            </div>
+          </Link>
+
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-5 h-px bg-mocha/30" />
+            <span className="text-[0.58rem] tracking-[0.2em] uppercase text-mocha/50">Create Account</span>
+          </div>
+
+          <h1
+            className="text-3xl text-charcoal font-light mb-8 leading-tight"
+            style={{ fontFamily: 'Playfair Display, serif' }}
+          >
+            Start your<br />
+            <span className="italic">brow empire</span>
+          </h1>
 
           {error && (
-            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg mb-6">
+            <div className="border border-red-200 bg-red-50 text-red-600 px-4 py-3 text-xs tracking-wide mb-6">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="bg-mocha/10 border border-mocha/20 text-mocha px-4 py-3 rounded-lg mb-6">
-              Account created successfully! Redirecting to your dashboard...
+            <div className="border border-mocha/20 bg-mocha/5 text-mocha px-4 py-3 text-xs tracking-wide mb-6">
+              Account created! Redirecting to your dashboard...
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm text-charcoal mb-2">Full Name</label>
+              <label className={labelClass}>Full Name</label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-4 py-3 bg-cream border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-mocha transition-all"
+                className={inputClass}
                 placeholder="Your full name"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm text-charcoal mb-2">Email Address</label>
+              <label className={labelClass}>Email Address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-cream border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-mocha transition-all"
+                className={inputClass}
                 placeholder="you@example.com"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm text-charcoal mb-2">Password</label>
+              <label className={labelClass}>Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-cream border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-mocha transition-all pr-12"
+                  className={inputClass + ' pr-12'}
                   placeholder="At least 6 characters"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-mocha-dark hover:text-mocha"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-mocha/40 hover:text-mocha transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -213,16 +297,20 @@ export const SignUpPage = () => {
             <button
               type="submit"
               disabled={loading || success}
-              className="w-full px-6 py-3 bg-mocha text-white rounded-full hover:bg-mocha-dark transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+              className="w-full py-4 bg-charcoal text-cream text-[0.62rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? (
+                <span className="w-4 h-4 border-2 border-cream/30 border-t-cream rounded-full animate-spin" />
+              ) : (
+                <>Create Account <ArrowRight className="w-3.5 h-3.5" /></>
+              )}
             </button>
           </form>
 
-          <p className="text-center text-mocha-dark mt-6">
+          <p className="text-center text-xs text-mocha/50 mt-8">
             Already have an account?{' '}
-            <Link to="/login" className="text-mocha hover:text-mocha-dark font-medium">
-              Sign In
+            <Link to="/login" className="text-charcoal hover:text-mocha transition-colors underline underline-offset-2">
+              Sign in
             </Link>
           </p>
         </div>
