@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Clock, TrendingUp, CheckCircle } from 'lucide-react';
+import { Clock, ArrowRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { ImageWithFallback } from './ImageWithFallback';
 
@@ -30,26 +30,12 @@ export const CoursesPage = () => {
         .select('*')
         .eq('is_published', true)
         .order('created_at', { ascending: false });
-
       if (error) throw error;
       setCourses(data || []);
     } catch (error) {
       console.error('Error fetching courses:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getLevelColor = (level: string | null) => {
-    switch (level) {
-      case 'beginner':
-        return 'bg-mocha/10 text-mocha';
-      case 'intermediate':
-        return 'bg-mocha-dark/10 text-mocha-dark';
-      case 'advanced':
-        return 'bg-charcoal/10 text-charcoal';
-      default:
-        return 'bg-linen text-mocha-dark';
     }
   };
 
@@ -63,94 +49,126 @@ export const CoursesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-cream pt-24 pb-16">
-      <div className="max-w-7xl mx-auto px-6">
+    <div className="min-h-screen bg-cream pt-24">
+
+      {/* Header */}
+      <div className="max-w-7xl mx-auto px-8 py-20 border-b border-mocha/10">
         <motion.div
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
         >
-          <h1 className="font-serif italic text-6xl text-charcoal mb-4">
-            Our Courses
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-px bg-mocha/40" />
+            <span className="text-[0.58rem] tracking-[0.3em] uppercase text-mocha/50">
+              Mariels Brow Academy
+            </span>
+          </div>
+          <h1
+            className="text-6xl md:text-7xl text-charcoal font-light leading-tight mb-6"
+            style={{ fontFamily: 'Playfair Display, serif' }}
+          >
+            Our <span className="italic">Courses</span>
           </h1>
-          <p className="text-xl text-mocha-dark max-w-2xl mx-auto">
-            Choose the perfect course to launch or elevate your brow artistry career
+          <p className="text-sm text-mocha-dark max-w-lg leading-relaxed">
+            Choose the perfect program to launch or elevate your brow artistry career. Lifetime access included with every course.
           </p>
         </motion.div>
+      </div>
 
+      {/* Courses Grid */}
+      <div className="max-w-7xl mx-auto px-8 py-16">
         {loading ? (
-          <div className="text-center py-20">
-            <div className="inline-block w-12 h-12 border-4 border-mocha/20 border-t-mocha rounded-full animate-spin"></div>
+          <div className="flex items-center justify-center py-32">
+            <div className="w-8 h-8 border-2 border-mocha/20 border-t-mocha rounded-full animate-spin" />
+          </div>
+        ) : courses.length === 0 ? (
+          <div className="text-center py-32">
+            <div
+              className="text-3xl text-charcoal italic mb-4"
+              style={{ fontFamily: 'Playfair Display, serif' }}
+            >
+              Coming Soon
+            </div>
+            <p className="text-sm text-mocha/60 tracking-wide">New courses are being prepared for you.</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-mocha/10">
             {courses.map((course, index) => (
               <motion.div
                 key={course.id}
-                initial={{ y: 30, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 group"
+                className="bg-white group"
               >
+                {/* Image */}
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <ImageWithFallback
                     src={course.thumbnail_url || getDefaultImage(index)}
                     alt={course.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
                   {course.level && (
-                    <div className="absolute top-4 right-4">
-                      <span className={`px-3 py-1 rounded-full text-xs uppercase tracking-wider ${getLevelColor(course.level)}`}>
+                    <div className="absolute top-4 left-4">
+                      <span className="bg-white px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase text-charcoal">
                         {course.level}
                       </span>
                     </div>
                   )}
                 </div>
 
-                <div className="p-6">
-                  <h3 className="font-serif text-2xl text-charcoal mb-3">
+                {/* Content */}
+                <div className="p-8">
+                  <h3
+                    className="text-2xl text-charcoal font-light mb-3 leading-tight"
+                    style={{ fontFamily: 'Playfair Display, serif' }}
+                  >
                     {course.title}
                   </h3>
-                  <p className="text-mocha-dark leading-relaxed mb-6 line-clamp-3">
+
+                  <p className="text-xs text-mocha-dark leading-relaxed mb-6 line-clamp-3">
                     {course.description}
                   </p>
 
-                  <div className="flex items-center gap-4 mb-6 text-sm text-mocha-dark">
+                  {/* Meta */}
+                  <div className="flex items-center gap-4 mb-6 pb-6 border-b border-mocha/08">
                     {course.duration_hours && (
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
+                      <div className="flex items-center gap-1.5 text-[0.6rem] tracking-widest uppercase text-mocha/50">
+                        <Clock className="w-3 h-3" />
                         {course.duration_hours}h
                       </div>
                     )}
-                    <div className="flex items-center gap-1">
-                      <TrendingUp className="w-4 h-4" />
-                      Professional
+                    <div className="text-[0.6rem] tracking-widest uppercase text-mocha/50">
+                      Lifetime Access
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  {/* Price + CTA */}
+                  <div className="flex items-end justify-between">
                     <div>
-                      <div className="font-serif text-3xl text-charcoal">
+                      <div
+                        className="text-3xl text-charcoal font-light"
+                        style={{ fontFamily: 'Playfair Display, serif' }}
+                      >
                         ${course.price}
                       </div>
-                      <div className="text-sm text-mocha-dark">or payment plans</div>
+                      <div className="text-[0.55rem] tracking-widest uppercase text-mocha/40 mt-0.5">
+                        Klarna · Afterpay · Affirm
+                      </div>
                     </div>
                     <Link
                       to={`/course/${course.id}`}
-                      className="px-6 py-3 bg-mocha text-white rounded-full hover:bg-mocha-dark transition-colors shadow-lg hover:shadow-xl"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-charcoal text-cream text-[0.58rem] tracking-[0.15em] uppercase hover:bg-mocha transition-all duration-300"
                     >
-                      Enroll Now
+                      View Course
+                      <ArrowRight className="w-3 h-3" />
                     </Link>
                   </div>
                 </div>
               </motion.div>
             ))}
-          </div>
-        )}
-
-        {!loading && courses.length === 0 && (
-          <div className="text-center py-20">
-            <p className="text-mocha-dark text-xl">No courses available at the moment.</p>
           </div>
         )}
       </div>
