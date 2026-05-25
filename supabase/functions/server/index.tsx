@@ -48,7 +48,7 @@ app.post("/make-server-1feb612f/ai-chat", async (c) => {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-3-5-sonnet-20241022",
+        model: "claude-sonnet-4-5",
         max_tokens: 1024,
         system: "You are a helpful course assistant for Mariels Brow Academy, an online education platform teaching brow artistry and beauty business skills. Answer questions about course content, technical issues with the platform, downloading workbooks, video playback, progress tracking, and certification. Be friendly, professional, and concise. If you don't know something specific about the platform, suggest the student contact support.",
         messages: messages.map((msg: any) => ({
