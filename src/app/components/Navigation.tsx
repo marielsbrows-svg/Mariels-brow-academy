@@ -1,12 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LogOut, User, BookOpen, LayoutDashboard } from 'lucide-react';
+import { LogOut, BookOpen, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'motion/react';
 
 export const Navigation = () => {
   const { user, signOut, isAdmin } = useAuth();
   const location = useLocation();
-
   const isActive = (path: string) => location.pathname === path;
 
   return (
@@ -27,28 +26,28 @@ export const Navigation = () => {
           </Link>
 
           <div className="flex items-center gap-6 md:gap-8">
-
             {user ? (
-<Link
-  to="/courses"
-  className={`text-xs tracking-widest uppercase transition-colors ${
-    isActive('/courses')
-      ? 'text-white font-medium border-b border-white pb-1'
-      : 'text-white/60 hover:text-white'
-  }`}
->
-  Courses
-</Link>
-<Link
-  to="/community"
-  className={`text-xs tracking-widest uppercase transition-colors ${
-    isActive('/community')
-      ? 'text-white font-medium border-b border-white pb-1'
-      : 'text-white/60 hover:text-white'
-  }`}
->
-  Community
-</Link><>
+              <>
+                <Link
+                  to="/courses"
+                  className={`text-xs tracking-widest uppercase transition-colors ${
+                    isActive('/courses')
+                      ? 'text-white font-medium border-b border-white pb-1'
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  Courses
+                </Link>
+                <Link
+                  to="/community"
+                  className={`text-xs tracking-widest uppercase transition-colors ${
+                    isActive('/community')
+                      ? 'text-white font-medium border-b border-white pb-1'
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  Community
+                </Link>
                 <Link
                   to="/dashboard"
                   className={`hidden md:flex items-center gap-2 text-xs tracking-widest uppercase transition-colors ${
@@ -60,7 +59,6 @@ export const Navigation = () => {
                   <BookOpen className="w-4 h-4" />
                   Dashboard
                 </Link>
-
                 {isAdmin && (
                   <Link
                     to="/admin"
@@ -74,7 +72,6 @@ export const Navigation = () => {
                     Admin
                   </Link>
                 )}
-
                 <button
                   onClick={() => signOut()}
                   className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
