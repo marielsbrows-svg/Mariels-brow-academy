@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ChevronLeft, ChevronRight, CheckCircle, Download, Menu, MessageSquare } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Download, Menu, MessageSquare, ArrowLeft } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { AssignmentSubmission } from './AssignmentSubmission';
@@ -54,76 +54,35 @@ export const LessonViewer = () => {
   const [slidesCompleted, setSlidesCompleted] = useState(false);
 
   useEffect(() => {
-    if (courseId && user) {
-      fetchCourseContent();
-    }
+    if (courseId && user) fetchCourseContent();
   }, [courseId, user]);
 
   useEffect(() => {
-    // Reset slides completion when changing lessons
     setSlidesCompleted(false);
   }, [currentLesson?.id]);
 
   const fetchCourseContent = async () => {
     try {
-      // Fetch course
-      const { data: courseData } = await supabase
-        .from('courses')
-        .select('id, title')
-        .eq('id', courseId)
-        .single();
-
+      const { data: courseData } = await supabase.from('courses').select('id, title').eq('id', courseId).single();
       setCourse(courseData);
 
-      // Fetch modules with lessons
-      const { data: modulesData } = await supabase
-        .from('course_modules')
-        .select('*')
-        .eq('course_id', courseId)
-        .order('order_index');
+      const { data: modulesData } = await supabase.from('course_modules').select('*').eq('course_id', courseId).order('order_index');
 
       if (modulesData) {
         const modulesWithLessons = await Promise.all(
           modulesData.map(async (module) => {
-            const { data: lessonsData } = await supabase
-              .from('lessons')
-              .select('*')
-              .eq('module_id', module.id)
-              .order('order_index');
-
-            // Fetch progress for each lesson
+            const { data: lessonsData } = await supabase.from('lessons').select('*').eq('module_id', module.id).order('order_index');
             const lessonsWithProgress = await Promise.all(
               (lessonsData || []).map(async (lesson) => {
-                const { data: progressData } = await supabase
-                  .from('lesson_progress')
-                  .select('completed, last_position_seconds')
-                  .eq('user_id', user?.id)
-                  .eq('lesson_id', lesson.id)
-                  .single();
-
-                const { data: resourcesData } = await supabase
-                  .from('lesson_resources')
-                  .select('*')
-                  .eq('lesson_id', lesson.id);
-
-                return {
-                  ...lesson,
-                  progress: progressData || { completed: false, last_position_seconds: 0 },
-                  resources: resourcesData || [],
-                };
+                const { data: progressData } = await supabase.from('lesson_progress').select('completed, last_position_seconds').eq('user_id', user?.id).eq('lesson_id', lesson.id).single();
+                const { data: resourcesData } = await supabase.from('lesson_resources').select('*').eq('lesson_id', lesson.id);
+                return { ...lesson, progress: progressData || { completed: false, last_position_seconds: 0 }, resources: resourcesData || [] };
               })
             );
-
-            return {
-              ...module,
-              lessons: lessonsWithProgress,
-            };
+            return { ...module, lessons: lessonsWithProgress };
           })
         );
-
         setModules(modulesWithLessons);
-
-        // Set first lesson as current
         if (modulesWithLessons.length > 0 && modulesWithLessons[0].lessons.length > 0) {
           setCurrentLesson(modulesWithLessons[0].lessons[0]);
         }
@@ -137,22 +96,12 @@ export const LessonViewer = () => {
 
   const markLessonComplete = async (lessonId: string) => {
     if (!user) return;
-
     try {
-      await supabase.from('lesson_progress').upsert({
-        user_id: user.id,
-        lesson_id: lessonId,
-        completed: true,
-        completed_at: new Date().toISOString(),
-      });
-
-      // Update local state
+      await supabase.from('lesson_progress').upsert({ user_id: user.id, lesson_id: lessonId, completed: true, completed_at: new Date().toISOString() });
       setModules(prev => prev.map(module => ({
         ...module,
         lessons: module.lessons.map(lesson =>
-          lesson.id === lessonId
-            ? { ...lesson, progress: { ...lesson.progress!, completed: true } }
-            : lesson
+          lesson.id === lessonId ? { ...lesson, progress: { ...lesson.progress!, completed: true } } : lesson
         ),
       })));
     } catch (error) {
@@ -162,18 +111,11 @@ export const LessonViewer = () => {
 
   const getNextLesson = () => {
     if (!currentLesson) return null;
-
     for (let i = 0; i < modules.length; i++) {
       const lessonIndex = modules[i].lessons.findIndex(l => l.id === currentLesson.id);
       if (lessonIndex !== -1) {
-        // Next lesson in same module
-        if (lessonIndex < modules[i].lessons.length - 1) {
-          return modules[i].lessons[lessonIndex + 1];
-        }
-        // First lesson of next module
-        if (i < modules.length - 1 && modules[i + 1].lessons.length > 0) {
-          return modules[i + 1].lessons[0];
-        }
+        if (lessonIndex < modules[i].lessons.length - 1) return modules[i].lessons[lessonIndex + 1];
+        if (i < modules.length - 1 && modules[i + 1].lessons.length > 0) return modules[i + 1].lessons[0];
       }
     }
     return null;
@@ -181,18 +123,11 @@ export const LessonViewer = () => {
 
   const getPreviousLesson = () => {
     if (!currentLesson) return null;
-
     for (let i = 0; i < modules.length; i++) {
       const lessonIndex = modules[i].lessons.findIndex(l => l.id === currentLesson.id);
       if (lessonIndex !== -1) {
-        // Previous lesson in same module
-        if (lessonIndex > 0) {
-          return modules[i].lessons[lessonIndex - 1];
-        }
-        // Last lesson of previous module
-        if (i > 0 && modules[i - 1].lessons.length > 0) {
-          return modules[i - 1].lessons[modules[i - 1].lessons.length - 1];
-        }
+        if (lessonIndex > 0) return modules[i].lessons[lessonIndex - 1];
+        if (i > 0 && modules[i - 1].lessons.length > 0) return modules[i - 1].lessons[modules[i - 1].lessons.length - 1];
       }
     }
     return null;
@@ -201,62 +136,74 @@ export const LessonViewer = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-charcoal flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-mocha/20 border-t-mocha rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-2 border-cream/20 border-t-cream rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-charcoal text-white pt-20">
-      <div className="flex">
-        {/* Sidebar */}
+    <div className="min-h-screen bg-charcoal text-cream pt-20">
+      <div className="flex h-[calc(100vh-80px)]">
+
+        {/* ── SIDEBAR ── */}
         <motion.div
           initial={false}
-          animate={{ width: sidebarOpen ? 360 : 0 }}
-          className="bg-charcoal border-r border-mocha/20 overflow-hidden"
+          animate={{ width: sidebarOpen ? 320 : 0 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          className="bg-charcoal border-r border-white/08 overflow-hidden flex-shrink-0"
         >
-          <div className="w-[360px] h-screen overflow-y-auto pb-20">
-            <div className="p-6 border-b border-mocha/20">
+          <div className="w-[320px] h-full overflow-y-auto">
+            {/* Sidebar Header */}
+            <div className="p-6 border-b border-white/08">
               <Link
                 to="/dashboard"
-                className="text-mocha hover:text-mocha-dark transition-colors text-sm mb-4 block"
+                className="inline-flex items-center gap-2 text-[0.58rem] tracking-[0.2em] uppercase text-cream/30 hover:text-cream/60 transition-colors mb-5"
               >
-                ← Back to Dashboard
+                <ArrowLeft className="w-3 h-3" /> Dashboard
               </Link>
-              <h2 className="font-serif text-2xl text-white">{course?.title}</h2>
+              <h2
+                className="text-xl text-cream font-light leading-tight"
+                style={{ fontFamily: 'Playfair Display, serif' }}
+              >
+                {course?.title}
+              </h2>
             </div>
 
+            {/* Modules & Lessons */}
             <div className="p-4">
               {modules.map((module) => (
-                <div key={module.id} className="mb-6">
-                  <h3 className="text-sm uppercase tracking-wider text-mocha-dark mb-3 px-2">
-                    {module.title}
-                  </h3>
-                  <div className="space-y-1">
+                <div key={module.id} className="mb-8">
+                  <div className="flex items-center gap-2 mb-3 px-2">
+                    <div className="w-3 h-px bg-cream/20" />
+                    <h3 className="text-[0.52rem] tracking-[0.2em] uppercase text-cream/30">
+                      {module.title}
+                    </h3>
+                  </div>
+                  <div className="space-y-0.5">
                     {module.lessons.map((lesson) => (
                       <button
                         key={lesson.id}
                         onClick={() => setCurrentLesson(lesson)}
-                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                        className={`w-full text-left px-4 py-3 transition-all flex items-center gap-3 ${
                           currentLesson?.id === lesson.id
-                            ? 'bg-mocha text-white'
-                            : 'hover:bg-mocha/10 text-white/70'
+                            ? 'bg-white/10 border-l-2 border-cream'
+                            : 'hover:bg-white/05 border-l-2 border-transparent'
                         }`}
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0">
                           {lesson.progress?.completed ? (
-                            <CheckCircle className="w-5 h-5 text-mocha flex-shrink-0" />
+                            <CheckCircle className="w-4 h-4 text-cream/60" />
                           ) : (
-                            <div className="w-5 h-5 border-2 border-mocha/30 rounded-full flex-shrink-0" />
+                            <div className="w-4 h-4 border border-cream/20 rounded-full" />
                           )}
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm truncate">{lesson.title}</div>
-                            {lesson.duration && (
-                              <div className="text-xs text-white/50">
-                                {lesson.duration} min
-                              </div>
-                            )}
-                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs text-cream/70 truncate leading-relaxed">{lesson.title}</div>
+                          {lesson.duration && (
+                            <div className="text-[0.52rem] tracking-wide text-cream/30 mt-0.5">
+                              {lesson.duration} min
+                            </div>
+                          )}
                         </div>
                       </button>
                     ))}
@@ -267,188 +214,184 @@ export const LessonViewer = () => {
           </div>
         </motion.div>
 
-        {/* Main Content */}
-        <div className="flex-1">
-          <div className="sticky top-20 z-10 bg-charcoal border-b border-mocha/20 px-6 py-4 flex items-center gap-4">
+        {/* ── MAIN CONTENT ── */}
+        <div className="flex-1 overflow-y-auto">
+
+          {/* Top Bar */}
+          <div className="sticky top-0 z-10 bg-charcoal border-b border-white/08 px-6 py-4 flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-mocha/10 rounded-lg transition-colors"
+              className="p-2 hover:bg-white/05 transition-colors"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-4 h-4 text-cream/50" />
             </button>
-            <h1 className="text-xl font-medium flex-1">{currentLesson?.title}</h1>
+            <h1 className="text-sm text-cream/70 flex-1 truncate">
+              {currentLesson?.title}
+            </h1>
           </div>
 
-          <div className="p-6">
+          <div className="p-8 max-w-4xl">
             {currentLesson ? (
-              <>
-                {/* Lesson Description - Shows First */}
-                <div className="bg-white text-charcoal rounded-2xl p-8 mb-8">
-                  <h2 className="font-serif text-3xl mb-4">{currentLesson.title}</h2>
+              <div className="space-y-6">
 
-                  <p className="text-mocha-dark leading-relaxed mb-6">
+                {/* Lesson Info Card */}
+                <div className="bg-white text-charcoal p-8">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-4 h-px bg-mocha/40" />
+                    <span className="text-[0.55rem] tracking-[0.2em] uppercase text-mocha/50">Current Lesson</span>
+                  </div>
+                  <h2
+                    className="text-3xl text-charcoal font-light mb-4"
+                    style={{ fontFamily: 'Playfair Display, serif' }}
+                  >
+                    {currentLesson.title}
+                  </h2>
+                  <p className="text-sm text-mocha-dark leading-relaxed">
                     {currentLesson.description}
                   </p>
-
-                  {/* Progress Indicator */}
                   {currentLesson.resources?.some(r => r.resource_type === 'slides') && !slidesCompleted && (
-                    <div className="p-3 bg-mocha/10 border border-mocha/20 rounded-lg">
-                      <p className="text-sm text-mocha-dark">
-                        📊 Review the slides below, then continue to the video lesson
-                      </p>
-                    </div>
-                  )}
-
-                  {!currentLesson.video_url && !currentLesson.resources?.some(r => r.resource_type === 'slides') && (
-                    <div className="p-3 bg-mocha/10 border border-mocha/20 rounded-lg">
-                      <p className="text-sm text-mocha-dark">
-                        📄 This lesson consists of downloadable materials. Review the resources below.
-                      </p>
+                    <div className="mt-4 px-4 py-3 border border-mocha/15 bg-linen text-xs text-mocha-dark">
+                      Review the slides below, then continue to the video lesson
                     </div>
                   )}
                 </div>
 
-                {/* Slides Viewer - Shows After Description */}
-                {currentLesson.resources && currentLesson.resources.some(r => r.resource_type === 'slides') && !slidesCompleted && (
-                  <div className="mb-8">
-                    <SlideViewer
-                      slideUrl={currentLesson.resources.find(r => r.resource_type === 'slides')!.file_url}
-                      totalSlides={10}
-                      onComplete={() => setSlidesCompleted(true)}
-                    />
-                  </div>
+                {/* Slides */}
+                {currentLesson.resources?.some(r => r.resource_type === 'slides') && !slidesCompleted && (
+                  <SlideViewer
+                    slideUrl={currentLesson.resources.find(r => r.resource_type === 'slides')!.file_url}
+                    totalSlides={10}
+                    onComplete={() => setSlidesCompleted(true)}
+                  />
                 )}
 
-                {/* Downloadable Workbooks & Resources (shows right after slides) */}
-                {currentLesson.resources && currentLesson.resources.filter(r => r.resource_type !== 'slides').length > 0 && !slidesCompleted && (
-                  <div className="bg-white text-charcoal rounded-2xl p-8 mb-8">
-                    <h3 className="font-serif text-2xl mb-4">📚 Workbooks & Resources</h3>
-                    <p className="text-mocha-dark mb-6">
-                      Download these materials to complete this lesson
-                    </p>
-                    <div className="space-y-3">
-                      {currentLesson.resources
-                        .filter(r => r.resource_type !== 'slides')
-                        .map((resource) => (
-                          <a
-                            key={resource.id}
-                            href={resource.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            download
-                            className="flex items-center gap-4 p-5 bg-cream rounded-xl hover:bg-linen transition-all group"
-                          >
-                            <div className="w-14 h-14 bg-mocha/10 rounded-xl flex items-center justify-center group-hover:bg-mocha transition-all">
-                              <Download className="w-7 h-7 text-mocha group-hover:text-white" />
+                {/* Workbooks & Resources */}
+                {currentLesson.resources && currentLesson.resources.filter(r => r.resource_type !== 'slides').length > 0 && (
+                  <div className="bg-white text-charcoal p-8">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-4 h-px bg-mocha/40" />
+                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-mocha/50">Materials</span>
+                    </div>
+                    <h3
+                      className="text-2xl text-charcoal font-light mb-6"
+                      style={{ fontFamily: 'Playfair Display, serif' }}
+                    >
+                      Workbooks & <span className="italic">Resources</span>
+                    </h3>
+                    <div className="space-y-2">
+                      {currentLesson.resources.filter(r => r.resource_type !== 'slides').map((resource) => (
+                        <a
+                          key={resource.id}
+                          href={resource.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                          className="flex items-center gap-4 p-4 border border-mocha/10 hover:border-mocha/30 hover:bg-linen transition-all group"
+                        >
+                          <div className="w-9 h-9 border border-mocha/20 flex items-center justify-center group-hover:bg-charcoal group-hover:border-charcoal transition-all">
+                            <Download className="w-3.5 h-3.5 text-mocha group-hover:text-cream" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm text-charcoal">{resource.title}</div>
+                            <div className="text-[0.55rem] tracking-wide text-mocha/40 uppercase mt-0.5">
+                              {resource.resource_type === 'workbook' ? 'Workbook' : 'Resource'}
                             </div>
-                            <div className="flex-1">
-                              <div className="font-medium text-lg text-charcoal">
-                                {resource.title}
-                              </div>
-                              <div className="text-sm text-mocha-dark capitalize mt-1">
-                                {resource.resource_type === 'workbook' ? '📝 Workbook' : '📄 Resource'}
-                              </div>
-                            </div>
-                            <div className="text-sm font-medium text-mocha">
-                              Download →
-                            </div>
-                          </a>
-                        ))}
+                          </div>
+                          <span className="text-[0.58rem] tracking-[0.15em] uppercase text-mocha/40">Download →</span>
+                        </a>
+                      ))}
                     </div>
                   </div>
                 )}
 
-                {/* Video Player - Shows After Slides */}
+                {/* Video Player */}
                 {currentLesson.video_url && (slidesCompleted || !currentLesson.resources?.some(r => r.resource_type === 'slides')) && (
-                  <div className="mb-8">
-                    <h3 className="text-white text-xl mb-4 flex items-center gap-2">
-                      📹 Video Lesson
-                    </h3>
-                    <div className="bg-black rounded-2xl overflow-hidden aspect-video">
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-4 h-px bg-cream/20" />
+                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/30">Video Lesson</span>
+                    </div>
+                    <div className="aspect-video bg-black overflow-hidden">
                       <video
                         src={currentLesson.video_url}
                         controls
                         className="w-full h-full"
                         onEnded={() => markLessonComplete(currentLesson.id)}
-                      >
-                        Your browser does not support the video tag.
-                      </video>
+                      />
                     </div>
                   </div>
                 )}
 
-                {/* Community Link */}
-                <div className="bg-white text-charcoal rounded-2xl p-8 mb-8">
-                  <div className="text-center">
-                    <MessageSquare className="w-12 h-12 mx-auto mb-4 text-mocha" />
-                    <h3 className="font-serif text-2xl text-charcoal mb-3">
-                      Join the Discussion
-                    </h3>
-                    <p className="text-mocha-dark mb-6">
-                      Connect with fellow students, ask questions, and share insights
-                    </p>
-                    <Link
-                      to={`/community/${courseId}`}
-                      className="inline-block px-6 py-3 bg-mocha text-white rounded-full hover:bg-mocha-dark transition-colors"
-                    >
-                      Go to Community
-                    </Link>
+                {/* Community */}
+                <div className="bg-white text-charcoal p-8 text-center">
+                  <div className="w-10 h-10 border border-mocha/20 flex items-center justify-center mx-auto mb-4">
+                    <MessageSquare className="w-4 h-4 text-mocha" />
                   </div>
+                  <h3
+                    className="text-2xl text-charcoal font-light mb-2"
+                    style={{ fontFamily: 'Playfair Display, serif' }}
+                  >
+                    Join the <span className="italic">Discussion</span>
+                  </h3>
+                  <p className="text-xs text-mocha/50 tracking-wide mb-6">
+                    Connect with fellow students and share insights
+                  </p>
+                  <Link
+                    to={`/community/${courseId}`}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-charcoal text-cream text-[0.58rem] tracking-[0.15em] uppercase hover:bg-mocha transition-all"
+                  >
+                    Go to Community
+                  </Link>
                 </div>
 
-                {/* Mark as Complete */}
+                {/* Mark Complete */}
                 {!currentLesson.progress?.completed && (
-                  <div className="bg-white text-charcoal rounded-2xl p-8 mb-8 text-center">
-                    <h4 className="font-serif text-xl text-charcoal mb-4">
+                  <div className="bg-white text-charcoal p-8 text-center">
+                    <h4
+                      className="text-xl text-charcoal font-light mb-5"
+                      style={{ fontFamily: 'Playfair Display, serif' }}
+                    >
                       Finished this lesson?
                     </h4>
                     <button
                       onClick={() => markLessonComplete(currentLesson.id)}
-                      className="px-8 py-4 bg-mocha text-white rounded-full hover:bg-mocha-dark transition-colors flex items-center gap-2 mx-auto text-lg"
+                      className="inline-flex items-center gap-2 px-8 py-4 bg-charcoal text-cream text-[0.6rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all"
                     >
-                      <CheckCircle className="w-6 h-6" />
+                      <CheckCircle className="w-3.5 h-3.5" />
                       Mark as Complete
                     </button>
                   </div>
                 )}
 
                 {/* Navigation */}
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center pt-4 border-t border-white/08">
                   <button
-                    onClick={() => {
-                      const prev = getPreviousLesson();
-                      if (prev) setCurrentLesson(prev);
-                    }}
+                    onClick={() => { const prev = getPreviousLesson(); if (prev) setCurrentLesson(prev); }}
                     disabled={!getPreviousLesson()}
-                    className="px-6 py-3 bg-white text-charcoal rounded-full hover:bg-linen transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="flex items-center gap-2 px-6 py-3 border border-cream/20 text-cream/60 text-[0.58rem] tracking-[0.15em] uppercase hover:border-cream/40 hover:text-cream transition-all disabled:opacity-20 disabled:cursor-not-allowed"
                   >
-                    <ChevronLeft className="w-5 h-5" />
-                    Previous Lesson
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    Previous
                   </button>
-
                   <button
-                    onClick={() => {
-                      const next = getNextLesson();
-                      if (next) setCurrentLesson(next);
-                    }}
+                    onClick={() => { const next = getNextLesson(); if (next) setCurrentLesson(next); }}
                     disabled={!getNextLesson()}
-                    className="px-6 py-3 bg-mocha text-white rounded-full hover:bg-mocha-dark transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="flex items-center gap-2 px-6 py-3 bg-cream text-charcoal text-[0.58rem] tracking-[0.15em] uppercase hover:bg-linen transition-all disabled:opacity-20 disabled:cursor-not-allowed"
                   >
                     Next Lesson
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
-              </>
+              </div>
             ) : (
-              <div className="text-center py-20 text-white/50">
-                <p>No lessons available</p>
+              <div className="flex items-center justify-center h-64">
+                <p className="text-xs text-cream/30 tracking-widest uppercase">No lessons available</p>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* AI Assistant */}
       <AIAssistant />
     </div>
   );
