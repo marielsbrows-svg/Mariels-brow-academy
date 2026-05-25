@@ -89,7 +89,10 @@ export const HomePage = () => {
   return (
     <div ref={containerRef} className="bg-charcoal">
 
-      {/* ── SPACER 1 ── */}
+{/* ── TICKER FIXED BELOW NAV ── */}
+      <div className="fixed top-[72px] left-0 right-0 z-50">
+        <TickerStrip />
+      </div>{/* ── SPACER 1 ── */}
       <div className="h-screen" />
 
       {/* ══════════════════════════════════════════════
@@ -182,11 +185,6 @@ export const HomePage = () => {
           </motion.div>
         </div>
       </StackSection>
-
-      {/* ── TICKER ── */}
-      <div className="relative z-20">
-        <TickerStrip />
-      </div>
 
       {/* ── SPACER 2 ── */}
       <div className="h-screen" />
