@@ -29,7 +29,26 @@ export const Navigation = () => {
           <div className="flex items-center gap-6 md:gap-8">
 
             {user ? (
-              <>
+<Link
+  to="/courses"
+  className={`text-xs tracking-widest uppercase transition-colors ${
+    isActive('/courses')
+      ? 'text-white font-medium border-b border-white pb-1'
+      : 'text-white/60 hover:text-white'
+  }`}
+>
+  Courses
+</Link>
+<Link
+  to="/community"
+  className={`text-xs tracking-widest uppercase transition-colors ${
+    isActive('/community')
+      ? 'text-white font-medium border-b border-white pb-1'
+      : 'text-white/60 hover:text-white'
+  }`}
+>
+  Community
+</Link><>
                 <Link
                   to="/dashboard"
                   className={`hidden md:flex items-center gap-2 text-xs tracking-widest uppercase transition-colors ${
