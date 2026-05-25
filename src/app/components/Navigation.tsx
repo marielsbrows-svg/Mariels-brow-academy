@@ -27,16 +27,6 @@ export const Navigation = () => {
           </Link>
 
           <div className="flex items-center gap-6 md:gap-8">
-            <Link
-              to="/courses"
-              className={`text-xs tracking-widest uppercase transition-colors ${
-                isActive('/courses')
-                  ? 'text-white font-medium border-b border-white pb-1'
-                  : 'text-white/60 hover:text-white'
-              }`}
-            >
-              Courses
-            </Link>
 
             {user ? (
               <>
@@ -83,7 +73,7 @@ export const Navigation = () => {
                   Login
                 </Link>
                 <Link
-                  to="/signup"
+                  to="/payment"
                   className="px-6 py-2.5 bg-cream text-charcoal text-xs tracking-widest uppercase hover:bg-linen transition-colors"
                 >
                   Enroll
