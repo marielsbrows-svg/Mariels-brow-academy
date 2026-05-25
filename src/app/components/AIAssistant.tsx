@@ -44,15 +44,27 @@ export const AIAssistant = () => {
     setIsTyping(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: {
-          messages: messages
-            .concat(userMessage)
-            .map((msg) => ({ role: msg.role, content: msg.content })),
-        },
-      });
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
-      if (error) throw error;
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/make-server-1feb612f/ai-chat`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({
+            messages: messages
+              .concat(userMessage)
+              .map((msg) => ({ role: msg.role, content: msg.content })),
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to get AI response');
+      const data = await response.json();
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
