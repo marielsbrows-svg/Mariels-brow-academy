@@ -79,7 +79,14 @@ const AppContent = () => {
               </AdminRoute>
             }
           />
-          <Route
+<Route
+  path="/community"
+  element={
+    <ProtectedRoute>
+      <CommunityPage />
+    </ProtectedRoute>
+  }
+/><Route
             path="/community/:courseId"
             element={
               <ProtectedRoute>
