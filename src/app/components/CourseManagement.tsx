@@ -169,7 +169,7 @@ export const CourseManagement = () => {
           .update({
             title: courseForm.title,
             description: courseForm.description,
-            price: parseFloat(courseForm.price),
+            price: 697,
             thumbnail_url: thumbnailUrl,
           })
           .eq('id', editingCourse.id);
@@ -180,7 +180,7 @@ export const CourseManagement = () => {
         const { error } = await supabase.from('courses').insert({
           title: courseForm.title,
           description: courseForm.description,
-          price: parseFloat(courseForm.price),
+          price: 697,
           thumbnail_url: thumbnailUrl,
         });
 
@@ -204,7 +204,6 @@ export const CourseManagement = () => {
     setCourseForm({
       title: course.title,
       description: course.description,
-      price: course.price.toString(),
       thumbnail: null,
     });
     setShowCourseForm(true);
@@ -421,18 +420,6 @@ export const CourseManagement = () => {
                 value={courseForm.description}
                 onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
                 rows={4}
-                className="w-full px-4 py-2 border border-mocha/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-mocha"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-charcoal mb-2">Price ($)</label>
-              <input
-                type="number"
-                required
-                step="0.01"
-                value={courseForm.price}
-                onChange={(e) => setCourseForm({ ...courseForm, price: e.target.value })}
                 className="w-full px-4 py-2 border border-mocha/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-mocha"
               />
             </div>
