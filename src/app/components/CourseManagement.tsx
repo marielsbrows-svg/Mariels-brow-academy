@@ -182,6 +182,7 @@ export const CourseManagement = () => {
           description: courseForm.description,
           price: 697,
           thumbnail_url: thumbnailUrl,
+          is_published: true,
         });
 
         if (error) throw error;
