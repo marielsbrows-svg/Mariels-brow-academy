@@ -7,7 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { AssignmentSubmission } from './AssignmentSubmission';
 import { SlideViewer } from './SlideViewer';
 import { AIAssistant } from './AIAssistant';
-
+import { QuizComponent } from './QuizComponent';
 interface Module {
   id: string;
   title: string;
@@ -343,7 +343,8 @@ export const LessonViewer = () => {
                     Go to Community
                   </Link>
                 </div>
-
+{/* Quiz */}
+<QuizComponent lessonId={currentLesson.id} onPass={() => markLessonComplete(currentLesson.id)} />               
                 {/* Mark Complete */}
                 {!currentLesson.progress?.completed && (
                   <div className="bg-white text-charcoal p-8 text-center">
