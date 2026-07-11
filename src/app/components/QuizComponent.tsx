@@ -35,10 +35,15 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
   const [loading, setLoading] = useState(true);
   const [alreadyPassed, setAlreadyPassed] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    fetchQuestions();
-    checkAttempts();
+    const init = async () => {
+      await fetchQuestions();
+      await checkAttempts();
+      setInitialized(true);
+    };
+    init();
   }, [lessonId]);
 
   const fetchQuestions = async () => {
@@ -71,7 +76,7 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
         const hasPassed = data.some(a => a.passed);
         if (hasPassed) {
           setAlreadyPassed(true);
-          onPass();
+          // Don't call onPass() here — only call it when they actually complete the quiz
         }
       }
     } catch (error) {
@@ -118,6 +123,7 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
 
       if (didPass) {
         setAlreadyPassed(true);
+        // Only call onPass when they actually pass the quiz right now
         setTimeout(() => onPass(), 2000);
       }
     } catch (error) {
@@ -135,7 +141,7 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
     setAttempts(prev => prev + 1);
   };
 
-  if (loading) {
+  if (loading || !initialized) {
     return (
       <div className="bg-white p-8 flex items-center justify-center">
         <div className="w-6 h-6 border-2 border-mocha/20 border-t-mocha rounded-full animate-spin" />
@@ -143,9 +149,11 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
     );
   }
 
+  // No questions — don't show quiz at all
   if (questions.length === 0) return null;
 
-  if (alreadyPassed) {
+  // Already passed
+  if (alreadyPassed && !submitted) {
     return (
       <div className="bg-white p-8 text-center border border-mocha/15">
         <CheckCircle className="w-10 h-10 text-mocha mx-auto mb-4" />
@@ -160,8 +168,8 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
     );
   }
 
-  // Max attempts reached
-  if (attempts >= MAX_ATTEMPTS && !passed) {
+  // Max attempts reached without passing
+  if (attempts >= MAX_ATTEMPTS && !passed && !submitted) {
     return (
       <div className="bg-white p-8 text-center border border-mocha/15">
         <Lock className="w-10 h-10 text-mocha/30 mx-auto mb-4" />
@@ -186,68 +194,40 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white border border-mocha/15 overflow-hidden"
       >
-        {/* Result Header */}
         <div className={`p-8 text-center ${passed ? 'bg-charcoal' : 'bg-linen'}`}>
           {passed ? (
             <>
               <CheckCircle className="w-12 h-12 text-cream mx-auto mb-4" />
-              <h3
-                className="text-3xl text-cream font-light italic mb-2"
-                style={{ fontFamily: 'Playfair Display, serif' }}
-              >
-                Congratulations!
-              </h3>
+              <h3 className="text-3xl text-cream font-light italic mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Congratulations!</h3>
               <p className="text-cream/60 text-sm">You passed the quiz</p>
             </>
           ) : (
             <>
               <XCircle className="w-12 h-12 text-mocha/50 mx-auto mb-4" />
-              <h3
-                className="text-3xl text-charcoal font-light italic mb-2"
-                style={{ fontFamily: 'Playfair Display, serif' }}
-              >
-                Not Quite Yet
-              </h3>
+              <h3 className="text-3xl text-charcoal font-light italic mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Not Quite Yet</h3>
               <p className="text-mocha/60 text-sm">Review the material and try again</p>
             </>
           )}
         </div>
 
-        {/* Score */}
         <div className="p-8">
           <div className="flex items-center justify-between mb-6 pb-6 border-b border-mocha/10">
             <div className="text-center flex-1">
-              <div
-                className="text-5xl text-charcoal font-light mb-1"
-                style={{ fontFamily: 'Playfair Display, serif' }}
-              >
-                {score}%
-              </div>
+              <div className="text-5xl text-charcoal font-light mb-1" style={{ fontFamily: 'Playfair Display, serif' }}>{score}%</div>
               <div className="text-[0.55rem] tracking-[0.2em] uppercase text-mocha/40">Your Score</div>
             </div>
             <div className="w-px h-12 bg-mocha/10" />
             <div className="text-center flex-1">
-              <div
-                className="text-5xl text-charcoal font-light mb-1"
-                style={{ fontFamily: 'Playfair Display, serif' }}
-              >
-                {PASS_SCORE}%
-              </div>
+              <div className="text-5xl text-charcoal font-light mb-1" style={{ fontFamily: 'Playfair Display, serif' }}>{PASS_SCORE}%</div>
               <div className="text-[0.55rem] tracking-[0.2em] uppercase text-mocha/40">Required</div>
             </div>
             <div className="w-px h-12 bg-mocha/10" />
             <div className="text-center flex-1">
-              <div
-                className="text-5xl text-charcoal font-light mb-1"
-                style={{ fontFamily: 'Playfair Display, serif' }}
-              >
-                {MAX_ATTEMPTS - attempts}
-              </div>
+              <div className="text-5xl text-charcoal font-light mb-1" style={{ fontFamily: 'Playfair Display, serif' }}>{Math.max(0, MAX_ATTEMPTS - (attempts + 1))}</div>
               <div className="text-[0.55rem] tracking-[0.2em] uppercase text-mocha/40">Attempts Left</div>
             </div>
           </div>
 
-          {/* Answer Review */}
           <div className="space-y-3 mb-6">
             {questions.map((q, i) => {
               const studentAnswer = answers[q.id];
@@ -255,10 +235,7 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
               return (
                 <div key={q.id} className={`p-4 border ${isCorrect ? 'border-mocha/20 bg-linen' : 'border-red-100 bg-red-50/50'}`}>
                   <div className="flex items-start gap-3">
-                    {isCorrect
-                      ? <CheckCircle className="w-4 h-4 text-mocha flex-shrink-0 mt-0.5" />
-                      : <XCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                    }
+                    {isCorrect ? <CheckCircle className="w-4 h-4 text-mocha flex-shrink-0 mt-0.5" /> : <XCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />}
                     <div className="flex-1">
                       <p className="text-xs text-charcoal mb-1">{i + 1}. {q.question}</p>
                       {!isCorrect && (
@@ -273,19 +250,15 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
             })}
           </div>
 
-          {/* Actions */}
           {passed ? (
             <div className="text-center">
               <p className="text-xs text-mocha/40 tracking-wide mb-4">Unlocking next lesson...</p>
               <div className="w-8 h-8 border-2 border-mocha/20 border-t-mocha rounded-full animate-spin mx-auto" />
             </div>
-          ) : attempts < MAX_ATTEMPTS && (
-            <button
-              onClick={retakeQuiz}
-              className="flex items-center justify-center gap-2 w-full py-4 border border-charcoal text-charcoal text-[0.62rem] tracking-[0.2em] uppercase hover:bg-charcoal hover:text-cream transition-all"
-            >
+          ) : attempts + 1 < MAX_ATTEMPTS && (
+            <button onClick={retakeQuiz} className="flex items-center justify-center gap-2 w-full py-4 border border-charcoal text-charcoal text-[0.62rem] tracking-[0.2em] uppercase hover:bg-charcoal hover:text-cream transition-all">
               <RotateCcw className="w-3.5 h-3.5" />
-              Retake Quiz ({MAX_ATTEMPTS - attempts} attempts left)
+              Retake Quiz ({MAX_ATTEMPTS - (attempts + 1)} attempts left)
             </button>
           )}
         </div>
@@ -304,72 +277,39 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
 
   return (
     <div className="bg-white border border-mocha/15 overflow-hidden">
-      {/* Quiz Header */}
       <div className="bg-charcoal px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-4 h-px bg-cream/20" />
           <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/40">Lesson Quiz</span>
         </div>
-        <span className="text-[0.55rem] tracking-[0.15em] uppercase text-cream/30">
-          Question {currentQ + 1} of {questions.length}
-        </span>
+        <span className="text-[0.55rem] tracking-[0.15em] uppercase text-cream/30">Question {currentQ + 1} of {questions.length}</span>
       </div>
 
-      {/* Progress Bar */}
       <div className="h-0.5 bg-mocha/10">
-        <div
-          className="h-full bg-charcoal transition-all duration-500"
-          style={{ width: `${((currentQ) / questions.length) * 100}%` }}
-        />
+        <div className="h-full bg-charcoal transition-all duration-500" style={{ width: `${(currentQ / questions.length) * 100}%` }} />
       </div>
 
       <div className="p-8">
-        {/* Question */}
         <AnimatePresence mode="wait">
-          <motion.div
-            key={currentQ}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.25 }}
-          >
-            <h3
-              className="text-xl text-charcoal font-light mb-6 leading-relaxed"
-              style={{ fontFamily: 'Playfair Display, serif' }}
-            >
+          <motion.div key={currentQ} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
+            <h3 className="text-xl text-charcoal font-light mb-6 leading-relaxed" style={{ fontFamily: 'Playfair Display, serif' }}>
               {question.question}
             </h3>
 
-            {/* Options */}
             <div className="space-y-3 mb-8">
               {options.map(({ key, text }) => (
                 <button
                   key={key}
                   onClick={() => handleSelect(key)}
-                  className={`w-full text-left p-4 border transition-all flex items-center gap-4 ${
-                    selected === key
-                      ? 'border-charcoal bg-charcoal text-cream'
-                      : 'border-mocha/15 bg-cream hover:border-mocha/40 text-charcoal'
-                  }`}
+                  className={`w-full text-left p-4 border transition-all flex items-center gap-4 ${selected === key ? 'border-charcoal bg-charcoal text-cream' : 'border-mocha/15 bg-cream hover:border-mocha/40 text-charcoal'}`}
                 >
-                  <span className={`w-7 h-7 flex items-center justify-center text-[0.65rem] font-medium flex-shrink-0 border transition-all ${
-                    selected === key
-                      ? 'border-cream/30 text-cream'
-                      : 'border-mocha/20 text-mocha/50'
-                  }`}>
-                    {key}
-                  </span>
+                  <span className={`w-7 h-7 flex items-center justify-center text-[0.65rem] font-medium flex-shrink-0 border transition-all ${selected === key ? 'border-cream/30 text-cream' : 'border-mocha/20 text-mocha/50'}`}>{key}</span>
                   <span className="text-sm leading-relaxed">{text}</span>
                 </button>
               ))}
             </div>
 
-            {/* Next Button */}
-            <button
-              onClick={handleNext}
-              disabled={!selected}
-              className="flex items-center justify-center gap-2 w-full py-4 bg-charcoal text-cream text-[0.62rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-            >
+            <button onClick={handleNext} disabled={!selected} className="flex items-center justify-center gap-2 w-full py-4 bg-charcoal text-cream text-[0.62rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all disabled:opacity-30 disabled:cursor-not-allowed">
               {currentQ < questions.length - 1 ? 'Next Question' : 'Submit Quiz'}
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
