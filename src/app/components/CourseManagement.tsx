@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Plus, Upload, Trash2, Edit2, ChevronDown, ChevronUp, FileText, Video, Save, X } from 'lucide-react';
+import { QuizBuilder } from './QuizBuilder';
 import { supabase } from '../../lib/supabase';
 
 interface Course {
@@ -51,7 +52,7 @@ export const CourseManagement = () => {
   const [selectedModuleForLesson, setSelectedModuleForLesson] = useState<string | null>(null);
   const [selectedLessonForResource, setSelectedLessonForResource] = useState<string | null>(null);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
-
+  const [quizBuilderLesson, setQuizBuilderLesson] = useState<{id: string, title: string} | null>(null);
   // Form states
   const [courseForm, setCourseForm] = useState({
     title: '',
@@ -379,7 +380,13 @@ export const CourseManagement = () => {
   };
 
   return (
-    <div className="space-y-8">
+    {quizBuilderLesson && (
+  <QuizBuilder
+    lessonId={quizBuilderLesson.id}
+    lessonTitle={quizBuilderLesson.title}
+    onClose={() => setQuizBuilderLesson(null)}
+  />
+)}    <div className="space-y-8">
       {/* Course Creation */}
       <div className="bg-white rounded-2xl p-8 shadow-lg">
         <div className="flex items-center justify-between mb-6">
@@ -726,7 +733,13 @@ export const CourseManagement = () => {
                               >
                                 <Plus className="w-3 h-3" />
                                 Add PDF/Resource
-                              </button>
+                                <button
+  onClick={() => setQuizBuilderLesson({ id: lesson.id, title: lesson.title })}
+  className="text-sm px-3 py-1 bg-charcoal text-cream hover:bg-mocha transition-colors rounded flex items-center gap-1"
+>
+  <Plus className="w-3 h-3" />
+  Add Quiz
+</button>                              </button>
                               <button
                                 onClick={() => handleDeleteLesson(lesson.id, module.id)}
                                 className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
