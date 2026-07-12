@@ -52,8 +52,6 @@ export const LessonViewer = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [slidesCompleted, setSlidesCompleted] = useState(false);
-  // Track which lessons have had their quiz passed THIS session only
-  const [quizPassedLessons, setQuizPassedLessons] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (courseId && user) fetchCourseContent();
@@ -122,11 +120,6 @@ export const LessonViewer = () => {
     }
   };
 
-  // Called when quiz is passed — just tracks locally, doesn't auto-complete lesson
-  const handleQuizPass = (lessonId: string) => {
-    setQuizPassedLessons(prev => new Set([...prev, lessonId]));
-  };
-
   const getNextLesson = () => {
     if (!currentLesson) return null;
     for (let i = 0; i < modules.length; i++) {
@@ -149,6 +142,15 @@ export const LessonViewer = () => {
       }
     }
     return null;
+  };
+
+  // Called when quiz is passed — marks lesson complete and moves to next lesson
+  const handleQuizPass = async (lessonId: string) => {
+    await markLessonComplete(lessonId);
+    setTimeout(() => {
+      const next = getNextLesson();
+      if (next) setCurrentLesson(next);
+    }, 2500);
   };
 
   if (loading) {
@@ -300,8 +302,9 @@ export const LessonViewer = () => {
                   </div>
                 )}
 
-                {/* Quiz — passes lessonId, does NOT auto-complete lesson */}
+                {/* Quiz — key prop forces remount when lesson changes */}
                 <QuizComponent
+                  key={currentLesson.id}
                   lessonId={currentLesson.id}
                   onPass={() => handleQuizPass(currentLesson.id)}
                 />
@@ -320,7 +323,7 @@ export const LessonViewer = () => {
                   </Link>
                 </div>
 
-                {/* Mark Complete — only show if quiz passed or no quiz exists */}
+                {/* Mark Complete */}
                 {!currentLesson.progress?.completed && (
                   <div className="bg-white text-charcoal p-8 text-center">
                     <h4 className="text-xl text-charcoal font-light mb-5" style={{ fontFamily: 'Playfair Display, serif' }}>
