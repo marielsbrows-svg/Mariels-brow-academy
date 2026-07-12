@@ -4,10 +4,10 @@ import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight, CheckCircle, Download, Menu, MessageSquare, ArrowLeft } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { AssignmentSubmission } from './AssignmentSubmission';
 import { SlideViewer } from './SlideViewer';
 import { AIAssistant } from './AIAssistant';
 import { QuizComponent } from './QuizComponent';
+
 interface Module {
   id: string;
   title: string;
@@ -52,6 +52,8 @@ export const LessonViewer = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [slidesCompleted, setSlidesCompleted] = useState(false);
+  // Track which lessons have had their quiz passed THIS session only
+  const [quizPassedLessons, setQuizPassedLessons] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (courseId && user) fetchCourseContent();
@@ -66,17 +68,21 @@ export const LessonViewer = () => {
       const { data: courseData } = await supabase.from('courses').select('id, title').eq('id', courseId).single();
       setCourse(courseData);
 
-      const { data: modulesData } = await supabase.from('course_modules').select('*').eq('course_id', courseId).order('order_index');
+      const { data: modulesData } = await supabase.from('course_modules').select('*').eq('course_id', courseId).order('order_index', { ascending: true });
 
       if (modulesData) {
         const modulesWithLessons = await Promise.all(
           modulesData.map(async (module) => {
-            const { data: lessonsData } = await supabase.from('lessons').select('*').eq('module_id', module.id).order('order_index');
+            const { data: lessonsData } = await supabase.from('lessons').select('*').eq('module_id', module.id).order('order_index', { ascending: true });
             const lessonsWithProgress = await Promise.all(
               (lessonsData || []).map(async (lesson) => {
                 const { data: progressData } = await supabase.from('lesson_progress').select('completed, last_position_seconds').eq('user_id', user?.id).eq('lesson_id', lesson.id).single();
                 const { data: resourcesData } = await supabase.from('lesson_resources').select('*').eq('lesson_id', lesson.id);
-                return { ...lesson, progress: progressData || { completed: false, last_position_seconds: 0 }, resources: resourcesData || [] };
+                return {
+                  ...lesson,
+                  progress: progressData || { completed: false, last_position_seconds: 0 },
+                  resources: resourcesData || [],
+                };
               })
             );
             return { ...module, lessons: lessonsWithProgress };
@@ -97,16 +103,28 @@ export const LessonViewer = () => {
   const markLessonComplete = async (lessonId: string) => {
     if (!user) return;
     try {
-      await supabase.from('lesson_progress').upsert({ user_id: user.id, lesson_id: lessonId, completed: true, completed_at: new Date().toISOString() });
+      await supabase.from('lesson_progress').upsert({
+        user_id: user.id,
+        lesson_id: lessonId,
+        completed: true,
+        completed_at: new Date().toISOString(),
+      });
       setModules(prev => prev.map(module => ({
         ...module,
         lessons: module.lessons.map(lesson =>
-          lesson.id === lessonId ? { ...lesson, progress: { ...lesson.progress!, completed: true } } : lesson
+          lesson.id === lessonId
+            ? { ...lesson, progress: { ...lesson.progress!, completed: true } }
+            : lesson
         ),
       })));
     } catch (error) {
       console.error('Error marking lesson complete:', error);
     }
+  };
+
+  // Called when quiz is passed — just tracks locally, doesn't auto-complete lesson
+  const handleQuizPass = (lessonId: string) => {
+    setQuizPassedLessons(prev => new Set([...prev, lessonId]));
   };
 
   const getNextLesson = () => {
@@ -145,7 +163,7 @@ export const LessonViewer = () => {
     <div className="min-h-screen bg-charcoal text-cream pt-20">
       <div className="flex h-[calc(100vh-80px)]">
 
-        {/* ── SIDEBAR ── */}
+        {/* SIDEBAR */}
         <motion.div
           initial={false}
           animate={{ width: sidebarOpen ? 320 : 0 }}
@@ -153,31 +171,21 @@ export const LessonViewer = () => {
           className="bg-charcoal border-r border-white/08 overflow-hidden flex-shrink-0"
         >
           <div className="w-[320px] h-full overflow-y-auto">
-            {/* Sidebar Header */}
             <div className="p-6 border-b border-white/08">
-              <Link
-                to="/dashboard"
-                className="inline-flex items-center gap-2 text-[0.58rem] tracking-[0.2em] uppercase text-cream/30 hover:text-cream/60 transition-colors mb-5"
-              >
+              <Link to="/dashboard" className="inline-flex items-center gap-2 text-[0.58rem] tracking-[0.2em] uppercase text-cream/30 hover:text-cream/60 transition-colors mb-5">
                 <ArrowLeft className="w-3 h-3" /> Dashboard
               </Link>
-              <h2
-                className="text-xl text-cream font-light leading-tight"
-                style={{ fontFamily: 'Playfair Display, serif' }}
-              >
+              <h2 className="text-xl text-cream font-light leading-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
                 {course?.title}
               </h2>
             </div>
 
-            {/* Modules & Lessons */}
             <div className="p-4">
               {modules.map((module) => (
                 <div key={module.id} className="mb-8">
                   <div className="flex items-center gap-2 mb-3 px-2">
                     <div className="w-3 h-px bg-cream/20" />
-                    <h3 className="text-[0.52rem] tracking-[0.2em] uppercase text-cream/30">
-                      {module.title}
-                    </h3>
+                    <h3 className="text-[0.52rem] tracking-[0.2em] uppercase text-cream/30">{module.title}</h3>
                   </div>
                   <div className="space-y-0.5">
                     {module.lessons.map((lesson) => (
@@ -191,18 +199,15 @@ export const LessonViewer = () => {
                         }`}
                       >
                         <div className="flex-shrink-0">
-                          {lesson.progress?.completed ? (
-                            <CheckCircle className="w-4 h-4 text-cream/60" />
-                          ) : (
-                            <div className="w-4 h-4 border border-cream/20 rounded-full" />
-                          )}
+                          {lesson.progress?.completed
+                            ? <CheckCircle className="w-4 h-4 text-cream/60" />
+                            : <div className="w-4 h-4 border border-cream/20 rounded-full" />
+                          }
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-xs text-cream/70 truncate leading-relaxed">{lesson.title}</div>
                           {lesson.duration && (
-                            <div className="text-[0.52rem] tracking-wide text-cream/30 mt-0.5">
-                              {lesson.duration} min
-                            </div>
+                            <div className="text-[0.52rem] tracking-wide text-cream/30 mt-0.5">{lesson.duration} min</div>
                           )}
                         </div>
                       </button>
@@ -214,41 +219,29 @@ export const LessonViewer = () => {
           </div>
         </motion.div>
 
-        {/* ── MAIN CONTENT ── */}
+        {/* MAIN CONTENT */}
         <div className="flex-1 overflow-y-auto">
-
-          {/* Top Bar */}
           <div className="sticky top-0 z-10 bg-charcoal border-b border-white/08 px-6 py-4 flex items-center gap-4">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-white/05 transition-colors"
-            >
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-white/05 transition-colors">
               <Menu className="w-4 h-4 text-cream/50" />
             </button>
-            <h1 className="text-sm text-cream/70 flex-1 truncate">
-              {currentLesson?.title}
-            </h1>
+            <h1 className="text-sm text-cream/70 flex-1 truncate">{currentLesson?.title}</h1>
           </div>
 
           <div className="p-8 max-w-4xl">
             {currentLesson ? (
               <div className="space-y-6">
 
-                {/* Lesson Info Card */}
+                {/* Lesson Info */}
                 <div className="bg-white text-charcoal p-8">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-4 h-px bg-mocha/40" />
                     <span className="text-[0.55rem] tracking-[0.2em] uppercase text-mocha/50">Current Lesson</span>
                   </div>
-                  <h2
-                    className="text-3xl text-charcoal font-light mb-4"
-                    style={{ fontFamily: 'Playfair Display, serif' }}
-                  >
+                  <h2 className="text-3xl text-charcoal font-light mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
                     {currentLesson.title}
                   </h2>
-                  <p className="text-sm text-mocha-dark leading-relaxed">
-                    {currentLesson.description}
-                  </p>
+                  <p className="text-sm text-mocha-dark leading-relaxed">{currentLesson.description}</p>
                   {currentLesson.resources?.some(r => r.resource_type === 'slides') && !slidesCompleted && (
                     <div className="mt-4 px-4 py-3 border border-mocha/15 bg-linen text-xs text-mocha-dark">
                       Review the slides below, then continue to the video lesson
@@ -260,34 +253,24 @@ export const LessonViewer = () => {
                 {currentLesson.resources?.some(r => r.resource_type === 'slides') && !slidesCompleted && (
                   <SlideViewer
                     slideUrl={currentLesson.resources.find(r => r.resource_type === 'slides')!.file_url}
-                    totalSlides={10}
                     onComplete={() => setSlidesCompleted(true)}
                   />
                 )}
 
-                {/* Workbooks & Resources */}
+                {/* Workbooks */}
                 {currentLesson.resources && currentLesson.resources.filter(r => r.resource_type !== 'slides').length > 0 && (
                   <div className="bg-white text-charcoal p-8">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-4 h-px bg-mocha/40" />
                       <span className="text-[0.55rem] tracking-[0.2em] uppercase text-mocha/50">Materials</span>
                     </div>
-                    <h3
-                      className="text-2xl text-charcoal font-light mb-6"
-                      style={{ fontFamily: 'Playfair Display, serif' }}
-                    >
+                    <h3 className="text-2xl text-charcoal font-light mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
                       Workbooks & <span className="italic">Resources</span>
                     </h3>
                     <div className="space-y-2">
                       {currentLesson.resources.filter(r => r.resource_type !== 'slides').map((resource) => (
-                        <a
-                          key={resource.id}
-                          href={resource.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          download
-                          className="flex items-center gap-4 p-4 border border-mocha/10 hover:border-mocha/30 hover:bg-linen transition-all group"
-                        >
+                        <a key={resource.id} href={resource.file_url} target="_blank" rel="noopener noreferrer" download
+                          className="flex items-center gap-4 p-4 border border-mocha/10 hover:border-mocha/30 hover:bg-linen transition-all group">
                           <div className="w-9 h-9 border border-mocha/20 flex items-center justify-center group-hover:bg-charcoal group-hover:border-charcoal transition-all">
                             <Download className="w-3.5 h-3.5 text-mocha group-hover:text-cream" />
                           </div>
@@ -304,7 +287,7 @@ export const LessonViewer = () => {
                   </div>
                 )}
 
-                {/* Video Player */}
+                {/* Video */}
                 {currentLesson.video_url && (slidesCompleted || !currentLesson.resources?.some(r => r.resource_type === 'slides')) && (
                   <div>
                     <div className="flex items-center gap-3 mb-4">
@@ -312,46 +295,35 @@ export const LessonViewer = () => {
                       <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/30">Video Lesson</span>
                     </div>
                     <div className="aspect-video bg-black overflow-hidden">
-                      <video
-                        src={currentLesson.video_url}
-                        controls
-                        className="w-full h-full"
-                        onEnded={() => markLessonComplete(currentLesson.id)}
-                      />
+                      <video src={currentLesson.video_url} controls className="w-full h-full" />
                     </div>
                   </div>
                 )}
+
+                {/* Quiz — passes lessonId, does NOT auto-complete lesson */}
+                <QuizComponent
+                  lessonId={currentLesson.id}
+                  onPass={() => handleQuizPass(currentLesson.id)}
+                />
 
                 {/* Community */}
                 <div className="bg-white text-charcoal p-8 text-center">
                   <div className="w-10 h-10 border border-mocha/20 flex items-center justify-center mx-auto mb-4">
                     <MessageSquare className="w-4 h-4 text-mocha" />
                   </div>
-                  <h3
-                    className="text-2xl text-charcoal font-light mb-2"
-                    style={{ fontFamily: 'Playfair Display, serif' }}
-                  >
+                  <h3 className="text-2xl text-charcoal font-light mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>
                     Join the <span className="italic">Discussion</span>
                   </h3>
-                  <p className="text-xs text-mocha/50 tracking-wide mb-6">
-                    Connect with fellow students and share insights
-                  </p>
-                  <Link
-                    to={`/community/${courseId}`}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-charcoal text-cream text-[0.58rem] tracking-[0.15em] uppercase hover:bg-mocha transition-all"
-                  >
+                  <p className="text-xs text-mocha/50 tracking-wide mb-6">Connect with fellow students and share insights</p>
+                  <Link to={`/community/${courseId}`} className="inline-flex items-center gap-2 px-6 py-3 bg-charcoal text-cream text-[0.58rem] tracking-[0.15em] uppercase hover:bg-mocha transition-all">
                     Go to Community
                   </Link>
                 </div>
-{/* Quiz */}
-<QuizComponent lessonId={currentLesson.id} onPass={() => markLessonComplete(currentLesson.id)} />               
-                {/* Mark Complete */}
+
+                {/* Mark Complete — only show if quiz passed or no quiz exists */}
                 {!currentLesson.progress?.completed && (
                   <div className="bg-white text-charcoal p-8 text-center">
-                    <h4
-                      className="text-xl text-charcoal font-light mb-5"
-                      style={{ fontFamily: 'Playfair Display, serif' }}
-                    >
+                    <h4 className="text-xl text-charcoal font-light mb-5" style={{ fontFamily: 'Playfair Display, serif' }}>
                       Finished this lesson?
                     </h4>
                     <button
@@ -371,16 +343,14 @@ export const LessonViewer = () => {
                     disabled={!getPreviousLesson()}
                     className="flex items-center gap-2 px-6 py-3 border border-cream/20 text-cream/60 text-[0.58rem] tracking-[0.15em] uppercase hover:border-cream/40 hover:text-cream transition-all disabled:opacity-20 disabled:cursor-not-allowed"
                   >
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                    Previous
+                    <ChevronLeft className="w-3.5 h-3.5" /> Previous
                   </button>
                   <button
                     onClick={() => { const next = getNextLesson(); if (next) setCurrentLesson(next); }}
                     disabled={!getNextLesson()}
                     className="flex items-center gap-2 px-6 py-3 bg-cream text-charcoal text-[0.58rem] tracking-[0.15em] uppercase hover:bg-linen transition-all disabled:opacity-20 disabled:cursor-not-allowed"
                   >
-                    Next Lesson
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    Next Lesson <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
