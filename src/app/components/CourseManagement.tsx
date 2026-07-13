@@ -442,8 +442,11 @@ export const CourseManagement = () => {
                               <label className="block text-xs font-medium text-charcoal mb-1">Type</label>
                               <select value={resourceForm.resource_type} onChange={e => setResourceForm({ ...resourceForm, resource_type: e.target.value })} className={inputClass}>
                                 <option value="slides">Slides (viewable)</option>
+                                <option value="audio">Voiceover Audio</option>
                                 <option value="workbook">Workbook (downloadable)</option>
+                                <option value="audio">Voiceover Audio</option>
                                 <option value="pdf">PDF (downloadable)</option>
+                                <option value="audio">Voiceover Audio</option>
                               </select>
                             </div>
                             <div><label className="block text-xs font-medium text-charcoal mb-1">File {editingResource && '(leave empty to keep current)'}</label><input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" onChange={e => setResourceForm({ ...resourceForm, file: e.target.files?.[0] || null })} className={inputClass} /></div>
