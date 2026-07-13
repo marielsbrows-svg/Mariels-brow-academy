@@ -420,7 +420,7 @@ export const CourseManagement = () => {
                               <Edit2 className="w-3 h-3" /> Edit
                             </button>
                             <button onClick={() => { setSelectedLessonForResource(lesson.id); setEditingResource(null); setResourceForm({ title: '', file: null, resource_type: 'pdf' }); }} className="text-xs px-2.5 py-1 bg-mocha text-cream hover:bg-mocha-dark transition-colors rounded flex items-center gap-1">
-                              <Plus className="w-3 h-3" /> PDF
+                              <Plus className="w-3 h-3" /> Add File
                             </button>
                             <button onClick={() => setQuizBuilderLesson({ id: lesson.id, title: lesson.title })} className="text-xs px-2.5 py-1 bg-charcoal text-cream hover:bg-mocha transition-colors rounded flex items-center gap-1">
                               <Plus className="w-3 h-3" /> Quiz
@@ -444,12 +444,20 @@ export const CourseManagement = () => {
                                 <option value="slides">Slides (viewable)</option>
                                 <option value="audio">Voiceover Audio</option>
                                 <option value="workbook">Workbook (downloadable)</option>
-                                <option value="audio">Voiceover Audio</option>
                                 <option value="pdf">PDF (downloadable)</option>
-                                <option value="audio">Voiceover Audio</option>
                               </select>
                             </div>
-                            <div><label className="block text-xs font-medium text-charcoal mb-1">File {editingResource && '(leave empty to keep current)'}</label><input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" onChange={e => setResourceForm({ ...resourceForm, file: e.target.files?.[0] || null })} className={inputClass} /></div>
+                            <div>
+                              <label className="block text-xs font-medium text-charcoal mb-1">
+                                File {editingResource && '(leave empty to keep current)'}
+                              </label>
+                              <input
+                                type="file"
+                                accept={resourceForm.resource_type === 'audio' ? 'audio/*,.mp3,.m4a,.wav' : '.pdf,.doc,.docx,.ppt,.pptx'}
+                                onChange={e => setResourceForm({ ...resourceForm, file: e.target.files?.[0] || null })}
+                                className={inputClass}
+                              />
+                            </div>
                             <div className="flex gap-2">
                               <button type="submit" disabled={uploading} className="px-4 py-2 bg-charcoal text-cream hover:bg-mocha transition-colors disabled:opacity-50 text-sm">{uploading ? 'Saving...' : 'Save'}</button>
                               <button type="button" onClick={() => { setSelectedLessonForResource(null); setEditingResource(null); setResourceForm({ title: '', file: null, resource_type: 'pdf' }); }} className="px-4 py-2 border border-charcoal text-charcoal hover:bg-charcoal hover:text-cream transition-colors text-sm">Cancel</button>
