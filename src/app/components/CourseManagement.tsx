@@ -4,7 +4,7 @@ import { Plus, Trash2, Edit2, ChevronDown, ChevronUp, FileText, Video, Save, X, 
 import { QuizBuilder } from './QuizBuilder';
 import { supabase } from '../../lib/supabase';
 
-interface Course { id: string; title: string; description: string; price: number; thumbnail_url: string; }
+interface Course { id: string; title: string; description: string; price: number; thumbnail_url: string; language: string; }
 interface Module { id: string; course_id: string; title: string; description: string; order_index: number; }
 interface Lesson { id: string; module_id: string; title: string; description: string; video_url: string; duration: number; order_index: number; }
 interface Resource { id: string; lesson_id: string; title: string; file_url: string; resource_type: string; }
@@ -37,7 +37,7 @@ export const CourseManagement = () => {
   const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
   const [viewingAttempts, setViewingAttempts] = useState<string | null>(null);
 
-  const [courseForm, setCourseForm] = useState({ title: '', description: '', thumbnail: null as File | null });
+  const [courseForm, setCourseForm] = useState({ title: '', description: '', language: 'EN', thumbnail: null as File | null });
   const [moduleForm, setModuleForm] = useState({ title: '', description: '' });
   const [lessonForm, setLessonForm] = useState({ title: '', description: '', duration: '', video: null as File | null });
   const [resourceForm, setResourceForm] = useState({ title: '', file: null as File | null, resource_type: 'pdf' });
@@ -48,7 +48,7 @@ export const CourseManagement = () => {
   useEffect(() => { if (selectedCourse) fetchModules(selectedCourse); }, [selectedCourse]);
 
   const fetchCourses = async () => {
-    const { data } = await supabase.from('courses').select('*').order('created_at', { ascending: true });
+    const { data } = await supabase.from('courses').select('*').order('language', { ascending: true }).order('created_at', { ascending: true });
     if (data) setCourses(data);
   };
 
@@ -95,11 +95,11 @@ export const CourseManagement = () => {
       let thumbnailUrl = editingCourse?.thumbnail_url || '';
       if (courseForm.thumbnail) thumbnailUrl = await uploadFile(courseForm.thumbnail, 'thumbnails');
       if (editingCourse) {
-        await supabase.from('courses').update({ title: courseForm.title, description: courseForm.description, thumbnail_url: thumbnailUrl }).eq('id', editingCourse.id);
+        await supabase.from('courses').update({ title: courseForm.title, description: courseForm.description, language: courseForm.language, thumbnail_url: thumbnailUrl }).eq('id', editingCourse.id);
       } else {
-        await supabase.from('courses').insert({ title: courseForm.title, description: courseForm.description, price: 697, thumbnail_url: thumbnailUrl, is_published: true });
+        await supabase.from('courses').insert({ title: courseForm.title, description: courseForm.description, price: 697, language: courseForm.language, thumbnail_url: thumbnailUrl, is_published: true });
       }
-      setCourseForm({ title: '', description: '', thumbnail: null });
+      setCourseForm({ title: '', description: '', language: 'EN', thumbnail: null });
       setShowCourseForm(false);
       setEditingCourse(null);
       fetchCourses();
@@ -254,7 +254,6 @@ export const CourseManagement = () => {
                   {quizQuestions.length === 0 && <p className="text-xs text-mocha/40 text-center py-4">No questions yet</p>}
                 </div>
               </div>
-
               <div>
                 <h3 className="font-medium text-charcoal mb-4">Student Attempts ({quizAttempts.length})</h3>
                 <div className="space-y-3">
@@ -310,7 +309,7 @@ export const CourseManagement = () => {
       <div className="bg-white rounded-2xl p-8 shadow-lg">
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-serif text-3xl text-charcoal">Courses</h2>
-          <button onClick={() => { setEditingCourse(null); setCourseForm({ title: '', description: '', thumbnail: null }); setShowCourseForm(true); }} className="flex items-center gap-2 px-6 py-3 bg-charcoal text-cream hover:bg-mocha transition-colors">
+          <button onClick={() => { setEditingCourse(null); setCourseForm({ title: '', description: '', language: 'EN', thumbnail: null }); setShowCourseForm(true); }} className="flex items-center gap-2 px-6 py-3 bg-charcoal text-cream hover:bg-mocha transition-colors">
             <Plus className="w-4 h-4" /> New Course
           </button>
         </div>
@@ -320,6 +319,13 @@ export const CourseManagement = () => {
             <h3 className="font-medium text-charcoal">{editingCourse ? 'Edit Course' : 'New Course'}</h3>
             <div><label className="block text-sm font-medium text-charcoal mb-2">Title</label><input type="text" required value={courseForm.title} onChange={e => setCourseForm({ ...courseForm, title: e.target.value })} className={inputClass} /></div>
             <div><label className="block text-sm font-medium text-charcoal mb-2">Description</label><textarea required value={courseForm.description} onChange={e => setCourseForm({ ...courseForm, description: e.target.value })} rows={4} className={inputClass} /></div>
+            <div>
+              <label className="block text-sm font-medium text-charcoal mb-2">Language</label>
+              <select value={courseForm.language} onChange={e => setCourseForm({ ...courseForm, language: e.target.value })} className={inputClass}>
+                <option value="EN">🇺🇸 English</option>
+                <option value="ES">🇲🇽 Español</option>
+              </select>
+            </div>
             <div><label className="block text-sm font-medium text-charcoal mb-2">Thumbnail {editingCourse && '(leave empty to keep current)'}</label><input type="file" accept="image/*" onChange={e => setCourseForm({ ...courseForm, thumbnail: e.target.files?.[0] || null })} className={inputClass} /></div>
             <div className="flex gap-3">
               <button type="submit" disabled={uploading} className="flex items-center gap-2 px-6 py-3 bg-charcoal text-cream hover:bg-mocha transition-colors disabled:opacity-50"><Save className="w-4 h-4" />{uploading ? 'Saving...' : 'Save'}</button>
@@ -333,11 +339,16 @@ export const CourseManagement = () => {
             <div key={course.id} className={`p-4 rounded-xl border-2 transition-all ${selectedCourse === course.id ? 'border-mocha bg-mocha/5' : 'border-mocha/20 hover:border-mocha/40'}`}>
               <div className="flex items-center justify-between">
                 <div onClick={() => setSelectedCourse(course.id)} className="flex-1 cursor-pointer">
-                  <h3 className="font-medium text-charcoal">{course.title}</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-medium text-charcoal">{course.title}</h3>
+                    <span className={`text-[0.5rem] px-2 py-0.5 tracking-widest uppercase ${course.language === 'ES' ? 'bg-mocha text-cream' : 'bg-charcoal text-cream'}`}>
+                      {course.language === 'ES' ? '🇲🇽 ES' : '🇺🇸 EN'}
+                    </span>
+                  </div>
                   <p className="text-xs text-mocha-dark line-clamp-1">{course.description}</p>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={e => { e.stopPropagation(); setEditingCourse(course); setCourseForm({ title: course.title, description: course.description, thumbnail: null }); setShowCourseForm(true); }} className="p-2 text-mocha hover:bg-mocha/10 rounded"><Edit2 className="w-4 h-4" /></button>
+                  <button onClick={e => { e.stopPropagation(); setEditingCourse(course); setCourseForm({ title: course.title, description: course.description, language: course.language || 'EN', thumbnail: null }); setShowCourseForm(true); }} className="p-2 text-mocha hover:bg-mocha/10 rounded"><Edit2 className="w-4 h-4" /></button>
                   <button onClick={e => { e.stopPropagation(); handleDeleteCourse(course.id); }} className="p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
@@ -448,15 +459,8 @@ export const CourseManagement = () => {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs font-medium text-charcoal mb-1">
-                                File {editingResource && '(leave empty to keep current)'}
-                              </label>
-                              <input
-                                type="file"
-                                accept={resourceForm.resource_type === 'audio' ? 'audio/*,.mp3,.m4a,.wav' : '.pdf,.doc,.docx,.ppt,.pptx'}
-                                onChange={e => setResourceForm({ ...resourceForm, file: e.target.files?.[0] || null })}
-                                className={inputClass}
-                              />
+                              <label className="block text-xs font-medium text-charcoal mb-1">File {editingResource && '(leave empty to keep current)'}</label>
+                              <input type="file" accept={resourceForm.resource_type === 'audio' ? 'audio/*,.mp3,.m4a,.wav' : '.pdf,.doc,.docx,.ppt,.pptx'} onChange={e => setResourceForm({ ...resourceForm, file: e.target.files?.[0] || null })} className={inputClass} />
                             </div>
                             <div className="flex gap-2">
                               <button type="submit" disabled={uploading} className="px-4 py-2 bg-charcoal text-cream hover:bg-mocha transition-colors disabled:opacity-50 text-sm">{uploading ? 'Saving...' : 'Save'}</button>
