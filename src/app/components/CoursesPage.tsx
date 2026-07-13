@@ -13,11 +13,13 @@ interface Course {
   thumbnail_url: string | null;
   duration_hours: number | null;
   level: 'beginner' | 'intermediate' | 'advanced' | null;
+  language: 'EN' | 'ES';
 }
 
 export const CoursesPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'ALL' | 'EN' | 'ES'>('ALL');
 
   useEffect(() => {
     fetchCourses();
@@ -29,7 +31,8 @@ export const CoursesPage = () => {
         .from('courses')
         .select('*')
         .eq('is_published', true)
-        .order('created_at', { ascending: false });
+        .order('language', { ascending: true })
+        .order('created_at', { ascending: true });
       if (error) throw error;
       setCourses(data || []);
     } catch (error) {
@@ -47,6 +50,107 @@ export const CoursesPage = () => {
     ];
     return `${images[index % images.length]}?w=800`;
   };
+
+  const filteredCourses = courses.filter(c =>
+    filter === 'ALL' ? true : c.language === filter
+  );
+
+  const enCourses = filteredCourses.filter(c => c.language === 'EN');
+  const esCourses = filteredCourses.filter(c => c.language === 'ES');
+
+  const CourseCard = ({ course, index }: { course: Course; index: number }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.08 }}
+      className="bg-white group"
+    >
+      {/* Image */}
+      <div className="relative aspect-[4/3] overflow-hidden">
+        <ImageWithFallback
+          src={course.thumbnail_url || getDefaultImage(index)}
+          alt={course.title}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
+
+        {/* Language Badge */}
+        <div className={`absolute top-3 left-3 px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase font-semibold ${
+          course.language === 'EN'
+            ? 'bg-charcoal text-cream'
+            : 'bg-mocha text-cream'
+        }`}>
+          {course.language === 'EN' ? '🇺🇸 EN' : '🇲🇽 ES'}
+        </div>
+
+        {/* Level Badge */}
+        {course.level && (
+          <div className="absolute top-3 right-3 bg-white px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase text-charcoal">
+            {course.level}
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-8">
+        <h3
+          className="text-2xl text-charcoal font-light mb-3 leading-tight"
+          style={{ fontFamily: 'Playfair Display, serif' }}
+        >
+          {course.title}
+        </h3>
+
+        <p className="text-xs text-mocha-dark leading-relaxed mb-6 line-clamp-3">
+          {course.description}
+        </p>
+
+        {/* Meta */}
+        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-mocha/08">
+          {course.duration_hours && (
+            <div className="flex items-center gap-1.5 text-[0.6rem] tracking-widest uppercase text-mocha/50">
+              <Clock className="w-3 h-3" />
+              {course.duration_hours}h
+            </div>
+          )}
+          <div className="text-[0.6rem] tracking-widest uppercase text-mocha/50">
+            Lifetime Access
+          </div>
+          <div className="text-[0.6rem] tracking-widest uppercase text-mocha/50">
+            {course.language === 'EN' ? 'English' : 'Español'}
+          </div>
+        </div>
+
+        {/* Price + CTA */}
+        <div className="flex items-end justify-between">
+          <div>
+            <div
+              className="text-3xl text-charcoal font-light"
+              style={{ fontFamily: 'Playfair Display, serif' }}
+            >
+              ${course.price}
+            </div>
+            <div className="text-[0.55rem] tracking-widest uppercase text-mocha/40 mt-0.5">
+              Klarna · Afterpay · Affirm
+            </div>
+          </div>
+          <Link
+            to={`/course/${course.id}`}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-charcoal text-cream text-[0.58rem] tracking-[0.15em] uppercase hover:bg-mocha transition-all duration-300"
+          >
+            {course.language === 'ES' ? 'Ver Curso' : 'View Course'}
+            <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  const SectionDivider = ({ label }: { label: string }) => (
+    <div className="flex items-center gap-4 mb-8">
+      <span className="text-[0.6rem] tracking-[0.25em] uppercase text-mocha/50 whitespace-nowrap">{label}</span>
+      <div className="flex-1 h-px bg-mocha/15" />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-cream pt-24">
@@ -71,104 +175,80 @@ export const CoursesPage = () => {
             Our <span className="italic">Courses</span>
           </h1>
           <p className="text-sm text-mocha-dark max-w-lg leading-relaxed">
-            Choose the perfect program to launch or elevate your brow artistry career. Lifetime access included with every course.
+            Professional brow certification programs available in English and Spanish. Lifetime access included with every course.
           </p>
         </motion.div>
       </div>
 
-      {/* Courses Grid */}
+      {/* Filter Bar */}
+      <div className="max-w-7xl mx-auto px-8 py-8 flex items-center gap-3 border-b border-mocha/08">
+        <span className="text-[0.58rem] tracking-[0.2em] uppercase text-mocha/40 mr-2">Filter:</span>
+        {[
+          { key: 'ALL', label: 'All Courses' },
+          { key: 'EN', label: '🇺🇸 English' },
+          { key: 'ES', label: '🇲🇽 Español' },
+        ].map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setFilter(key as typeof filter)}
+            className={`px-5 py-2 text-[0.62rem] tracking-[0.15em] uppercase transition-all ${
+              filter === key
+                ? 'bg-charcoal text-cream'
+                : 'border border-mocha/20 text-mocha/60 hover:border-charcoal hover:text-charcoal'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+        <span className="ml-auto text-[0.58rem] tracking-wide text-mocha/40">
+          {filteredCourses.length} {filteredCourses.length === 1 ? 'course' : 'courses'} available
+        </span>
+      </div>
+
+      {/* Courses */}
       <div className="max-w-7xl mx-auto px-8 py-16">
         {loading ? (
           <div className="flex items-center justify-center py-32">
             <div className="w-8 h-8 border-2 border-mocha/20 border-t-mocha rounded-full animate-spin" />
           </div>
-        ) : courses.length === 0 ? (
+        ) : filteredCourses.length === 0 ? (
           <div className="text-center py-32">
             <div
               className="text-3xl text-charcoal italic mb-4"
               style={{ fontFamily: 'Playfair Display, serif' }}
             >
-              Coming Soon
+              No Courses Found
             </div>
-            <p className="text-sm text-mocha/60 tracking-wide">New courses are being prepared for you.</p>
+            <p className="text-sm text-mocha/60 tracking-wide">
+              {filter === 'ES' ? 'Los cursos en español estarán disponibles pronto.' : 'Courses coming soon.'}
+            </p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-mocha/10">
-            {courses.map((course, index) => (
-              <motion.div
-                key={course.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white group"
-              >
-                {/* Image */}
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <ImageWithFallback
-                    src={course.thumbnail_url || getDefaultImage(index)}
-                    alt={course.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
-                  {course.level && (
-                    <div className="absolute top-4 left-4">
-                      <span className="bg-white px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase text-charcoal">
-                        {course.level}
-                      </span>
-                    </div>
-                  )}
+          <div className="space-y-16">
+
+            {/* English Courses */}
+            {(filter === 'ALL' || filter === 'EN') && enCourses.length > 0 && (
+              <div>
+                {filter === 'ALL' && <SectionDivider label="🇺🇸 English Programs" />}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-mocha/10">
+                  {enCourses.map((course, i) => (
+                    <CourseCard key={course.id} course={course} index={i} />
+                  ))}
                 </div>
+              </div>
+            )}
 
-                {/* Content */}
-                <div className="p-8">
-                  <h3
-                    className="text-2xl text-charcoal font-light mb-3 leading-tight"
-                    style={{ fontFamily: 'Playfair Display, serif' }}
-                  >
-                    {course.title}
-                  </h3>
-
-                  <p className="text-xs text-mocha-dark leading-relaxed mb-6 line-clamp-3">
-                    {course.description}
-                  </p>
-
-                  {/* Meta */}
-                  <div className="flex items-center gap-4 mb-6 pb-6 border-b border-mocha/08">
-                    {course.duration_hours && (
-                      <div className="flex items-center gap-1.5 text-[0.6rem] tracking-widest uppercase text-mocha/50">
-                        <Clock className="w-3 h-3" />
-                        {course.duration_hours}h
-                      </div>
-                    )}
-                    <div className="text-[0.6rem] tracking-widest uppercase text-mocha/50">
-                      Lifetime Access
-                    </div>
-                  </div>
-
-                  {/* Price + CTA */}
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <div
-                        className="text-3xl text-charcoal font-light"
-                        style={{ fontFamily: 'Playfair Display, serif' }}
-                      >
-                        ${course.price}
-                      </div>
-                      <div className="text-[0.55rem] tracking-widest uppercase text-mocha/40 mt-0.5">
-                        Klarna · Afterpay · Affirm
-                      </div>
-                    </div>
-                    <Link
-                      to={`/course/${course.id}`}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-charcoal text-cream text-[0.58rem] tracking-[0.15em] uppercase hover:bg-mocha transition-all duration-300"
-                    >
-                      View Course
-                      <ArrowRight className="w-3 h-3" />
-                    </Link>
-                  </div>
+            {/* Spanish Courses */}
+            {(filter === 'ALL' || filter === 'ES') && esCourses.length > 0 && (
+              <div>
+                {filter === 'ALL' && <SectionDivider label="🇲🇽 Programas en Español" />}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-mocha/10">
+                  {esCourses.map((course, i) => (
+                    <CourseCard key={course.id} course={course} index={i} />
+                  ))}
                 </div>
-              </motion.div>
-            ))}
+              </div>
+            )}
           </div>
         )}
       </div>
