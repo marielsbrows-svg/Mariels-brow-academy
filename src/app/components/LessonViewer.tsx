@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ChevronLeft, ChevronRight, CheckCircle, Download, Menu, MessageSquare, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Download, Menu, MessageSquare, ArrowLeft, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { SlideViewer } from './SlideViewer';
@@ -43,6 +43,114 @@ interface Course {
   title: string;
 }
 
+// ── Audio Player Component ──────────────────────────────────────────────────
+const AudioPlayer = ({ src }: { src: string }) => {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (playing) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setPlaying(!playing);
+  };
+
+  const toggleMute = () => {
+    if (!audioRef.current) return;
+    audioRef.current.muted = !muted;
+    setMuted(!muted);
+  };
+
+  const handleTimeUpdate = () => {
+    if (!audioRef.current) return;
+    setCurrentTime(audioRef.current.currentTime);
+    setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
+  };
+
+  const handleLoadedMetadata = () => {
+    if (!audioRef.current) return;
+    setDuration(audioRef.current.duration);
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!audioRef.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percent = x / rect.width;
+    audioRef.current.currentTime = percent * audioRef.current.duration;
+  };
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="bg-charcoal border border-white/10 p-5">
+      <audio
+        ref={audioRef}
+        src={src}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+        onEnded={() => setPlaying(false)}
+      />
+
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-4 h-px bg-cream/20" />
+        <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/30">Lesson Voiceover</span>
+      </div>
+
+      <div className="flex items-center gap-4">
+        {/* Play/Pause */}
+        <button
+          onClick={togglePlay}
+          className="w-10 h-10 bg-cream text-charcoal flex items-center justify-center hover:bg-linen transition-colors flex-shrink-0"
+        >
+          {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+        </button>
+
+        {/* Progress Bar */}
+        <div className="flex-1">
+          <div
+            className="h-1 bg-white/10 cursor-pointer relative"
+            onClick={handleSeek}
+          >
+            <div
+              className="h-full bg-cream transition-all"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="flex justify-between mt-1.5">
+            <span className="text-[0.52rem] text-cream/30">{formatTime(currentTime)}</span>
+            <span className="text-[0.52rem] text-cream/30">{formatTime(duration)}</span>
+          </div>
+        </div>
+
+        {/* Mute */}
+        <button
+          onClick={toggleMute}
+          className="text-cream/40 hover:text-cream transition-colors flex-shrink-0"
+        >
+          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+      </div>
+
+      <p className="text-[0.55rem] text-cream/20 tracking-wide mt-3">
+        Play the voiceover while clicking through the slides above
+      </p>
+    </div>
+  );
+};
+
+// ── Main Component ──────────────────────────────────────────────────────────
 export const LessonViewer = () => {
   const { courseId } = useParams();
   const { user } = useAuth();
@@ -144,7 +252,6 @@ export const LessonViewer = () => {
     return null;
   };
 
-  // Called when quiz is passed — marks lesson complete and moves to next lesson
   const handleQuizPass = async (lessonId: string) => {
     await markLessonComplete(lessonId);
     setTimeout(() => {
@@ -244,23 +351,25 @@ export const LessonViewer = () => {
                     {currentLesson.title}
                   </h2>
                   <p className="text-sm text-mocha-dark leading-relaxed">{currentLesson.description}</p>
-                  {currentLesson.resources?.some(r => r.resource_type === 'slides') && !slidesCompleted && (
-                    <div className="mt-4 px-4 py-3 border border-mocha/15 bg-linen text-xs text-mocha-dark">
-                      Review the slides below, then continue to the video lesson
-                    </div>
-                  )}
                 </div>
 
                 {/* Slides */}
-                {currentLesson.resources?.some(r => r.resource_type === 'slides') && !slidesCompleted && (
+                {currentLesson.resources?.some(r => r.resource_type === 'slides') && (
                   <SlideViewer
                     slideUrl={currentLesson.resources.find(r => r.resource_type === 'slides')!.file_url}
                     onComplete={() => setSlidesCompleted(true)}
                   />
                 )}
 
+                {/* Voiceover Audio Player — shows if there's an audio resource */}
+                {currentLesson.resources?.some(r => r.resource_type === 'audio') && (
+                  <AudioPlayer
+                    src={currentLesson.resources.find(r => r.resource_type === 'audio')!.file_url}
+                  />
+                )}
+
                 {/* Workbooks */}
-                {currentLesson.resources && currentLesson.resources.filter(r => r.resource_type !== 'slides').length > 0 && (
+                {currentLesson.resources && currentLesson.resources.filter(r => !['slides', 'audio'].includes(r.resource_type)).length > 0 && (
                   <div className="bg-white text-charcoal p-8">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-4 h-px bg-mocha/40" />
@@ -270,7 +379,7 @@ export const LessonViewer = () => {
                       Workbooks & <span className="italic">Resources</span>
                     </h3>
                     <div className="space-y-2">
-                      {currentLesson.resources.filter(r => r.resource_type !== 'slides').map((resource) => (
+                      {currentLesson.resources.filter(r => !['slides', 'audio'].includes(r.resource_type)).map((resource) => (
                         <a key={resource.id} href={resource.file_url} target="_blank" rel="noopener noreferrer" download
                           className="flex items-center gap-4 p-4 border border-mocha/10 hover:border-mocha/30 hover:bg-linen transition-all group">
                           <div className="w-9 h-9 border border-mocha/20 flex items-center justify-center group-hover:bg-charcoal group-hover:border-charcoal transition-all">
@@ -290,7 +399,7 @@ export const LessonViewer = () => {
                 )}
 
                 {/* Video */}
-                {currentLesson.video_url && (slidesCompleted || !currentLesson.resources?.some(r => r.resource_type === 'slides')) && (
+                {currentLesson.video_url && (
                   <div>
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-4 h-px bg-cream/20" />
@@ -302,7 +411,7 @@ export const LessonViewer = () => {
                   </div>
                 )}
 
-                {/* Quiz — key prop forces remount when lesson changes */}
+                {/* Quiz */}
                 <QuizComponent
                   key={currentLesson.id}
                   lessonId={currentLesson.id}
