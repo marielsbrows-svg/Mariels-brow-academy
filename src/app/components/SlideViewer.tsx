@@ -71,8 +71,11 @@ export const SlideViewer = ({ slideUrl, lessonId, onComplete }: SlideViewerProps
       const page = await pdfRef.current.getPage(pageNum);
       const containerWidth = containerRef.current.clientWidth || 600;
       const unscaledViewport = page.getViewport({ scale: 1 });
-      const scale = containerWidth / unscaledViewport.width;
+      const pixelRatio = window.devicePixelRatio || 2;
+      const scale = (containerWidth / unscaledViewport.width) * pixelRatio;
       const viewport = page.getViewport({ scale });
+      canvas.style.width = '100%';
+      canvas.style.height = 'auto';
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
