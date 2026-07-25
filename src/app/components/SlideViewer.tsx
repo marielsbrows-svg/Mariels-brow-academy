@@ -1,44 +1,29 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Maximize2, X, Loader, Play, Pause, Volume2, VolumeX } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useState, useEffect, useCallback } from 'react';
+import { Upload, CheckCircle, Loader, Trash2, Play } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
-interface SlideViewerProps {
-  slideUrl: string;
+interface SlideAudio {
+  slide_number: number;
+  audio_url: string | null;
+}
+
+interface SlideAudioManagerProps {
   lessonId: string;
-  totalSlides?: number;
-  onComplete?: () => void;
+  slideUrl: string;
 }
 
 const PDFJS_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174';
 
-export const SlideViewer = ({ slideUrl, lessonId, onComplete }: SlideViewerProps) => {
-  const [currentSlide, setCurrentSlide] = useState(1);
-  const [numPages, setNumPages] = useState(1);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+export const SlideAudioManager = ({ lessonId, slideUrl }: SlideAudioManagerProps) => {
+  const [numSlides, setNumSlides] = useState(0);
+  const [slideAudio, setSlideAudio] = useState<SlideAudio[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fullCanvasRef = useRef<HTMLCanvasElement>(null);
-  const pdfRef = useRef<any>(null);
-  const renderingRef = useRef(false);
-
-  // Audio
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [playing, setPlaying] = useState(false);
-  const [muted, setMuted] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [audioProgress, setAudioProgress] = useState(0);
-  const [audioDuration, setAudioDuration] = useState(0);
+  const [uploading, setUploading] = useState<number | null>(null);
+  const [success, setSuccess] = useState<number | null>(null);
 
   const getPdfJs = useCallback((): Promise<any> => {
     return new Promise((resolve, reject) => {
       if ((window as any).pdfjsLib) { resolve((window as any).pdfjsLib); return; }
-      const existing = document.querySelector(`script[src="${PDFJS_CDN}/pdf.min.js"]`);
-      if (existing) {
-        existing.addEventListener('load', () => resolve((window as any).pdfjsLib));
-        return;
-      }
       const script = document.createElement('script');
       script.src = `${PDFJS_CDN}/pdf.min.js`;
       script.onload = () => {
@@ -51,193 +36,121 @@ export const SlideViewer = ({ slideUrl, lessonId, onComplete }: SlideViewerProps
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(false);
-    setCurrentSlide(1);
-    getPdfJs().then(async (pdfjsLib) => {
-      if (cancelled) return;
+    const init = async () => {
+      setLoading(true);
       try {
-        const pdf = await pdfjsLib.getDocument({ url: slideUrl, cMapUrl: `${PDFJS_CDN}/cmaps/`, cMapPacked: true }).promise;
-        if (cancelled) return;
-        pdfRef.current = pdf;
-        setNumPages(pdf.numPages);
-        setLoading(false);
+        // Get page count from PDF
+        const pdfjsLib = await getPdfJs();
+        const pdf = await pdfjsLib.getDocument({ url: slideUrl }).promise;
+        const pages = pdf.numPages;
+        setNumSlides(pages);
+
+        // Fetch existing audio
+        const { data } = await supabase.from('slide_audio').select('slide_number, audio_url').eq('lesson_id', lessonId);
+        const audioMap = data || [];
+        const slides: SlideAudio[] = Array.from({ length: pages }, (_, i) => ({
+          slide_number: i + 1,
+          audio_url: audioMap.find(a => a.slide_number === i + 1)?.audio_url || null,
+        }));
+        setSlideAudio(slides);
       } catch (err) {
-        if (!cancelled) { setError(true); setLoading(false); }
+        console.error('Error loading slides:', err);
+      } finally {
+        setLoading(false);
       }
-    }).catch(() => { if (!cancelled) { setError(true); setLoading(false); } });
-    return () => { cancelled = true; };
-  }, [slideUrl]);
+    };
+    init();
+  }, [lessonId, slideUrl]);
 
-  const renderPage = useCallback(async (pageNum: number, canvas: HTMLCanvasElement | null) => {
-    if (!pdfRef.current || !canvas || renderingRef.current) return;
-    renderingRef.current = true;
+  const handleUpload = async (slideNum: number, file: File) => {
+    setUploading(slideNum);
     try {
-      const page = await pdfRef.current.getPage(pageNum);
-      const containerWidth = canvas.parentElement?.clientWidth || 800;
-      const viewport = page.getViewport({ scale: 1 });
-      const scale = (containerWidth / viewport.width) * window.devicePixelRatio;
-      const scaledViewport = page.getViewport({ scale });
-      canvas.width = scaledViewport.width;
-      canvas.height = scaledViewport.height;
-      canvas.style.width = `${containerWidth}px`;
-      canvas.style.height = `${containerWidth * (viewport.height / viewport.width)}px`;
-      const ctx = canvas.getContext('2d');
-      if (ctx) await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
-    } catch (err: any) {
-      if (err?.name !== 'RenderingCancelledException') console.error('Render error:', err);
-    } finally { renderingRef.current = false; }
-  }, []);
-
-  useEffect(() => {
-    if (!loading && pdfRef.current) {
-      renderPage(currentSlide, isFullscreen ? fullCanvasRef.current : canvasRef.current);
+      const ext = file.name.split('.').pop();
+      const path = `slide-audio/${lessonId}/slide-${slideNum}.${ext}`;
+      await supabase.storage.from('course-materials').upload(path, file, { upsert: true });
+      const { data } = supabase.storage.from('course-materials').getPublicUrl(path);
+      await supabase.from('slide_audio').upsert({ lesson_id: lessonId, slide_number: slideNum, audio_url: data.publicUrl });
+      setSlideAudio(prev => prev.map(s => s.slide_number === slideNum ? { ...s, audio_url: data.publicUrl } : s));
+      setSuccess(slideNum);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      alert('Upload failed. Please try again.');
+    } finally {
+      setUploading(null);
     }
-  }, [currentSlide, loading, isFullscreen, renderPage]);
-
-  // Fetch audio for current slide
-  useEffect(() => {
-    if (audioRef.current) { audioRef.current.pause(); setPlaying(false); setAudioProgress(0); }
-    setAudioUrl(null);
-    supabase.from('slide_audio').select('audio_url')
-      .eq('lesson_id', lessonId).eq('slide_number', currentSlide).single()
-      .then(({ data }) => { if (data) setAudioUrl(data.audio_url); });
-  }, [currentSlide, lessonId]);
-
-  const handleNext = () => {
-    if (currentSlide < numPages) setCurrentSlide(p => p + 1);
-    else if (onComplete) onComplete();
   };
 
-  const AudioBar = () => (
-    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-      {audioUrl ? (
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              if (!audioRef.current) return;
-              if (playing) { audioRef.current.pause(); setPlaying(false); }
-              else { audioRef.current.play(); setPlaying(true); }
-            }}
-            className="w-9 h-9 bg-white text-charcoal flex items-center justify-center hover:bg-cream transition-colors flex-shrink-0 rounded-full shadow-lg"
-          >
-            {playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
-          </button>
-          <div className="flex-1 cursor-pointer" onClick={e => {
-            if (!audioRef.current || !audioDuration) return;
-            const rect = e.currentTarget.getBoundingClientRect();
-            audioRef.current.currentTime = ((e.clientX - rect.left) / rect.width) * audioDuration;
-          }}>
-            <div className="h-1 bg-white/20">
-              <div className="h-full bg-white transition-all" style={{ width: `${audioProgress}%` }} />
-            </div>
-          </div>
-          <button onClick={() => { if (!audioRef.current) return; audioRef.current.muted = !muted; setMuted(!muted); }}
-            className="text-white/50 hover:text-white transition-colors flex-shrink-0">
-            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </button>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 opacity-30">
-          <Volume2 className="w-3.5 h-3.5 text-white" />
-          <span className="text-[0.52rem] text-white tracking-wide">No voiceover for this slide</span>
-        </div>
-      )}
-    </div>
-  );
+  const handleDelete = async (slideNum: number) => {
+    if (!confirm(`Delete audio for slide ${slideNum}?`)) return;
+    await supabase.from('slide_audio').delete().eq('lesson_id', lessonId).eq('slide_number', slideNum);
+    setSlideAudio(prev => prev.map(s => s.slide_number === slideNum ? { ...s, audio_url: null } : s));
+  };
 
-  const SlideContent = ({ canvasReference }: { canvasReference: React.RefObject<HTMLCanvasElement> }) => (
-    <div className="relative w-full bg-white" style={{ minHeight: 300 }}>
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-charcoal" style={{ minHeight: 300 }}>
-          <div className="flex flex-col items-center gap-3">
-            <Loader className="w-7 h-7 text-cream/40 animate-spin" />
-            <span className="text-[0.6rem] tracking-widest uppercase text-cream/30">Loading slides...</span>
-          </div>
-        </div>
-      )}
-      {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-charcoal" style={{ minHeight: 300 }}>
-          <p className="text-cream/40 text-sm">Unable to load slides. Please try again.</p>
-        </div>
-      )}
-      <canvas ref={canvasReference} className="w-full block" style={{ display: loading || error ? 'none' : 'block' }} />
-      {!loading && !error && (
-        <>
-          <div className="absolute top-3 right-3 bg-black/60 px-2.5 py-1">
-            <span className="text-[0.52rem] tracking-[0.15em] uppercase text-white/70">{currentSlide} / {numPages}</span>
-          </div>
-          <AudioBar />
-        </>
-      )}
-    </div>
-  );
-
-  const NavBar = () => (
-    <div className="flex items-center justify-between px-6 py-4 bg-charcoal border-t border-white/08">
-      <button onClick={() => currentSlide > 1 && setCurrentSlide(p => p - 1)} disabled={currentSlide === 1}
-        className="flex items-center gap-2 px-5 py-2.5 border border-cream/20 text-cream text-[0.58rem] tracking-[0.15em] uppercase hover:border-cream/40 transition-all disabled:opacity-20 disabled:cursor-not-allowed">
-        <ChevronLeft className="w-3.5 h-3.5" /> Previous
-      </button>
-      <div className="flex gap-1.5">
-        {Array.from({ length: Math.min(numPages, 10) }).map((_, i) => (
-          <button key={i} onClick={() => setCurrentSlide(i + 1)}
-            className={`h-1.5 rounded-full transition-all ${currentSlide === i + 1 ? 'bg-cream w-4' : 'bg-cream/20 w-1.5'}`} />
-        ))}
-        {numPages > 10 && <span className="text-cream/30 text-xs ml-1">+{numPages - 10}</span>}
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 py-4 px-3">
+        <Loader className="w-4 h-4 text-mocha animate-spin" />
+        <span className="text-xs text-mocha/50">Detecting slides...</span>
       </div>
-      <button onClick={handleNext}
-        className="flex items-center gap-2 px-5 py-2.5 bg-cream text-charcoal text-[0.58rem] tracking-[0.15em] uppercase hover:bg-linen transition-all">
-        {currentSlide < numPages ? <>Next <ChevronRight className="w-3.5 h-3.5" /></> : <>Continue <ChevronRight className="w-3.5 h-3.5" /></>}
-      </button>
-    </div>
-  );
+    );
+  }
 
   return (
-    <>
-      {audioUrl && (
-        <audio ref={audioRef} src={audioUrl}
-          onTimeUpdate={() => { if (audioRef.current) setAudioProgress((audioRef.current.currentTime / audioRef.current.duration) * 100 || 0); }}
-          onLoadedMetadata={() => { if (audioRef.current) setAudioDuration(audioRef.current.duration); }}
-          onEnded={() => setPlaying(false)} />
-      )}
-
-      {!isFullscreen && (
-        <div className="overflow-hidden border border-white/08">
-          <div className="flex items-center justify-between px-6 py-3 bg-charcoal border-b border-white/08">
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-px bg-cream/20" />
-              <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/30">Course Slides</span>
+    <div className="mt-3 border border-mocha/15 rounded-lg overflow-hidden">
+      <div className="bg-linen px-4 py-2.5 border-b border-mocha/10">
+        <span className="text-[0.6rem] tracking-[0.2em] uppercase text-mocha/60 font-medium">
+          Slide Voiceovers — {numSlides} slides detected
+        </span>
+      </div>
+      <div className="divide-y divide-mocha/08">
+        {slideAudio.map((slide) => (
+          <div key={slide.slide_number} className="flex items-center gap-3 px-4 py-2.5 bg-white hover:bg-cream/50 transition-colors">
+            {/* Slide number */}
+            <div className="w-16 flex-shrink-0">
+              <span className="text-[0.6rem] tracking-widest uppercase text-mocha/40">Slide {slide.slide_number}</span>
             </div>
-            <button onClick={() => setIsFullscreen(true)} className="p-1.5 text-cream/30 hover:text-cream transition-colors">
-              <Maximize2 className="w-4 h-4" />
-            </button>
+
+            {/* Status */}
+            <div className="flex-1">
+              {slide.audio_url ? (
+                <div className="flex items-center gap-2">
+                  <Play className="w-3 h-3 text-mocha" />
+                  <span className="text-[0.6rem] text-mocha/60 tracking-wide">Audio uploaded</span>
+                </div>
+              ) : (
+                <span className="text-[0.6rem] text-mocha/30 tracking-wide">No audio</span>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {success === slide.slide_number ? (
+                <div className="flex items-center gap-1 text-mocha">
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  <span className="text-[0.58rem] tracking-wide">Saved!</span>
+                </div>
+              ) : uploading === slide.slide_number ? (
+                <div className="flex items-center gap-1 text-mocha/50">
+                  <Loader className="w-3.5 h-3.5 animate-spin" />
+                  <span className="text-[0.58rem] tracking-wide">Uploading...</span>
+                </div>
+              ) : (
+                <label className="flex items-center gap-1 px-3 py-1.5 bg-charcoal text-cream text-[0.58rem] tracking-wide uppercase cursor-pointer hover:bg-mocha transition-colors rounded">
+                  <Upload className="w-3 h-3" />
+                  {slide.audio_url ? 'Replace' : 'Upload'}
+                  <input type="file" accept="audio/*,.mp3,.m4a,.wav" className="hidden"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(slide.slide_number, f); }} />
+                </label>
+              )}
+              {slide.audio_url && uploading !== slide.slide_number && (
+                <button onClick={() => handleDelete(slide.slide_number)} className="p-1.5 text-red-400 hover:text-red-600 transition-colors">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
-          <SlideContent canvasReference={canvasRef} />
-          <NavBar />
-        </div>
-      )}
-
-      <AnimatePresence>
-        {isFullscreen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-charcoal flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/08 flex-shrink-0">
-              <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/30">Course Slides</span>
-              <button onClick={() => setIsFullscreen(false)} className="p-2 text-cream/40 hover:text-cream">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-auto flex items-center justify-center p-8">
-              <div className="w-full max-w-5xl">
-                <SlideContent canvasReference={fullCanvasRef} />
-              </div>
-            </div>
-            <NavBar />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+        ))}
+      </div>
+    </div>
   );
 };
