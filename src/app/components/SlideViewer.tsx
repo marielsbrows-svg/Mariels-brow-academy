@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Maximize2, X, Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, Maximize2, X, Play, Pause, Volume2, VolumeX, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../../lib/supabase';
 
@@ -10,11 +10,18 @@ interface SlideViewerProps {
   onComplete?: () => void;
 }
 
-export const SlideViewer = ({ slideUrl, lessonId, totalSlides = 1, onComplete }: SlideViewerProps) => {
+const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174';
+
+export const SlideViewer = ({ slideUrl, lessonId, onComplete }: SlideViewerProps) => {
   const [currentSlide, setCurrentSlide] = useState(1);
-  const [numPages, setNumPages] = useState(totalSlides);
+  const [numPages, setNumPages] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [loaded, setLoaded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pdfRef = useRef<any>(null);
+  const renderTaskRef = useRef<any>(null);
+  const isRenderingRef = useRef(false);
 
   // Audio
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -24,30 +31,74 @@ export const SlideViewer = ({ slideUrl, lessonId, totalSlides = 1, onComplete }:
   const [audioProgress, setAudioProgress] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
 
-  // Get page count from PDF using PDF.js
+  // Load PDF.js and PDF
   useEffect(() => {
-    setLoaded(false);
+    let cancelled = false;
+    setLoading(true);
     setCurrentSlide(1);
-    const PDFJS_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174';
-    const load = () => {
-      const lib = (window as any).pdfjsLib;
-      lib.GlobalWorkerOptions.workerSrc = `${PDFJS_CDN}/pdf.worker.min.js`;
-      lib.getDocument(slideUrl).promise.then((pdf: any) => {
+
+    const initAndLoad = async (pdfjsLib: any) => {
+      try {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `${PDFJS}/pdf.worker.min.js`;
+        const pdf = await pdfjsLib.getDocument(slideUrl).promise;
+        if (cancelled) return;
+        pdfRef.current = pdf;
         setNumPages(pdf.numPages);
-        setLoaded(true);
-      }).catch(() => setLoaded(true));
+        setLoading(false);
+      } catch (e) {
+        if (!cancelled) setLoading(false);
+      }
     };
+
     if ((window as any).pdfjsLib) {
-      load();
+      initAndLoad((window as any).pdfjsLib);
     } else {
-      const script = document.createElement('script');
-      script.src = `${PDFJS_CDN}/pdf.min.js`;
-      script.onload = load;
-      document.head.appendChild(script);
+      const s = document.createElement('script');
+      s.src = `${PDFJS}/pdf.min.js`;
+      s.onload = () => initAndLoad((window as any).pdfjsLib);
+      document.head.appendChild(s);
     }
+    return () => { cancelled = true; };
   }, [slideUrl]);
 
-  // Fetch audio per slide
+  const renderPage = useCallback(async (pageNum: number) => {
+    if (!pdfRef.current || !canvasRef.current || !containerRef.current) return;
+    if (isRenderingRef.current) {
+      if (renderTaskRef.current) { try { renderTaskRef.current.cancel(); } catch {} }
+    }
+    isRenderingRef.current = true;
+    try {
+      const page = await pdfRef.current.getPage(pageNum);
+      const containerWidth = containerRef.current.clientWidth || 600;
+      const unscaledViewport = page.getViewport({ scale: 1 });
+      const scale = containerWidth / unscaledViewport.width;
+      const viewport = page.getViewport({ scale });
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      canvas.style.width = '100%';
+      canvas.style.height = 'auto';
+      renderTaskRef.current = page.render({ canvasContext: ctx, viewport });
+      await renderTaskRef.current.promise;
+    } catch (e: any) {
+      if (e?.name !== 'RenderingCancelledException') console.error(e);
+    } finally {
+      isRenderingRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!loading && pdfRef.current) {
+      // Wait for container to be measured
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => renderPage(currentSlide));
+      });
+    }
+  }, [currentSlide, loading, renderPage]);
+
+  // Reset audio on slide change
   useEffect(() => {
     if (audioRef.current) { audioRef.current.pause(); setPlaying(false); setAudioProgress(0); }
     setAudioUrl(null);
@@ -61,50 +112,35 @@ export const SlideViewer = ({ slideUrl, lessonId, totalSlides = 1, onComplete }:
     else if (onComplete) onComplete();
   };
 
-  const iframeSrc = `${slideUrl}#page=${currentSlide}&toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
-
-  const SlideFrame = ({ height = '500px' }: { height?: string }) => (
-    <div className="relative w-full bg-white overflow-hidden" style={{ height }}>
-      <iframe
-        key={`${slideUrl}-${currentSlide}`}
-        src={iframeSrc}
-        className="w-full h-full border-0"
-        title={`Slide ${currentSlide}`}
-      />
-      {/* Slide counter */}
-      <div className="absolute top-3 right-3 bg-black/60 px-2.5 py-1 pointer-events-none">
-        <span className="text-[0.52rem] tracking-[0.15em] uppercase text-white/80">{currentSlide} / {numPages}</span>
-      </div>
-      {/* Audio bar */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pointer-events-none">
-        {audioUrl ? (
-          <div className="flex items-center gap-3 pointer-events-auto">
-            <button onClick={() => {
-              if (!audioRef.current) return;
-              if (playing) { audioRef.current.pause(); setPlaying(false); }
-              else { audioRef.current.play(); setPlaying(true); }
-            }} className="w-9 h-9 bg-white text-charcoal flex items-center justify-center hover:bg-cream transition-colors flex-shrink-0 rounded-full shadow-lg">
-              {playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
-            </button>
-            <div className="flex-1 pointer-events-auto cursor-pointer" onClick={e => {
-              if (!audioRef.current || !audioDuration) return;
-              const rect = e.currentTarget.getBoundingClientRect();
-              audioRef.current.currentTime = ((e.clientX - rect.left) / rect.width) * audioDuration;
-            }}>
-              <div className="h-1 bg-white/20"><div className="h-full bg-white transition-all" style={{ width: `${audioProgress}%` }} /></div>
-            </div>
-            <button onClick={() => { if (!audioRef.current) return; audioRef.current.muted = !muted; setMuted(!muted); }}
-              className="text-white/50 hover:text-white transition-colors flex-shrink-0 pointer-events-auto">
-              {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            </button>
+  const AudioBar = () => (
+    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+      {audioUrl ? (
+        <div className="flex items-center gap-3">
+          <button onClick={() => {
+            if (!audioRef.current) return;
+            if (playing) { audioRef.current.pause(); setPlaying(false); }
+            else { audioRef.current.play(); setPlaying(true); }
+          }} className="w-9 h-9 bg-white text-charcoal flex items-center justify-center hover:bg-cream transition-colors flex-shrink-0 rounded-full shadow-lg">
+            {playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
+          </button>
+          <div className="flex-1 cursor-pointer" onClick={e => {
+            if (!audioRef.current || !audioDuration) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            audioRef.current.currentTime = ((e.clientX - rect.left) / rect.width) * audioDuration;
+          }}>
+            <div className="h-1 bg-white/20"><div className="h-full bg-white" style={{ width: `${audioProgress}%` }} /></div>
           </div>
-        ) : (
-          <div className="flex items-center gap-2 opacity-30 pointer-events-none">
-            <Volume2 className="w-3.5 h-3.5 text-white" />
-            <span className="text-[0.52rem] text-white tracking-wide">No voiceover for this slide</span>
-          </div>
-        )}
-      </div>
+          <button onClick={() => { if (!audioRef.current) return; audioRef.current.muted = !muted; setMuted(!muted); }}
+            className="text-white/50 hover:text-white transition-colors flex-shrink-0">
+            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 opacity-30">
+          <Volume2 className="w-3.5 h-3.5 text-white" />
+          <span className="text-[0.52rem] text-white tracking-wide">No voiceover for this slide</span>
+        </div>
+      )}
     </div>
   );
 
@@ -144,11 +180,28 @@ export const SlideViewer = ({ slideUrl, lessonId, totalSlides = 1, onComplete }:
               <div className="w-4 h-px bg-cream/20" />
               <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/30">Course Slides</span>
             </div>
-            <button onClick={() => setIsFullscreen(true)} className="p-1.5 text-cream/30 hover:text-cream transition-colors">
+            <button onClick={() => setIsFullscreen(true)} className="p-1.5 text-cream/30 hover:text-cream">
               <Maximize2 className="w-4 h-4" />
             </button>
           </div>
-          <SlideFrame height="520px" />
+          <div ref={containerRef} className="relative bg-white w-full min-h-[400px]">
+            {loading ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-charcoal">
+                <div className="flex flex-col items-center gap-3">
+                  <Loader className="w-7 h-7 text-cream/40 animate-spin" />
+                  <span className="text-[0.6rem] tracking-widest uppercase text-cream/30">Loading slides...</span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <canvas ref={canvasRef} className="w-full block" />
+                <div className="absolute top-3 right-3 bg-black/60 px-2.5 py-1">
+                  <span className="text-[0.52rem] tracking-[0.15em] uppercase text-white/80">{currentSlide} / {numPages}</span>
+                </div>
+                <AudioBar />
+              </>
+            )}
+          </div>
           <NavBar />
         </div>
       )}
@@ -163,8 +216,14 @@ export const SlideViewer = ({ slideUrl, lessonId, totalSlides = 1, onComplete }:
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex-1 overflow-hidden">
-              <SlideFrame height="100%" />
+            <div className="flex-1 overflow-auto p-4 flex items-center justify-center">
+              <div className="w-full max-w-4xl relative">
+                <canvas ref={canvasRef} className="w-full block" />
+                <div className="absolute top-3 right-3 bg-black/60 px-2.5 py-1">
+                  <span className="text-[0.52rem] tracking-[0.15em] uppercase text-white/80">{currentSlide} / {numPages}</span>
+                </div>
+                <AudioBar />
+              </div>
             </div>
             <NavBar />
           </motion.div>
