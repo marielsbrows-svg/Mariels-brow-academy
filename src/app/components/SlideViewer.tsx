@@ -40,12 +40,15 @@ export const SlideViewer = ({ slideUrl, lessonId, onComplete }: SlideViewerProps
     const initAndLoad = async (pdfjsLib: any) => {
       try {
         pdfjsLib.GlobalWorkerOptions.workerSrc = `${PDFJS}/pdf.worker.min.js`;
+        console.log('SlideViewer: loading PDF from', slideUrl);
         const pdf = await pdfjsLib.getDocument(slideUrl).promise;
         if (cancelled) return;
+        console.log('SlideViewer: PDF loaded, pages =', pdf.numPages);
         pdfRef.current = pdf;
         setNumPages(pdf.numPages);
         setLoading(false);
       } catch (e) {
+        console.error('SlideViewer: PDF load error', e);
         if (!cancelled) setLoading(false);
       }
     };
