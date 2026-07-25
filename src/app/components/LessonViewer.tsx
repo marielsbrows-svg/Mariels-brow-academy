@@ -318,7 +318,6 @@ export const LessonViewer = () => {
                 {/* Slides — now with lessonId for per-slide audio */}
                 {currentLesson.resources?.some(r => r.resource_type === 'slides') && (
                   <SlideViewer
-                    slideUrl={currentLesson.resources.find(r => r.resource_type === 'slides')!.file_url}
                     lessonId={currentLesson.id}
                     onComplete={() => setSlidesCompleted(true)}
                   />
