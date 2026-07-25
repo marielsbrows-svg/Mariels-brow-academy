@@ -37,17 +37,30 @@ export const SlideViewer = ({ slideUrl, lessonId, totalSlides, onComplete, admin
 
   // Load PDF.js
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-    script.onload = () => {
+    const PDFJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    const WORKER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const initPDF = () => {
       const pdfjsLib = (window as any).pdfjsLib;
-      pdfjsLib.GlobalWorkerOptions.workerSrc =
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = WORKER_URL;
       loadPDF(pdfjsLib);
     };
-    script.onerror = () => setError(true);
-    document.head.appendChild(script);
-    return () => { document.head.removeChild(script); };
+
+    if ((window as any).pdfjsLib) {
+      // Already loaded
+      initPDF();
+    } else {
+      const existing = document.querySelector(`script[src="${PDFJS_URL}"]`);
+      if (existing) {
+        existing.addEventListener('load', initPDF);
+      } else {
+        const script = document.createElement('script');
+        script.src = PDFJS_URL;
+        script.onload = initPDF;
+        script.onerror = () => setError(true);
+        document.head.appendChild(script);
+      }
+    }
   }, [slideUrl]);
 
   const loadPDF = async (pdfjsLib: any) => {
