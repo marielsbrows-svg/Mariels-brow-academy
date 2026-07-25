@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Plus, Trash2, Edit2, ChevronDown, ChevronUp, FileText, Video, Save, X, Eye } from 'lucide-react';
 import { QuizBuilder } from './QuizBuilder';
+import { SlideAudioManager } from './SlideAudioManager';
 import { supabase } from '../../lib/supabase';
 
 interface Course { id: string; title: string; description: string; price: number; thumbnail_url: string; language: string; }
@@ -469,6 +470,10 @@ export const CourseManagement = () => {
                           </motion.form>
                         )}
 
+                        {(() => {
+                          const slidesResource = resources.find(r => r.lesson_id === lesson.id && r.resource_type === 'slides');
+                          return slidesResource ? <SlideAudioManager key={lesson.id} lessonId={lesson.id} slideUrl={slidesResource.file_url} /> : null;
+                        })()}
                         {resources.filter(r => r.lesson_id === lesson.id).map(resource => (
                           <div key={resource.id} className="mt-2 p-2 bg-linen rounded flex items-center justify-between gap-2 text-sm">
                             <div className="flex items-center gap-2">
