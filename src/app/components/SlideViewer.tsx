@@ -67,9 +67,9 @@ export const SlideViewer = ({ slideUrl, lessonId, totalSlides = 1, onComplete }:
       }
       const page = await pdfDocRef.current.getPage(currentSlide);
       const scale = canvas.parentElement ? canvas.parentElement.clientWidth / page.getViewport({ scale: 1 }).width : 1;
-const viewport = page.getViewport({ scale: Math.max(scale, 0.5) });
-canvas.style.width = '100%';
-canvas.style.height = 'auto';
+      const viewport = page.getViewport({ scale: Math.max(scale, 0.5) });
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
       const ctx = canvas.getContext('2d')!;
       renderTaskRef.current = page.render({ canvasContext: ctx, viewport });
       try { await renderTaskRef.current.promise; } catch {}
