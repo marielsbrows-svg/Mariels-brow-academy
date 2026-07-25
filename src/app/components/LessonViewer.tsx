@@ -54,11 +54,7 @@ const AudioPlayer = ({ src }: { src: string }) => {
 
   const togglePlay = () => {
     if (!audioRef.current) return;
-    if (playing) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
+    if (playing) { audioRef.current.pause(); } else { audioRef.current.play(); }
     setPlaying(!playing);
   };
 
@@ -68,23 +64,10 @@ const AudioPlayer = ({ src }: { src: string }) => {
     setMuted(!muted);
   };
 
-  const handleTimeUpdate = () => {
-    if (!audioRef.current) return;
-    setCurrentTime(audioRef.current.currentTime);
-    setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
-  };
-
-  const handleLoadedMetadata = () => {
-    if (!audioRef.current) return;
-    setDuration(audioRef.current.duration);
-  };
-
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!audioRef.current) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = x / rect.width;
-    audioRef.current.currentTime = percent * audioRef.current.duration;
+    audioRef.current.currentTime = ((e.clientX - rect.left) / rect.width) * audioRef.current.duration;
   };
 
   const formatTime = (seconds: number) => {
@@ -98,51 +81,31 @@ const AudioPlayer = ({ src }: { src: string }) => {
       <audio
         ref={audioRef}
         src={src}
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleLoadedMetadata}
+        onTimeUpdate={() => { if (audioRef.current) { setCurrentTime(audioRef.current.currentTime); setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100); } }}
+        onLoadedMetadata={() => { if (audioRef.current) setDuration(audioRef.current.duration); }}
         onEnded={() => setPlaying(false)}
       />
-
       <div className="flex items-center gap-3 mb-3">
         <div className="w-4 h-px bg-cream/20" />
         <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/30">Lesson Voiceover</span>
       </div>
-
       <div className="flex items-center gap-4">
-        {/* Play/Pause */}
-        <button
-          onClick={togglePlay}
-          className="w-10 h-10 bg-cream text-charcoal flex items-center justify-center hover:bg-linen transition-colors flex-shrink-0"
-        >
+        <button onClick={togglePlay} className="w-10 h-10 bg-cream text-charcoal flex items-center justify-center hover:bg-linen transition-colors flex-shrink-0">
           {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
         </button>
-
-        {/* Progress Bar */}
         <div className="flex-1">
-          <div
-            className="h-1 bg-white/10 cursor-pointer relative"
-            onClick={handleSeek}
-          >
-            <div
-              className="h-full bg-cream transition-all"
-              style={{ width: `${progress}%` }}
-            />
+          <div className="h-1 bg-white/10 cursor-pointer relative" onClick={handleSeek}>
+            <div className="h-full bg-cream transition-all" style={{ width: `${progress}%` }} />
           </div>
           <div className="flex justify-between mt-1.5">
             <span className="text-[0.52rem] text-cream/30">{formatTime(currentTime)}</span>
             <span className="text-[0.52rem] text-cream/30">{formatTime(duration)}</span>
           </div>
         </div>
-
-        {/* Mute */}
-        <button
-          onClick={toggleMute}
-          className="text-cream/40 hover:text-cream transition-colors flex-shrink-0"
-        >
+        <button onClick={toggleMute} className="text-cream/40 hover:text-cream transition-colors flex-shrink-0">
           {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
         </button>
       </div>
-
       <p className="text-[0.55rem] text-cream/20 tracking-wide mt-3">
         Play the voiceover while clicking through the slides above
       </p>
@@ -288,7 +251,6 @@ export const LessonViewer = () => {
                 {course?.title}
               </h2>
             </div>
-
             <div className="p-4">
               {modules.map((module) => (
                 <div key={module.id} className="mb-8">
@@ -353,15 +315,16 @@ export const LessonViewer = () => {
                   <p className="text-sm text-mocha-dark leading-relaxed">{currentLesson.description}</p>
                 </div>
 
-                {/* Slides */}
+                {/* Slides — now with lessonId for per-slide audio */}
                 {currentLesson.resources?.some(r => r.resource_type === 'slides') && (
                   <SlideViewer
                     slideUrl={currentLesson.resources.find(r => r.resource_type === 'slides')!.file_url}
+                    lessonId={currentLesson.id}
                     onComplete={() => setSlidesCompleted(true)}
                   />
                 )}
 
-                {/* Voiceover Audio Player — shows if there's an audio resource */}
+                {/* Standalone audio player (if uploaded as separate audio resource) */}
                 {currentLesson.resources?.some(r => r.resource_type === 'audio') && (
                   <AudioPlayer
                     src={currentLesson.resources.find(r => r.resource_type === 'audio')!.file_url}
@@ -468,13 +431,12 @@ export const LessonViewer = () => {
               </div>
             ) : (
               <div className="flex items-center justify-center h-64">
-                <p className="text-xs text-cream/30 tracking-widest uppercase">No lessons available</p>
+                <p className="text-xs text-cream/30 tracking-widests uppercase">No lessons available</p>
               </div>
             )}
           </div>
         </div>
       </div>
-
       <AIAssistant />
     </div>
   );
