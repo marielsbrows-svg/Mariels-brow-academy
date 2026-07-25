@@ -10,18 +10,15 @@ interface SlideViewerProps {
   onComplete?: () => void;
 }
 
-const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174';
-
 export const SlideViewer = ({ slideUrl, lessonId, onComplete }: SlideViewerProps) => {
   const [currentSlide, setCurrentSlide] = useState(1);
   const [numPages, setNumPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pdfRef = useRef<any>(null);
-  const renderTaskRef = useRef<any>(null);
-  const isRenderingRef = useRef(false);
 
   // Audio
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -31,80 +28,81 @@ export const SlideViewer = ({ slideUrl, lessonId, onComplete }: SlideViewerProps
   const [audioProgress, setAudioProgress] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
 
-  // Load PDF.js and PDF
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setError('');
     setCurrentSlide(1);
 
-    const initAndLoad = async (pdfjsLib: any) => {
+    // Use import() to load pdfjs-dist which is already in node_modules
+    import('pdfjs-dist').then(async (pdfjs) => {
+      if (cancelled) return;
       try {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `${PDFJS}/pdf.worker.min.js`;
-        console.log('SlideViewer: loading PDF from', slideUrl);
-        const pdf = await pdfjsLib.getDocument(slideUrl).promise;
+        pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+        const pdf = await pdfjs.getDocument(slideUrl).promise;
         if (cancelled) return;
-        console.log('SlideViewer: PDF loaded, pages =', pdf.numPages);
         pdfRef.current = pdf;
         setNumPages(pdf.numPages);
         setLoading(false);
-      } catch (e) {
-        console.error('SlideViewer: PDF load error', e);
-        if (!cancelled) setLoading(false);
+      } catch (e: any) {
+        console.error('PDF load error:', e);
+        if (!cancelled) { setError(e.message || 'Failed to load PDF'); setLoading(false); }
       }
-    };
+    }).catch(async () => {
+      // Fallback: load via CDN script tag
+      if (cancelled) return;
+      const PDFJS_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174';
+      const loadScript = () => new Promise<void>((resolve, reject) => {
+        if ((window as any).pdfjsLib) { resolve(); return; }
+        const s = document.createElement('script');
+        s.src = `${PDFJS_CDN}/pdf.min.js`;
+        s.onload = () => resolve();
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+      try {
+        await loadScript();
+        if (cancelled) return;
+        const lib = (window as any).pdfjsLib;
+        lib.GlobalWorkerOptions.workerSrc = `${PDFJS_CDN}/pdf.worker.min.js`;
+        const pdf = await lib.getDocument(slideUrl).promise;
+        if (cancelled) return;
+        pdfRef.current = pdf;
+        setNumPages(pdf.numPages);
+        setLoading(false);
+      } catch (e: any) {
+        if (!cancelled) { setError('Failed to load slides'); setLoading(false); }
+      }
+    });
 
-    if ((window as any).pdfjsLib) {
-      initAndLoad((window as any).pdfjsLib);
-    } else {
-      const s = document.createElement('script');
-      s.src = `${PDFJS}/pdf.min.js`;
-      s.onload = () => initAndLoad((window as any).pdfjsLib);
-      document.head.appendChild(s);
-    }
     return () => { cancelled = true; };
   }, [slideUrl]);
 
   const renderPage = useCallback(async (pageNum: number) => {
-    if (!pdfRef.current || !canvasRef.current || !containerRef.current) return;
-    if (isRenderingRef.current) {
-      if (renderTaskRef.current) { try { renderTaskRef.current.cancel(); } catch {} }
-    }
-    isRenderingRef.current = true;
+    if (!pdfRef.current || !canvasRef.current) return;
     try {
       const page = await pdfRef.current.getPage(pageNum);
-      const containerWidth = containerRef.current.getBoundingClientRect().width || containerRef.current.offsetWidth || window.innerWidth * 0.6 || 800;
-      console.log('SlideViewer: containerWidth =', containerWidth, 'clientWidth =', containerRef.current.clientWidth, 'offsetWidth =', containerRef.current.offsetWidth);
-      const unscaledViewport = page.getViewport({ scale: 1 });
-      const scale = containerWidth / unscaledViewport.width;
-      const viewport = page.getViewport({ scale });
-      canvas.style.width = '100%';
-      canvas.style.height = 'auto';
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      canvas.style.width = '100%';
-      canvas.style.height = 'auto';
-      renderTaskRef.current = page.render({ canvasContext: ctx, viewport });
-      await renderTaskRef.current.promise;
-    } catch (e: any) {
-      if (e?.name !== 'RenderingCancelledException') console.error(e);
-    } finally {
-      isRenderingRef.current = false;
+      const containerWidth = containerRef.current?.offsetWidth || 700;
+      const viewport = page.getViewport({ scale: 1 });
+      const scale = containerWidth / viewport.width;
+      const scaledViewport = page.getViewport({ scale });
+      canvas.width = scaledViewport.width;
+      canvas.height = scaledViewport.height;
+      await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+    } catch (e) {
+      console.error('Render error:', e);
     }
   }, []);
 
   useEffect(() => {
-    if (!loading && pdfRef.current) {
-      // Wait for container to be measured
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => renderPage(currentSlide));
-      });
+    if (!loading && !error && pdfRef.current) {
+      setTimeout(() => renderPage(currentSlide), 200);
     }
-  }, [currentSlide, loading, renderPage]);
+  }, [currentSlide, loading, error, renderPage]);
 
-  // Reset audio on slide change
   useEffect(() => {
     if (audioRef.current) { audioRef.current.pause(); setPlaying(false); setAudioProgress(0); }
     setAudioUrl(null);
@@ -137,7 +135,7 @@ export const SlideViewer = ({ slideUrl, lessonId, onComplete }: SlideViewerProps
             <div className="h-1 bg-white/20"><div className="h-full bg-white" style={{ width: `${audioProgress}%` }} /></div>
           </div>
           <button onClick={() => { if (!audioRef.current) return; audioRef.current.muted = !muted; setMuted(!muted); }}
-            className="text-white/50 hover:text-white transition-colors flex-shrink-0">
+            className="text-white/50 hover:text-white flex-shrink-0">
             {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
         </div>
@@ -170,6 +168,33 @@ export const SlideViewer = ({ slideUrl, lessonId, onComplete }: SlideViewerProps
     </div>
   );
 
+  const SlideContent = () => (
+    <div ref={containerRef} className="relative bg-white w-full" style={{ minHeight: 400 }}>
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-charcoal" style={{ minHeight: 400 }}>
+          <div className="flex flex-col items-center gap-3">
+            <Loader className="w-7 h-7 text-cream/40 animate-spin" />
+            <span className="text-[0.6rem] tracking-widets uppercase text-cream/30">Loading slides...</span>
+          </div>
+        </div>
+      )}
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-charcoal" style={{ minHeight: 400 }}>
+          <p className="text-cream/40 text-sm text-center px-8">{error}</p>
+        </div>
+      )}
+      {!loading && !error && (
+        <>
+          <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: 'auto' }} />
+          <div className="absolute top-3 right-3 bg-black/60 px-2.5 py-1">
+            <span className="text-[0.52rem] tracking-[0.15em] uppercase text-white/80">{currentSlide} / {numPages}</span>
+          </div>
+          <AudioBar />
+        </>
+      )}
+    </div>
+  );
+
   return (
     <>
       {audioUrl && (
@@ -190,24 +215,7 @@ export const SlideViewer = ({ slideUrl, lessonId, onComplete }: SlideViewerProps
               <Maximize2 className="w-4 h-4" />
             </button>
           </div>
-          <div ref={containerRef} className="relative bg-white w-full min-h-[400px]">
-            {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-charcoal">
-                <div className="flex flex-col items-center gap-3">
-                  <Loader className="w-7 h-7 text-cream/40 animate-spin" />
-                  <span className="text-[0.6rem] tracking-widest uppercase text-cream/30">Loading slides...</span>
-                </div>
-              </div>
-            ) : (
-              <>
-                <canvas ref={canvasRef} className="w-full block" />
-                <div className="absolute top-3 right-3 bg-black/60 px-2.5 py-1">
-                  <span className="text-[0.52rem] tracking-[0.15em] uppercase text-white/80">{currentSlide} / {numPages}</span>
-                </div>
-                <AudioBar />
-              </>
-            )}
-          </div>
+          <SlideContent />
           <NavBar />
         </div>
       )}
@@ -222,14 +230,8 @@ export const SlideViewer = ({ slideUrl, lessonId, onComplete }: SlideViewerProps
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex-1 overflow-auto p-4 flex items-center justify-center">
-              <div className="w-full max-w-4xl relative">
-                <canvas ref={canvasRef} className="w-full block" />
-                <div className="absolute top-3 right-3 bg-black/60 px-2.5 py-1">
-                  <span className="text-[0.52rem] tracking-[0.15em] uppercase text-white/80">{currentSlide} / {numPages}</span>
-                </div>
-                <AudioBar />
-              </div>
+            <div className="flex-1 overflow-auto">
+              <SlideContent />
             </div>
             <NavBar />
           </motion.div>
