@@ -316,10 +316,10 @@ export const LessonViewer = () => {
                 </div>
 
                 {/* Slides — now with lessonId for per-slide audio */}
-                {currentLesson.resources?.some(r => r.resource_type === 'slides') && (
-                  <SlideViewer
-                    lessonId={currentLesson.id}
-                    onComplete={() => setSlidesCompleted(true)}
+             <SlideViewer
+  lessonId={currentLesson.id}
+  onComplete={() => setSlidesCompleted(true)}
+/>
                   />
                 )}
 
