@@ -20,16 +20,13 @@ export const CourseManagement = () => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [expandedModule, setExpandedModule] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-
   const [showCourseForm, setShowCourseForm] = useState(false);
   const [showModuleForm, setShowModuleForm] = useState(false);
   const [showLessonForm, setShowLessonForm] = useState(false);
-
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [editingModule, setEditingModule] = useState<Module | null>(null);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
-
   const [selectedModuleForLesson, setSelectedModuleForLesson] = useState<string | null>(null);
   const [selectedLessonForResource, setSelectedLessonForResource] = useState<string | null>(null);
   const [quizBuilderLesson, setQuizBuilderLesson] = useState<{ id: string; title: string } | null>(null);
@@ -37,7 +34,6 @@ export const CourseManagement = () => {
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
   const [viewingAttempts, setViewingAttempts] = useState<string | null>(null);
-
   const [courseForm, setCourseForm] = useState({ title: '', description: '', language: 'EN', thumbnail: null as File | null });
   const [moduleForm, setModuleForm] = useState({ title: '', description: '' });
   const [lessonForm, setLessonForm] = useState({ title: '', description: '', duration: '', video: null as File | null });
@@ -60,15 +56,11 @@ export const CourseManagement = () => {
 
   const fetchLessons = async (moduleId: string) => {
     const { data: lessonsData } = await supabase.from('lessons').select('*').eq('module_id', moduleId).order('order_index', { ascending: true });
-    if (lessonsData) setLessons(prev => {
-      const otherLessons = prev.filter(l => l.module_id !== moduleId);
-      return [...otherLessons, ...lessonsData];
-    });
+    if (lessonsData) setLessons(prev => [...prev.filter(l => l.module_id !== moduleId), ...lessonsData]);
     const { data: resourcesData } = await supabase.from('lesson_resources').select('*').in('lesson_id', lessonsData?.map(l => l.id) || []);
     if (resourcesData) setResources(prev => {
-      const lessonIds = lessonsData?.map(l => l.id) || [];
-      const otherResources = prev.filter(r => !lessonIds.includes(r.lesson_id));
-      return [...otherResources, ...resourcesData];
+      const ids = lessonsData?.map(l => l.id) || [];
+      return [...prev.filter(r => !ids.includes(r.lesson_id)), ...resourcesData];
     });
   };
 
@@ -90,8 +82,7 @@ export const CourseManagement = () => {
   };
 
   const handleSaveCourse = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setUploading(true);
+    e.preventDefault(); setUploading(true);
     try {
       let thumbnailUrl = editingCourse?.thumbnail_url || '';
       if (courseForm.thumbnail) thumbnailUrl = await uploadFile(courseForm.thumbnail, 'thumbnails');
@@ -101,46 +92,38 @@ export const CourseManagement = () => {
         await supabase.from('courses').insert({ title: courseForm.title, description: courseForm.description, price: 697, language: courseForm.language, thumbnail_url: thumbnailUrl, is_published: true });
       }
       setCourseForm({ title: '', description: '', language: 'EN', thumbnail: null });
-      setShowCourseForm(false);
-      setEditingCourse(null);
-      fetchCourses();
-    } catch (error) { alert('Error saving course'); }
-    finally { setUploading(false); }
+      setShowCourseForm(false); setEditingCourse(null); fetchCourses();
+    } catch { alert('Error saving course'); } finally { setUploading(false); }
   };
 
   const handleDeleteCourse = async (courseId: string) => {
-    if (!confirm('Delete this course and all its content?')) return;
+    if (!confirm('Delete this course?')) return;
     await supabase.from('courses').delete().eq('id', courseId);
     if (selectedCourse === courseId) setSelectedCourse(null);
     fetchCourses();
   };
 
   const handleSaveModule = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setUploading(true);
+    e.preventDefault(); setUploading(true);
     try {
       if (editingModule) {
         await supabase.from('course_modules').update({ title: moduleForm.title, description: moduleForm.description }).eq('id', editingModule.id);
       } else {
         await supabase.from('course_modules').insert({ course_id: selectedCourse, title: moduleForm.title, description: moduleForm.description, order_index: modules.length });
       }
-      setModuleForm({ title: '', description: '' });
-      setShowModuleForm(false);
-      setEditingModule(null);
+      setModuleForm({ title: '', description: '' }); setShowModuleForm(false); setEditingModule(null);
       if (selectedCourse) fetchModules(selectedCourse);
-    } catch (error) { alert('Error saving module'); }
-    finally { setUploading(false); }
+    } catch { alert('Error saving module'); } finally { setUploading(false); }
   };
 
   const handleDeleteModule = async (moduleId: string) => {
-    if (!confirm('Delete this module and all its lessons?')) return;
+    if (!confirm('Delete this module?')) return;
     await supabase.from('course_modules').delete().eq('id', moduleId);
     if (selectedCourse) fetchModules(selectedCourse);
   };
 
   const handleSaveLesson = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setUploading(true);
+    e.preventDefault(); setUploading(true);
     try {
       let videoUrl = editingLesson?.video_url || null;
       if (lessonForm.video) videoUrl = await uploadFile(lessonForm.video, `videos/${selectedModuleForLesson || editingLesson?.module_id}`);
@@ -153,11 +136,8 @@ export const CourseManagement = () => {
         if (selectedModuleForLesson) fetchLessons(selectedModuleForLesson);
       }
       setLessonForm({ title: '', description: '', duration: '', video: null });
-      setShowLessonForm(false);
-      setEditingLesson(null);
-      setSelectedModuleForLesson(null);
-    } catch (error: any) { alert(`Error saving lesson: ${error.message}`); }
-    finally { setUploading(false); }
+      setShowLessonForm(false); setEditingLesson(null); setSelectedModuleForLesson(null);
+    } catch (error: any) { alert(`Error saving lesson: ${error.message}`); } finally { setUploading(false); }
   };
 
   const handleDeleteLesson = async (lessonId: string, moduleId: string) => {
@@ -167,8 +147,7 @@ export const CourseManagement = () => {
   };
 
   const handleUploadResource = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setUploading(true);
+    e.preventDefault(); setUploading(true);
     try {
       if (editingResource) {
         const updates: any = { title: resourceForm.title, resource_type: resourceForm.resource_type };
@@ -184,10 +163,8 @@ export const CourseManagement = () => {
         if (lesson) fetchLessons(lesson.module_id);
       }
       setResourceForm({ title: '', file: null, resource_type: 'pdf' });
-      setSelectedLessonForResource(null);
-      setEditingResource(null);
-    } catch (error) { alert('Error saving resource'); }
-    finally { setUploading(false); }
+      setSelectedLessonForResource(null); setEditingResource(null);
+    } catch { alert('Error saving resource'); } finally { setUploading(false); }
   };
 
   const handleDeleteResource = async (resourceId: string, moduleId: string) => {
@@ -203,7 +180,7 @@ export const CourseManagement = () => {
   };
 
   const handleResetAttempts = async (lessonId: string, userId: string) => {
-    if (!confirm("Reset this student's quiz attempts?")) return;
+    if (!confirm("Reset this student's attempts?")) return;
     await supabase.from('quiz_attempts').delete().eq('lesson_id', lessonId).eq('user_id', userId);
     fetchQuizData(lessonId);
   };
@@ -212,11 +189,8 @@ export const CourseManagement = () => {
     <div className="space-y-8">
 
       {quizBuilderLesson && (
-        <QuizBuilder
-          lessonId={quizBuilderLesson.id}
-          lessonTitle={quizBuilderLesson.title}
-          onClose={() => { setQuizBuilderLesson(null); if (viewingQuizLesson) fetchQuizData(viewingQuizLesson); }}
-        />
+        <QuizBuilder lessonId={quizBuilderLesson.id} lessonTitle={quizBuilderLesson.title}
+          onClose={() => { setQuizBuilderLesson(null); if (viewingQuizLesson) fetchQuizData(viewingQuizLesson); }} />
       )}
 
       {viewingQuizLesson && (
@@ -244,8 +218,7 @@ export const CourseManagement = () => {
                       <div className="grid grid-cols-2 gap-2">
                         {['a', 'b', 'c', 'd'].map(opt => (
                           <div key={opt} className={`px-3 py-1.5 text-xs flex items-center gap-2 ${q.correct_answer === opt.toUpperCase() ? 'bg-charcoal text-cream' : 'bg-cream text-mocha/60'}`}>
-                            <span className="font-medium">{opt.toUpperCase()}.</span>
-                            {q[`option_${opt}` as keyof QuizQuestion]}
+                            <span className="font-medium">{opt.toUpperCase()}.</span>{q[`option_${opt}` as keyof QuizQuestion]}
                             {q.correct_answer === opt.toUpperCase() && <span className="ml-auto">✓</span>}
                           </div>
                         ))}
@@ -265,9 +238,7 @@ export const CourseManagement = () => {
                           <p className="text-sm font-medium text-charcoal">{attempt.profiles?.full_name || 'Student'}</p>
                           <p className="text-xs text-mocha/50">{attempt.profiles?.email}</p>
                           <div className="flex items-center gap-3 mt-1">
-                            <span className={`text-xs px-2 py-0.5 ${attempt.passed ? 'bg-charcoal text-cream' : 'bg-red-100 text-red-600'}`}>
-                              {attempt.passed ? 'Passed' : 'Failed'} — {attempt.score}%
-                            </span>
+                            <span className={`text-xs px-2 py-0.5 ${attempt.passed ? 'bg-charcoal text-cream' : 'bg-red-100 text-red-600'}`}>{attempt.passed ? 'Passed' : 'Failed'} — {attempt.score}%</span>
                             <span className="text-xs text-mocha/40">Attempt #{attempt.attempt_number}</span>
                             <span className="text-xs text-mocha/40">{new Date(attempt.created_at).toLocaleDateString()}</span>
                           </div>
@@ -282,13 +253,13 @@ export const CourseManagement = () => {
                       {viewingAttempts === attempt.id && attempt.answers && (
                         <div className="mt-3 space-y-2 border-t border-mocha/10 pt-3">
                           {quizQuestions.map((q, i) => {
-                            const studentAnswer = attempt.answers[q.id];
-                            const isCorrect = studentAnswer === q.correct_answer;
+                            const sa = attempt.answers[q.id];
+                            const isCorrect = sa === q.correct_answer;
                             return (
                               <div key={q.id} className={`p-3 text-xs ${isCorrect ? 'bg-linen' : 'bg-red-50'}`}>
                                 <p className="text-charcoal mb-1">{i + 1}. {q.question}</p>
                                 <p className={isCorrect ? 'text-mocha' : 'text-red-500'}>
-                                  Student answered: <span className="font-medium">{q[`option_${studentAnswer?.toLowerCase()}` as keyof QuizQuestion] || 'No answer'}</span>
+                                  Student: <span className="font-medium">{q[`option_${sa?.toLowerCase()}` as keyof QuizQuestion] || 'No answer'}</span>
                                   {!isCorrect && <span className="text-mocha ml-2">· Correct: {q[`option_${q.correct_answer.toLowerCase()}` as keyof QuizQuestion]}</span>}
                                 </p>
                               </div>
@@ -314,7 +285,6 @@ export const CourseManagement = () => {
             <Plus className="w-4 h-4" /> New Course
           </button>
         </div>
-
         {showCourseForm && (
           <motion.form initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} onSubmit={handleSaveCourse} className="bg-linen p-6 rounded-xl mb-6 space-y-4">
             <h3 className="font-medium text-charcoal">{editingCourse ? 'Edit Course' : 'New Course'}</h3>
@@ -334,7 +304,6 @@ export const CourseManagement = () => {
             </div>
           </motion.form>
         )}
-
         <div className="space-y-3">
           {courses.map(course => (
             <div key={course.id} className={`p-4 rounded-xl border-2 transition-all ${selectedCourse === course.id ? 'border-mocha bg-mocha/5' : 'border-mocha/20 hover:border-mocha/40'}`}>
@@ -342,9 +311,7 @@ export const CourseManagement = () => {
                 <div onClick={() => setSelectedCourse(course.id)} className="flex-1 cursor-pointer">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-medium text-charcoal">{course.title}</h3>
-                    <span className={`text-[0.5rem] px-2 py-0.5 tracking-widest uppercase ${course.language === 'ES' ? 'bg-mocha text-cream' : 'bg-charcoal text-cream'}`}>
-                      {course.language === 'ES' ? '🇲🇽 ES' : '🇺🇸 EN'}
-                    </span>
+                    <span className={`text-[0.5rem] px-2 py-0.5 tracking-widest uppercase ${course.language === 'ES' ? 'bg-mocha text-cream' : 'bg-charcoal text-cream'}`}>{course.language === 'ES' ? '🇲🇽 ES' : '🇺🇸 EN'}</span>
                   </div>
                   <p className="text-xs text-mocha-dark line-clamp-1">{course.description}</p>
                 </div>
@@ -417,78 +384,84 @@ export const CourseManagement = () => {
                       <Plus className="w-4 h-4" /> Add Lesson
                     </button>
 
-                    {lessons.filter(l => l.module_id === module.id).map(lesson => (
-                      <div key={lesson.id} className="bg-cream p-4 rounded-lg">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h4 className="font-medium text-charcoal flex items-center gap-2">
-                              {lesson.video_url ? <Video className="w-4 h-4 text-mocha" /> : <FileText className="w-4 h-4 text-mocha" />}
-                              {lesson.title}
-                            </h4>
-                            <p className="text-xs text-mocha-dark mt-0.5">{lesson.duration} min{!lesson.video_url && ' • Slides only'}</p>
+                    {lessons.filter(l => l.module_id === module.id).map(lesson => {
+                      const lessonResources = resources.filter(r => r.lesson_id === lesson.id);
+                      const slidesResource = lessonResources.find(r => r.resource_type === 'slides');
+                      return (
+                        <div key={lesson.id} className="bg-cream p-4 rounded-lg">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <h4 className="font-medium text-charcoal flex items-center gap-2">
+                                {lesson.video_url ? <Video className="w-4 h-4 text-mocha" /> : <FileText className="w-4 h-4 text-mocha" />}
+                                {lesson.title}
+                              </h4>
+                              <p className="text-xs text-mocha-dark mt-0.5">{lesson.duration} min{!lesson.video_url && ' • Slides only'}</p>
+                            </div>
+                            <div className="flex gap-1.5 flex-wrap justify-end">
+                              <button onClick={() => { setEditingLesson(lesson); setLessonForm({ title: lesson.title, description: lesson.description, duration: lesson.duration?.toString() || '', video: null }); setShowLessonForm(true); }} className="text-xs px-2.5 py-1 border border-mocha/20 text-mocha hover:bg-mocha hover:text-cream transition-colors rounded flex items-center gap-1">
+                                <Edit2 className="w-3 h-3" /> Edit
+                              </button>
+                              <button onClick={() => { setSelectedLessonForResource(lesson.id); setEditingResource(null); setResourceForm({ title: '', file: null, resource_type: 'pdf' }); }} className="text-xs px-2.5 py-1 bg-mocha text-cream hover:bg-mocha-dark transition-colors rounded flex items-center gap-1">
+                                <Plus className="w-3 h-3" /> Add File
+                              </button>
+                              <button onClick={() => setQuizBuilderLesson({ id: lesson.id, title: lesson.title })} className="text-xs px-2.5 py-1 bg-charcoal text-cream hover:bg-mocha transition-colors rounded flex items-center gap-1">
+                                <Plus className="w-3 h-3" /> Quiz
+                              </button>
+                              <button onClick={() => { setViewingQuizLesson(lesson.id); fetchQuizData(lesson.id); }} className="text-xs px-2.5 py-1 border border-charcoal text-charcoal hover:bg-charcoal hover:text-cream transition-colors rounded flex items-center gap-1">
+                                <Eye className="w-3 h-3" /> View Quiz
+                              </button>
+                              <button onClick={() => handleDeleteLesson(lesson.id, module.id)} className="text-xs px-2.5 py-1 border border-red-200 text-red-500 hover:bg-red-50 transition-colors rounded">
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex gap-1.5 flex-wrap justify-end">
-                            <button onClick={() => { setEditingLesson(lesson); setLessonForm({ title: lesson.title, description: lesson.description, duration: lesson.duration?.toString() || '', video: null }); setShowLessonForm(true); }} className="text-xs px-2.5 py-1 border border-mocha/20 text-mocha hover:bg-mocha hover:text-cream transition-colors rounded flex items-center gap-1">
-                              <Edit2 className="w-3 h-3" /> Edit
-                            </button>
-                            <button onClick={() => { setSelectedLessonForResource(lesson.id); setEditingResource(null); setResourceForm({ title: '', file: null, resource_type: 'pdf' }); }} className="text-xs px-2.5 py-1 bg-mocha text-cream hover:bg-mocha-dark transition-colors rounded flex items-center gap-1">
-                              <Plus className="w-3 h-3" /> Add File
-                            </button>
-                            <button onClick={() => setQuizBuilderLesson({ id: lesson.id, title: lesson.title })} className="text-xs px-2.5 py-1 bg-charcoal text-cream hover:bg-mocha transition-colors rounded flex items-center gap-1">
-                              <Plus className="w-3 h-3" /> Quiz
-                            </button>
-                            <button onClick={() => { setViewingQuizLesson(lesson.id); fetchQuizData(lesson.id); }} className="text-xs px-2.5 py-1 border border-charcoal text-charcoal hover:bg-charcoal hover:text-cream transition-colors rounded flex items-center gap-1">
-                              <Eye className="w-3 h-3" /> View Quiz
-                            </button>
-                            <button onClick={() => handleDeleteLesson(lesson.id, module.id)} className="text-xs px-2.5 py-1 border border-red-200 text-red-500 hover:bg-red-50 transition-colors rounded">
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
+
+                          {/* Add File Form */}
+                          {(selectedLessonForResource === lesson.id || editingResource?.lesson_id === lesson.id) && (
+                            <motion.form initial={{ opacity: 0 }} animate={{ opacity: 1 }} onSubmit={handleUploadResource} className="mt-3 p-3 bg-white rounded-lg space-y-3 border border-mocha/20">
+                              <h5 className="text-sm font-medium text-charcoal">{editingResource ? 'Edit Resource' : 'Add Resource'}</h5>
+                              <div><label className="block text-xs font-medium text-charcoal mb-1">Title</label><input type="text" required value={resourceForm.title} onChange={e => setResourceForm({ ...resourceForm, title: e.target.value })} className={inputClass} /></div>
+                              <div>
+                                <label className="block text-xs font-medium text-charcoal mb-1">Type</label>
+                                <select value={resourceForm.resource_type} onChange={e => setResourceForm({ ...resourceForm, resource_type: e.target.value })} className={inputClass}>
+                                  <option value="slides">Slides (viewable)</option>
+                                  <option value="workbook">Workbook (downloadable)</option>
+                                  <option value="pdf">PDF (downloadable)</option>
+                                </select>
+                              </div>
+                              <div><label className="block text-xs font-medium text-charcoal mb-1">File {editingResource && '(leave empty to keep current)'}</label><input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" onChange={e => setResourceForm({ ...resourceForm, file: e.target.files?.[0] || null })} className={inputClass} /></div>
+                              <div className="flex gap-2">
+                                <button type="submit" disabled={uploading} className="px-4 py-2 bg-charcoal text-cream hover:bg-mocha transition-colors disabled:opacity-50 text-sm">{uploading ? 'Saving...' : 'Save'}</button>
+                                <button type="button" onClick={() => { setSelectedLessonForResource(null); setEditingResource(null); setResourceForm({ title: '', file: null, resource_type: 'pdf' }); }} className="px-4 py-2 border border-charcoal text-charcoal hover:bg-charcoal hover:text-cream transition-colors text-sm">Cancel</button>
+                              </div>
+                            </motion.form>
+                          )}
+
+                          {/* Resources List */}
+                          {lessonResources.map(resource => (
+                            <div key={resource.id} className="mt-2 p-2 bg-linen rounded flex items-center justify-between gap-2 text-sm">
+                              <div className="flex items-center gap-2">
+                                <FileText className="w-4 h-4 text-mocha" />
+                                <span className="text-charcoal">{resource.title}</span>
+                                <span className="text-xs text-mocha-dark">({resource.resource_type})</span>
+                              </div>
+                              <div className="flex gap-1">
+                                <button onClick={() => { setEditingResource(resource); setResourceForm({ title: resource.title, file: null, resource_type: resource.resource_type }); setSelectedLessonForResource(null); }} className="p-1 text-mocha hover:bg-mocha/10 rounded"><Edit2 className="w-3 h-3" /></button>
+                                <button onClick={() => handleDeleteResource(resource.id, module.id)} className="p-1 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-3 h-3" /></button>
+                              </div>
+                            </div>
+                          ))}
+
+                          {/* Slide Audio Manager — shows only if lesson has slides */}
+                          {slidesResource && (
+                            <SlideAudioManager
+                              lessonId={lesson.id}
+                              slideUrl={slidesResource.file_url}
+                            />
+                          )}
                         </div>
-
-                        {(selectedLessonForResource === lesson.id || editingResource?.lesson_id === lesson.id) && (
-                          <motion.form initial={{ opacity: 0 }} animate={{ opacity: 1 }} onSubmit={handleUploadResource} className="mt-3 p-3 bg-white rounded-lg space-y-3 border border-mocha/20">
-                            <h5 className="text-sm font-medium text-charcoal">{editingResource ? 'Edit Resource' : 'Add Resource'}</h5>
-                            <div><label className="block text-xs font-medium text-charcoal mb-1">Title</label><input type="text" required value={resourceForm.title} onChange={e => setResourceForm({ ...resourceForm, title: e.target.value })} className={inputClass} /></div>
-                            <div>
-                              <label className="block text-xs font-medium text-charcoal mb-1">Type</label>
-                              <select value={resourceForm.resource_type} onChange={e => setResourceForm({ ...resourceForm, resource_type: e.target.value })} className={inputClass}>
-                                <option value="slides">Slides (viewable)</option>
-                                <option value="audio">Voiceover Audio</option>
-                                <option value="workbook">Workbook (downloadable)</option>
-                                <option value="pdf">PDF (downloadable)</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-xs font-medium text-charcoal mb-1">File {editingResource && '(leave empty to keep current)'}</label>
-                              <input type="file" accept={resourceForm.resource_type === 'audio' ? 'audio/*,.mp3,.m4a,.wav' : '.pdf,.doc,.docx,.ppt,.pptx'} onChange={e => setResourceForm({ ...resourceForm, file: e.target.files?.[0] || null })} className={inputClass} />
-                            </div>
-                            <div className="flex gap-2">
-                              <button type="submit" disabled={uploading} className="px-4 py-2 bg-charcoal text-cream hover:bg-mocha transition-colors disabled:opacity-50 text-sm">{uploading ? 'Saving...' : 'Save'}</button>
-                              <button type="button" onClick={() => { setSelectedLessonForResource(null); setEditingResource(null); setResourceForm({ title: '', file: null, resource_type: 'pdf' }); }} className="px-4 py-2 border border-charcoal text-charcoal hover:bg-charcoal hover:text-cream transition-colors text-sm">Cancel</button>
-                            </div>
-                          </motion.form>
-                        )}
-
-                        {(() => {
-                          const slidesResource = resources.find(r => r.lesson_id === lesson.id && r.resource_type === 'slides');
-                          return slidesResource ? <SlideAudioManager key={lesson.id} lessonId={lesson.id} slideUrl={slidesResource.file_url} /> : null;
-                        })()}
-                        {resources.filter(r => r.lesson_id === lesson.id).map(resource => (
-                          <div key={resource.id} className="mt-2 p-2 bg-linen rounded flex items-center justify-between gap-2 text-sm">
-                            <div className="flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-mocha" />
-                              <span className="text-charcoal">{resource.title}</span>
-                              <span className="text-xs text-mocha-dark">({resource.resource_type})</span>
-                            </div>
-                            <div className="flex gap-1">
-                              <button onClick={() => { setEditingResource(resource); setResourceForm({ title: resource.title, file: null, resource_type: resource.resource_type }); setSelectedLessonForResource(null); }} className="p-1 text-mocha hover:bg-mocha/10 rounded"><Edit2 className="w-3 h-3" /></button>
-                              <button onClick={() => handleDeleteResource(resource.id, module.id)} className="p-1 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-3 h-3" /></button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
