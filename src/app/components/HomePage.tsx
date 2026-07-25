@@ -89,10 +89,7 @@ export const HomePage = () => {
   return (
     <div ref={containerRef} className="bg-charcoal">
 
-{/* ── TICKER FIXED BELOW NAV ── */}
-      <div className="fixed top-[72px] left-0 right-0 z-50">
-        <TickerStrip />
-      </div>{/* ── SPACER 1 ── */}
+      {/* ── SPACER 1 ── */}
       <div className="h-screen" />
 
       {/* ══════════════════════════════════════════════
@@ -117,7 +114,6 @@ export const HomePage = () => {
 
             <h1
               className="text-5xl md:text-6xl lg:text-7xl text-charcoal leading-[1.02] mb-6"
-              className="font-playfair"
             >
               Master Your<br />Craft.<br />
               <span className="italic">Build Your</span><br />
@@ -174,7 +170,6 @@ export const HomePage = () => {
             <div className="absolute bottom-8 left-8 bg-white px-4 py-3 border-l-2 border-charcoal">
               <div
                 className="text-3xl text-charcoal leading-none"
-                className="font-playfair"
               >
                 5K+
               </div>
@@ -185,6 +180,11 @@ export const HomePage = () => {
           </motion.div>
         </div>
       </StackSection>
+
+      {/* ── TICKER ── */}
+      <div className="relative z-20">
+        <TickerStrip />
+      </div>
 
       {/* ── SPACER 2 ── */}
       <div className="h-screen" />
@@ -208,7 +208,6 @@ export const HomePage = () => {
               >
                 <div
                   className="text-3xl md:text-4xl text-charcoal mb-1"
-                  className="font-playfair"
                 >
                   {stat.value}
                 </div>
@@ -248,7 +247,6 @@ export const HomePage = () => {
 
               <h2
                 className="text-4xl md:text-5xl text-charcoal leading-tight mb-6"
-                className="font-playfair"
               >
                 Hi, I'm <span className="italic">Mariel</span><br />
                 MA Eyebrow Specialist
@@ -300,7 +298,6 @@ export const HomePage = () => {
 
           <h2
             className="text-4xl md:text-5xl text-charcoal text-center mb-12 leading-tight"
-            className="font-playfair"
           >
             The <span className="italic">Transformation</span>
           </h2>
@@ -347,7 +344,6 @@ export const HomePage = () => {
 
           <h2
             className="text-4xl md:text-5xl text-cream text-center mb-12"
-            className="font-playfair"
           >
             Brows to <span className="italic">Business</span>
           </h2>
@@ -372,7 +368,6 @@ export const HomePage = () => {
 
               <h3
                 className="text-3xl text-cream italic mb-4"
-                className="font-playfair"
               >
                 Brows to Business
               </h3>
@@ -392,7 +387,6 @@ export const HomePage = () => {
 
               <div
                 className="text-4xl text-cream mb-6"
-                className="font-playfair"
               >
                 $697
               </div>
@@ -430,7 +424,6 @@ export const HomePage = () => {
 
           <h2
             className="text-4xl md:text-5xl text-charcoal text-center mb-12"
-            className="font-playfair"
           >
             Words From Our <span className="italic">Students</span>
           </h2>
@@ -448,7 +441,6 @@ export const HomePage = () => {
                 <div className="text-charcoal text-xs tracking-[0.2em] mb-4">★★★★★</div>
                 <p
                   className="text-lg text-charcoal italic leading-relaxed mb-6"
-                  className="font-playfair"
                 >
                   "{t.content}"
                 </p>
@@ -485,7 +477,6 @@ export const HomePage = () => {
 
             <h2
               className="text-5xl md:text-7xl text-cream leading-tight mb-6"
-              className="font-playfair"
             >
               Ready to Build<br />Your <span className="italic">Brow Empire?</span>
             </h2>
