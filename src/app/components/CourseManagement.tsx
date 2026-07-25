@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Plus, Trash2, Edit2, ChevronDown, ChevronUp, FileText, Video, Save, X, Eye } from 'lucide-react';
 import { QuizBuilder } from './QuizBuilder';
-import { SlideAudioManager } from './SlideAudioManager';
+import { SlideUploader } from './SlideUploader';
 import { supabase } from '../../lib/supabase';
 
 interface Course { id: string; title: string; description: string; price: number; thumbnail_url: string; language: string; }
@@ -452,13 +452,11 @@ export const CourseManagement = () => {
                             </div>
                           ))}
 
-                          {/* Slide Audio Manager — shows only if lesson has slides */}
-                          {slidesResource && (
-                            <SlideAudioManager
-                              lessonId={lesson.id}
-                              slideUrl={slidesResource.file_url}
-                            />
-                          )}
+                          {/* Slide Uploader — upload ZIP of PNG slides */}
+                          <SlideUploader
+                            lessonId={lesson.id}
+                            lessonTitle={lesson.title}
+                          />
                         </div>
                       );
                     })}
