@@ -69,7 +69,7 @@ export const SlideViewer = ({ slideUrl, lessonId, onComplete }: SlideViewerProps
     isRenderingRef.current = true;
     try {
       const page = await pdfRef.current.getPage(pageNum);
-      const containerWidth = containerRef.current.clientWidth || 600;
+      const containerWidth = containerRef.current.getBoundingClientRect().width || containerRef.current.offsetWidth || 600;
       const unscaledViewport = page.getViewport({ scale: 1 });
       const scale = containerWidth / unscaledViewport.width;
       const viewport = page.getViewport({ scale });
