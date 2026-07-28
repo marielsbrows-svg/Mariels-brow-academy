@@ -36,7 +36,7 @@ export const CourseManagement = () => {
   const [viewingAttempts, setViewingAttempts] = useState<string | null>(null);
   const [courseForm, setCourseForm] = useState({ title: '', description: '', language: 'EN', thumbnail: null as File | null });
   const [moduleForm, setModuleForm] = useState({ title: '', description: '' });
-  const [lessonForm, setLessonForm] = useState({ title: '', description: '', duration: '', video: null as File | null });
+  const [lessonForm, setLessonForm] = useState({ title: '', description: '', duration: '', video_url: '' });
   const [resourceForm, setResourceForm] = useState({ title: '', file: null as File | null, resource_type: 'pdf' });
 
   const inputClass = 'w-full px-3 py-2 border border-mocha/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-mocha text-sm';
@@ -125,8 +125,7 @@ export const CourseManagement = () => {
   const handleSaveLesson = async (e: React.FormEvent) => {
     e.preventDefault(); setUploading(true);
     try {
-      let videoUrl = editingLesson?.video_url || null;
-      if (lessonForm.video) videoUrl = await uploadFile(lessonForm.video, `videos/${selectedModuleForLesson || editingLesson?.module_id}`);
+      const videoUrl = lessonForm.video_url.trim() || editingLesson?.video_url || null;
       if (editingLesson) {
         await supabase.from('lessons').update({ title: lessonForm.title, description: lessonForm.description, duration: parseInt(lessonForm.duration), video_url: videoUrl }).eq('id', editingLesson.id);
         fetchLessons(editingLesson.module_id);
@@ -135,7 +134,7 @@ export const CourseManagement = () => {
         await supabase.from('lessons').insert({ module_id: selectedModuleForLesson, title: lessonForm.title, description: lessonForm.description, video_url: videoUrl, duration: parseInt(lessonForm.duration), order_index: moduleLessons.length });
         if (selectedModuleForLesson) fetchLessons(selectedModuleForLesson);
       }
-      setLessonForm({ title: '', description: '', duration: '', video: null });
+      setLessonForm({ title: '', description: '', duration: '', video_url: '' });
       setShowLessonForm(false); setEditingLesson(null); setSelectedModuleForLesson(null);
     } catch (error: any) { alert(`Error saving lesson: ${error.message}`); } finally { setUploading(false); }
   };
@@ -353,10 +352,16 @@ export const CourseManagement = () => {
               <div><label className="block text-sm font-medium text-charcoal mb-2">Title</label><input type="text" required value={lessonForm.title} onChange={e => setLessonForm({ ...lessonForm, title: e.target.value })} className={inputClass} /></div>
               <div><label className="block text-sm font-medium text-charcoal mb-2">Description</label><textarea required value={lessonForm.description} onChange={e => setLessonForm({ ...lessonForm, description: e.target.value })} rows={3} className={inputClass} /></div>
               <div><label className="block text-sm font-medium text-charcoal mb-2">Duration (minutes)</label><input type="number" required min="1" value={lessonForm.duration} onChange={e => setLessonForm({ ...lessonForm, duration: e.target.value })} className={inputClass} /></div>
-              <div><label className="block text-sm font-medium text-charcoal mb-2">Video File {editingLesson && '(leave empty to keep current)'}</label><input type="file" accept="video/*" onChange={e => setLessonForm({ ...lessonForm, video: e.target.files?.[0] || null })} className={inputClass} /></div>
+              <div>
+                <label className="block text-sm font-medium text-charcoal mb-2">Video URL (YouTube, Vimeo, etc.) — optional</label>
+                <input type="url" placeholder="https://youtube.com/watch?v=..." value={lessonForm.video_url} onChange={e => setLessonForm({ ...lessonForm, video_url: e.target.value })} className={inputClass} />
+                {editingLesson?.video_url && !lessonForm.video_url && (
+                  <p className="text-xs text-mocha/50 mt-1">Current: {editingLesson.video_url}</p>
+                )}
+              </div>
               <div className="flex gap-3">
                 <button type="submit" disabled={uploading} className="flex items-center gap-2 px-6 py-3 bg-charcoal text-cream hover:bg-mocha transition-colors disabled:opacity-50"><Save className="w-4 h-4" />{uploading ? 'Saving...' : 'Save'}</button>
-                <button type="button" onClick={() => { setShowLessonForm(false); setEditingLesson(null); setSelectedModuleForLesson(null); }} className="p-3 border border-charcoal text-charcoal hover:bg-charcoal hover:text-cream transition-colors"><X className="w-4 h-4" /></button>
+                <button type="button" onClick={() => { setShowLessonForm(false); setEditingLesson(null); setSelectedModuleForLesson(null); setLessonForm({ title: '', description: '', duration: '', video_url: '' }); }} className="p-3 border border-charcoal text-charcoal hover:bg-charcoal hover:text-cream transition-colors"><X className="w-4 h-4" /></button>
               </div>
             </motion.form>
           )}
@@ -380,7 +385,7 @@ export const CourseManagement = () => {
 
                 {expandedModule === module.id && (
                   <div className="p-4 space-y-4">
-                    <button onClick={() => { setEditingLesson(null); setLessonForm({ title: '', description: '', duration: '', video: null }); setSelectedModuleForLesson(module.id); setShowLessonForm(true); }} className="flex items-center gap-2 px-4 py-2 bg-charcoal text-cream hover:bg-mocha transition-colors text-sm">
+                    <button onClick={() => { setEditingLesson(null); setLessonForm({ title: '', description: '', duration: '', video_url: '' }); setSelectedModuleForLesson(module.id); setShowLessonForm(true); }} className="flex items-center gap-2 px-4 py-2 bg-charcoal text-cream hover:bg-mocha transition-colors text-sm">
                       <Plus className="w-4 h-4" /> Add Lesson
                     </button>
 
@@ -398,7 +403,7 @@ export const CourseManagement = () => {
                               <p className="text-xs text-mocha-dark mt-0.5">{lesson.duration} min{!lesson.video_url && ' • Slides only'}</p>
                             </div>
                             <div className="flex gap-1.5 flex-wrap justify-end">
-                              <button onClick={() => { setEditingLesson(lesson); setLessonForm({ title: lesson.title, description: lesson.description, duration: lesson.duration?.toString() || '', video: null }); setShowLessonForm(true); }} className="text-xs px-2.5 py-1 border border-mocha/20 text-mocha hover:bg-mocha hover:text-cream transition-colors rounded flex items-center gap-1">
+                              <button onClick={() => { setEditingLesson(lesson); setLessonForm({ title: lesson.title, description: lesson.description, duration: lesson.duration?.toString() || '', video_url: lesson.video_url || '' }); setShowLessonForm(true); }} className="text-xs px-2.5 py-1 border border-mocha/20 text-mocha hover:bg-mocha hover:text-cream transition-colors rounded flex items-center gap-1">
                                 <Edit2 className="w-3 h-3" /> Edit
                               </button>
                               <button onClick={() => { setSelectedLessonForResource(lesson.id); setEditingResource(null); setResourceForm({ title: '', file: null, resource_type: 'pdf' }); }} className="text-xs px-2.5 py-1 bg-mocha text-cream hover:bg-mocha-dark transition-colors rounded flex items-center gap-1">
