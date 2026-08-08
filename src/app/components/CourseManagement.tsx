@@ -353,10 +353,26 @@ export const CourseManagement = () => {
               <div><label className="block text-sm font-medium text-charcoal mb-2">Description</label><textarea required value={lessonForm.description} onChange={e => setLessonForm({ ...lessonForm, description: e.target.value })} rows={3} className={inputClass} /></div>
               <div><label className="block text-sm font-medium text-charcoal mb-2">Duration (minutes)</label><input type="number" required min="1" value={lessonForm.duration} onChange={e => setLessonForm({ ...lessonForm, duration: e.target.value })} className={inputClass} /></div>
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Video URL (YouTube, Vimeo, etc.) — optional</label>
+                <label className="block text-sm font-medium text-charcoal mb-2">Video URL (YouTube, Vimeo) — optional</label>
                 <input type="url" placeholder="https://youtube.com/watch?v=..." value={lessonForm.video_url} onChange={e => setLessonForm({ ...lessonForm, video_url: e.target.value })} className={inputClass} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-charcoal mb-2">OR Upload Video File (under 50MB)</label>
+                <input type="file" accept="video/*" onChange={async e => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 50 * 1024 * 1024) { alert('File too large! Must be under 50MB.'); return; }
+                  setUploading(true);
+                  try {
+                    const url = await uploadFile(file, `videos/${selectedModuleForLesson || editingLesson?.module_id}`);
+                    setLessonForm(f => ({ ...f, video_url: url }));
+                    alert('Video uploaded! Click Save to apply.');
+                  } catch { alert('Upload failed.'); }
+                  finally { setUploading(false); }
+                }} className={inputClass} />
+                {uploading && <p className="text-xs text-mocha/50 mt-1">Uploading video...</p>}
                 {editingLesson?.video_url && !lessonForm.video_url && (
-                  <p className="text-xs text-mocha/50 mt-1">Current: {editingLesson.video_url}</p>
+                  <p className="text-xs text-mocha/50 mt-1">Current video is set</p>
                 )}
               </div>
               <div className="flex gap-3">
