@@ -366,7 +366,27 @@ export const LessonViewer = () => {
                       <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/30">Video Lesson</span>
                     </div>
                     <div className="aspect-video bg-black overflow-hidden">
-                      <video src={currentLesson.video_url} controls className="w-full h-full" />
+                      {currentLesson.video_url.includes('youtube.com') || currentLesson.video_url.includes('youtu.be') ? (
+                        <iframe
+                          src={currentLesson.video_url
+                            .replace('watch?v=', 'embed/')
+                            .replace('youtu.be/', 'youtube.com/embed/')
+                            .replace('youtube.com/embed/', 'youtube.com/embed/')
+                            + '?rel=0&modestbranding=1'}
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : currentLesson.video_url.includes('vimeo.com') ? (
+                        <iframe
+                          src={currentLesson.video_url.replace('vimeo.com/', 'player.vimeo.com/video/')}
+                          className="w-full h-full"
+                          allow="autoplay; fullscreen; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video src={currentLesson.video_url} controls className="w-full h-full" />
+                      )}
                     </div>
                   </div>
                 )}
