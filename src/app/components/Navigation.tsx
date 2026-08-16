@@ -133,32 +133,9 @@ export const Navigation = () => {
       <nav className="nav-root">
         <div className="nav-inner">
 
-          {/* LEFT */}
-          <div className="nav-left">
-            {user ? (
-              <>
-                <Link to="/courses" className={`nav-link ${isActive('/courses') ? 'active' : ''}`}>
-                  Courses
-                </Link>
-                <Link to="/dashboard" className={`nav-link nav-hide-mobile ${isActive('/dashboard') ? 'active' : ''}`}>
-                  <BookOpen className="w-3 h-3" />
-                  Dashboard
-                </Link>
-                {isAdmin && (
-                  <Link to="/admin" className={`nav-link nav-hide-mobile ${isActive('/admin') ? 'active' : ''}`}>
-                    <LayoutDashboard className="w-3 h-3" />
-                    Admin
-                  </Link>
-                )}
-              </>
-            ) : (
-              <Link to="/login" className="nav-login">Login</Link>
-            )}
-          </div>
-
-          {/* CENTER LOGO */}
-          <Link to="/" className="nav-logo">
-            <div className="nav-logo-text">
+          {/* LEFT - LOGO */}
+          <Link to="/" className="nav-logo" style={{ position: 'static', transform: 'none', textAlign: 'left' }}>
+            <div className="nav-logo-text" style={{ alignItems: 'flex-start' }}>
               <span className="nav-logo-main">MARIEL</span>
               <span className="nav-logo-sub">Brows · Academy</span>
             </div>
@@ -168,15 +145,22 @@ export const Navigation = () => {
           <div className="nav-right">
             {user ? (
               <>
-                <Link to="/community" className={`nav-link nav-hide-mobile ${isActive('/community') ? 'active' : ''}`}>
-                  Community
+                <Link to="/courses" className={`nav-link ${isActive('/courses') ? 'active' : ''}`}>Courses</Link>
+                <Link to="/dashboard" className={`nav-link nav-hide-mobile ${isActive('/dashboard') ? 'active' : ''}`}>
+                  <BookOpen className="w-3 h-3" />Dashboard
                 </Link>
+                <Link to="/community" className={`nav-link nav-hide-mobile ${isActive('/community') ? 'active' : ''}`}>Community</Link>
+                {isAdmin && (
+                  <Link to="/admin" className={`nav-link nav-hide-mobile ${isActive('/admin') ? 'active' : ''}`}>
+                    <LayoutDashboard className="w-3 h-3" />Admin
+                  </Link>
+                )}
                 <button onClick={() => signOut()} className="nav-signout" title="Sign Out">
                   <LogOut className="w-4 h-4" />
                 </button>
               </>
             ) : (
-              <div style={{ width: '60px' }} />
+              <Link to="/login" className="nav-login">Login</Link>
             )}
           </div>
 
