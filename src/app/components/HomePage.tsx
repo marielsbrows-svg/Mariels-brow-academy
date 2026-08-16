@@ -326,28 +326,19 @@ export const HomePage = () => {
         }
 
         @media (max-width: 768px) {
-          .home-nav { padding: 24px 20px; }
-          .home-videos { grid-template-columns: 1fr; }
+          .home-videos { grid-template-columns: 1fr; height: 100svh; }
           .home-video-cell:not(:first-child) { display: none; }
           .home-bottom { flex-direction: column; padding: 32px 20px; gap: 24px; }
-          .home-form { max-width: 100%; width: 100%; }
-          .home-headline { font-size: 4.5rem; }
+          .home-form { max-width: 100%; width: 100%; flex-direction: column; }
+          .home-input { border-right: 1px solid #D4D4D4; border-bottom: none; }
+          .home-headline { font-size: 4rem; }
+          .home-bottom-title { font-size: 1.6rem; }
         }
       `}</style>
 
       <div className="home-root">
-        {/* NAV */}
-        <nav className="home-nav">
-          <Link to="/login" className="home-nav-login">Login</Link>
-          <div className="home-nav-logo">
-            <span className="home-logo-main">Mariel</span>
-            <span className="home-logo-sub">Brows · Education</span>
-          </div>
-          <div className="home-nav-right" style={{ width: '60px' }} />
-        </nav>
-
-        {/* VIDEO GRID */}
-        <div className="home-videos">
+        {/* VIDEO GRID — starts at top, nav floats over it */}
+        <div className="home-videos" style={{ paddingTop: 0 }}>
           {/* Video 1 */}
           <div className="home-video-cell">
             <video autoPlay muted loop playsInline>
