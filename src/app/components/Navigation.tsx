@@ -1,104 +1,187 @@
 import { Link, useLocation } from 'react-router-dom';
 import { LogOut, BookOpen, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { motion } from 'motion/react';
 
 export const Navigation = () => {
   const { user, signOut, isAdmin } = useAuth();
   const location = useLocation();
+  const isHome = location.pathname === '/';
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <motion.nav
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      className="fixed top-0 left-0 right-0 z-50 bg-charcoal border-b border-white/10"
-    >
-      <div className="max-w-7xl mx-auto px-6 py-5">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center">
-            <div
-              className="text-3xl md:text-4xl text-cream tracking-tight whitespace-nowrap"
-              style={{ fontFamily: 'Classique Script, cursive' }}
-            >
-              Mariels Brow Academy
-            </div>
-          </Link>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@200;300;400&display=swap');
 
-          <div className="flex items-center gap-6 md:gap-8">
+        .nav-root {
+          position: fixed;
+          top: 0; left: 0; right: 0;
+          z-index: 50;
+          background: ${isHome ? 'transparent' : '#000'};
+          border-bottom: ${isHome ? 'none' : '1px solid rgba(255,255,255,0.08)'};
+          transition: background 0.3s;
+        }
+
+        .nav-inner {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 24px 40px;
+        }
+
+        .nav-left {
+          display: flex;
+          align-items: center;
+          gap: 24px;
+          min-width: 120px;
+        }
+
+        .nav-login {
+          font-family: 'Inter', sans-serif;
+          font-size: 0.55rem;
+          font-weight: 300;
+          letter-spacing: 0.3em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.5);
+          text-decoration: none;
+          transition: color 0.2s;
+        }
+        .nav-login:hover { color: #fff; }
+
+        .nav-link {
+          font-family: 'Inter', sans-serif;
+          font-size: 0.55rem;
+          font-weight: 300;
+          letter-spacing: 0.3em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.5);
+          text-decoration: none;
+          transition: color 0.2s;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .nav-link:hover { color: #fff; }
+        .nav-link.active { color: #fff; border-bottom: 1px solid rgba(255,255,255,0.4); padding-bottom: 2px; }
+
+        .nav-logo {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          text-align: center;
+          text-decoration: none;
+        }
+
+        .nav-logo img {
+          height: 36px;
+          width: auto;
+          filter: invert(1);
+        }
+
+        .nav-logo-text {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .nav-logo-main {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 1.5rem;
+          letter-spacing: 0.15em;
+          color: #fff;
+          line-height: 1;
+        }
+
+        .nav-logo-sub {
+          font-family: 'Inter', sans-serif;
+          font-size: 0.38rem;
+          font-weight: 200;
+          letter-spacing: 0.45em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.35);
+          margin-top: 3px;
+        }
+
+        .nav-right {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          min-width: 120px;
+          justify-content: flex-end;
+        }
+
+        .nav-signout {
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: rgba(255,255,255,0.4);
+          transition: color 0.2s;
+          display: flex;
+          align-items: center;
+          padding: 0;
+        }
+        .nav-signout:hover { color: #fff; }
+
+        @media (max-width: 640px) {
+          .nav-inner { padding: 20px 20px; }
+          .nav-logo-main { font-size: 1.1rem; }
+          .nav-left, .nav-right { min-width: 60px; }
+          .nav-hide-mobile { display: none; }
+        }
+      `}</style>
+
+      <nav className="nav-root">
+        <div className="nav-inner">
+
+          {/* LEFT */}
+          <div className="nav-left">
             {user ? (
               <>
-                <Link
-                  to="/courses"
-                  className={`text-xs tracking-widest uppercase transition-colors ${
-                    isActive('/courses')
-                      ? 'text-white font-medium border-b border-white pb-1'
-                      : 'text-white/60 hover:text-white'
-                  }`}
-                >
+                <Link to="/courses" className={`nav-link ${isActive('/courses') ? 'active' : ''}`}>
                   Courses
                 </Link>
-                <Link
-                  to="/community"
-                  className={`text-xs tracking-widest uppercase transition-colors ${
-                    isActive('/community')
-                      ? 'text-white font-medium border-b border-white pb-1'
-                      : 'text-white/60 hover:text-white'
-                  }`}
-                >
-                  Community
-                </Link>
-                <Link
-                  to="/dashboard"
-                  className={`hidden md:flex items-center gap-2 text-xs tracking-widest uppercase transition-colors ${
-                    isActive('/dashboard')
-                      ? 'text-white font-medium border-b border-white pb-1'
-                      : 'text-white/60 hover:text-white'
-                  }`}
-                >
-                  <BookOpen className="w-4 h-4" />
+                <Link to="/dashboard" className={`nav-link nav-hide-mobile ${isActive('/dashboard') ? 'active' : ''}`}>
+                  <BookOpen className="w-3 h-3" />
                   Dashboard
                 </Link>
                 {isAdmin && (
-                  <Link
-                    to="/admin"
-                    className={`hidden md:flex items-center gap-2 text-xs tracking-widest uppercase transition-colors ${
-                      isActive('/admin')
-                        ? 'text-white font-medium border-b border-white pb-1'
-                        : 'text-white/60 hover:text-white'
-                    }`}
-                  >
-                    <LayoutDashboard className="w-4 h-4" />
+                  <Link to="/admin" className={`nav-link nav-hide-mobile ${isActive('/admin') ? 'active' : ''}`}>
+                    <LayoutDashboard className="w-3 h-3" />
                     Admin
                   </Link>
                 )}
-                <button
-                  onClick={() => signOut()}
-                  className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
-                  title="Sign Out"
-                >
+              </>
+            ) : (
+              <Link to="/login" className="nav-login">Login</Link>
+            )}
+          </div>
+
+          {/* CENTER LOGO */}
+          <Link to="/" className="nav-logo">
+            <div className="nav-logo-text">
+              <span className="nav-logo-main">MARIEL</span>
+              <span className="nav-logo-sub">Brows · Academy</span>
+            </div>
+          </Link>
+
+          {/* RIGHT */}
+          <div className="nav-right">
+            {user ? (
+              <>
+                <Link to="/community" className={`nav-link nav-hide-mobile ${isActive('/community') ? 'active' : ''}`}>
+                  Community
+                </Link>
+                <button onClick={() => signOut()} className="nav-signout" title="Sign Out">
                   <LogOut className="w-4 h-4" />
                 </button>
               </>
             ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="text-xs tracking-widest uppercase text-white/60 hover:text-white transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/payment"
-                  className="px-6 py-2.5 bg-cream text-charcoal text-xs tracking-widest uppercase hover:bg-linen transition-colors"
-                >
-                  Enroll
-                </Link>
-              </>
+              <div style={{ width: '60px' }} />
             )}
           </div>
+
         </div>
-      </div>
-    </motion.nav>
+      </nav>
+    </>
   );
 };
