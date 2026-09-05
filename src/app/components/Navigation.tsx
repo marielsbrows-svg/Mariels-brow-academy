@@ -5,7 +5,6 @@ import { useAuth } from '../../contexts/AuthContext';
 export const Navigation = () => {
   const { user, signOut, isAdmin } = useAuth();
   const location = useLocation();
-  const isHome = location.pathname === '/';
   const isActive = (path: string) => location.pathname === path;
 
   return (
@@ -17,8 +16,8 @@ export const Navigation = () => {
           position: fixed;
           top: 0; left: 0; right: 0;
           z-index: 50;
-          background: ${isHome ? 'transparent' : '#000'};
-          border-bottom: ${isHome ? 'none' : '1px solid rgba(255,255,255,0.08)'};
+          background: #000;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
           transition: background 0.3s;
         }
 
@@ -27,13 +26,6 @@ export const Navigation = () => {
           align-items: center;
           justify-content: space-between;
           padding: 24px 40px;
-        }
-
-        .nav-left {
-          display: flex;
-          align-items: center;
-          gap: 24px;
-          min-width: 120px;
         }
 
         .nav-login {
@@ -64,24 +56,12 @@ export const Navigation = () => {
         .nav-link:hover { color: #fff; }
         .nav-link.active { color: #fff; border-bottom: 1px solid rgba(255,255,255,0.4); padding-bottom: 2px; }
 
-        .nav-logo {
-          position: absolute;
-          left: 50%;
-          transform: translateX(-50%);
-          text-align: center;
-          text-decoration: none;
-        }
-
-        .nav-logo img {
-          height: 36px;
-          width: auto;
-          filter: invert(1);
-        }
+        .nav-logo { text-decoration: none; }
 
         .nav-logo-text {
           display: flex;
           flex-direction: column;
-          align-items: center;
+          align-items: flex-start;
         }
 
         .nav-logo-main {
@@ -125,7 +105,7 @@ export const Navigation = () => {
         @media (max-width: 640px) {
           .nav-inner { padding: 20px 20px; }
           .nav-logo-main { font-size: 1.1rem; }
-          .nav-left, .nav-right { min-width: 60px; }
+          .nav-right { min-width: 60px; }
           .nav-hide-mobile { display: none; }
         }
       `}</style>
@@ -134,10 +114,10 @@ export const Navigation = () => {
         <div className="nav-inner">
 
           {/* LEFT - LOGO */}
-          <Link to="/" className="nav-logo" style={{ position: 'static', transform: 'none', textAlign: 'left' }}>
-            <div className="nav-logo-text" style={{ alignItems: 'flex-start' }}>
-              <span className="nav-logo-main">MARIEL</span>
-              <span className="nav-logo-sub">Brows · Academy</span>
+          <Link to="/" className="nav-logo">
+            <div className="nav-logo-text">
+              <span className="nav-logo-main">MARIELS</span>
+              <span className="nav-logo-sub">Brow · Academy</span>
             </div>
           </Link>
 
