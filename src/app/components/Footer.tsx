@@ -17,7 +17,7 @@ export const Footer = () => {
         color: 'rgba(255,255,255,0.25)',
         margin: 0,
       }}>
-        © 2026 Mariel Brows Academy. All rights reserved.
+        © 2026 Mariels Brow Academy. All rights reserved.
       </p>
     </footer>
   );
