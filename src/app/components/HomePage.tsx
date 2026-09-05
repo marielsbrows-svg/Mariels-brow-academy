@@ -4,6 +4,10 @@ import { supabase } from '../../lib/supabase';
 // ============================================================
 //  PASTE YOUR BOOKING LINK HERE (e.g. your Square booking URL)
 const BOOKING_URL = 'https://square.site/book/7Z5H2G6FRKT6H/mariels-brows';
+
+// Flip this to true on launch day → the waitlist box becomes an "Enroll now" button:
+const ENROLLMENT_OPEN = false;
+const ENROLL_URL = '/courses'; // where "Enroll now" sends people
 // ============================================================
 
 const TICKER = ['Online', 'Brow Mapping Mastery', 'Get Certified', 'En Español'];
@@ -72,15 +76,24 @@ export const HomePage = () => {
 
           <div className="action">
             <div className="display title">Brow mapping<br />mastery</div>
-            <p className="lede">Join the waitlist for early access and founding-member pricing.</p>
-            {waitDone ? (
-              <div className="form"><span className="done">Thank you — check your inbox.</span></div>
+            {ENROLLMENT_OPEN ? (
+              <>
+                <p className="lede">Enrollment is open — founding-member pricing, for a limited time.</p>
+                <a className="enroll-btn" href={ENROLL_URL}>Enroll now</a>
+              </>
             ) : (
-              <form className="form" onSubmit={handleWaitlist}>
-                <input type="email" placeholder="your@email.com" aria-label="Email for waitlist"
-                  value={waitEmail} onChange={(e) => setWaitEmail(e.target.value)} required />
-                <button type="submit" disabled={waitBusy}>{waitBusy ? '…' : 'Join the waitlist'}</button>
-              </form>
+              <>
+                <p className="lede">Join the waitlist for early access and founding-member pricing.</p>
+                {waitDone ? (
+                  <div className="form"><span className="done">Thank you — check your inbox.</span></div>
+                ) : (
+                  <form className="form" onSubmit={handleWaitlist}>
+                    <input type="email" placeholder="your@email.com" aria-label="Email for waitlist"
+                      value={waitEmail} onChange={(e) => setWaitEmail(e.target.value)} required />
+                    <button type="submit" disabled={waitBusy}>{waitBusy ? '…' : 'Join the waitlist'}</button>
+                  </form>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -148,6 +161,8 @@ const CSS = `
 .mba-home .form button:disabled{opacity:.5;cursor:default;}
 .mba-home .form .done{padding:15px 16px;font-size:13px;color:var(--soft);}
 .mba-home .rule{height:1px;background:var(--line);max-width:440px;}
+.mba-home .enroll-btn{display:inline-block;background:#000;color:#fff;padding:17px 44px;font-size:12px;letter-spacing:3px;text-transform:uppercase;text-decoration:none;font-weight:500;transition:opacity 0.2s;}
+.mba-home .enroll-btn:hover{opacity:.85;}
 .mba-home .marquee{background:#000;color:#fff;overflow:hidden;white-space:nowrap;padding:22px 0;}
 .mba-home .marquee-track{display:inline-block;white-space:nowrap;animation:mbascroll 32s linear infinite;}
 .mba-home .marquee-track span{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:22px;letter-spacing:2px;}
