@@ -55,7 +55,7 @@ export const HomePage = () => {
       {/* HERO */}
       <section className="hero">
         <div className="hero-img">
-          <img className="portrait" src="/brand/portrait.png" alt="Mariel, founder of Mariels Brow Academy" />
+          <img className="portrait" src="/Brand/portrait.png" alt="Mariel, founder of Mariels Brow Academy" />
         </div>
         <div className="hero-copy">
           <div className="action">
@@ -100,7 +100,7 @@ export const HomePage = () => {
         <div className="photo-track">
           {[...WORK, ...WORK].map((n, i) => (
             <div className="shot" key={i}>
-              <img src={`/brand/work-${n}.jpg`} alt="Brow transformation by Mariel" loading="lazy" />
+              <img src={`/Brand/work-${n}.jpg`} alt="Brow transformation by Mariel" loading="lazy" />
             </div>
           ))}
         </div>
