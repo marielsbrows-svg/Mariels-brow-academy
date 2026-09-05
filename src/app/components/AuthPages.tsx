@@ -1,13 +1,48 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { motion } from 'motion/react';
-import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
-const inputClass =
-  'w-full px-4 py-3.5 bg-cream border border-mocha/20 text-charcoal text-sm outline-none focus:border-charcoal transition-colors placeholder:text-mocha/30';
-
-const labelClass = 'block text-[0.6rem] tracking-[0.2em] uppercase text-mocha/60 mb-2';
+const AUTH_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500&display=swap');
+.mba-auth{min-height:100vh;background:#fff;color:#000;font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:300;}
+.mba-auth *{box-sizing:border-box;}
+.mba-auth .display{font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0.01em;line-height:0.92;}
+.mba-auth .auth-grid{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;}
+.mba-auth .auth-panel{background:#000;color:#fff;display:flex;align-items:flex-end;padding:56px;}
+.mba-auth .panel-h{font-size:60px;color:#fff;}
+.mba-auth .panel-sub{color:rgba(255,255,255,0.5);font-size:14px;max-width:34ch;margin-top:18px;line-height:1.6;}
+.mba-auth .auth-form-wrap{display:flex;align-items:center;justify-content:center;padding:64px 40px;}
+.mba-auth .auth-form{width:100%;max-width:380px;}
+.mba-auth .auth-logo{text-decoration:none;display:block;margin-bottom:46px;}
+.mba-auth .al-name{font-size:26px;letter-spacing:2px;color:#000;}
+.mba-auth .al-sub{font-size:9px;letter-spacing:6px;text-transform:uppercase;color:#9A9A9A;margin-top:5px;}
+.mba-auth .auth-kicker{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#9A9A9A;margin-bottom:18px;}
+.mba-auth .auth-h1{font-size:42px;color:#000;margin:0 0 30px;}
+.mba-auth .auth-msg{padding:12px 14px;font-size:12px;letter-spacing:0.02em;margin-bottom:20px;}
+.mba-auth .auth-error{border:1px solid #E3B7B7;background:#FBEDED;color:#9E3A3A;}
+.mba-auth .auth-success{border:1px solid #C9C9C9;background:#F4F4F4;color:#4F4F4F;}
+.mba-auth .auth-fields{display:flex;flex-direction:column;gap:20px;}
+.mba-auth .fl{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#9A9A9A;margin-bottom:8px;}
+.mba-auth .auth-input{width:100%;border:1px solid #000;background:#fff;padding:14px 16px;font-family:inherit;font-size:16px;color:#000;outline:none;}
+.mba-auth .auth-input::placeholder{color:#BDB8AE;}
+.mba-auth .pw-wrap{position:relative;}
+.mba-auth .pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;color:#9A9A9A;display:flex;padding:0;}
+.mba-auth .pw-toggle:hover{color:#000;}
+.mba-auth .auth-submit{width:100%;margin-top:8px;background:#000;color:#fff;border:0;padding:16px;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:inherit;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.2s;}
+.mba-auth .auth-submit:hover{opacity:.85;}
+.mba-auth .auth-submit:disabled{opacity:.5;cursor:default;}
+.mba-auth .auth-alt{text-align:center;font-size:13px;color:#9A9A9A;margin-top:32px;}
+.mba-auth .auth-alt a{color:#000;text-decoration:underline;text-underline-offset:2px;}
+.mba-auth .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:mbaspin 0.7s linear infinite;}
+@keyframes mbaspin{to{transform:rotate(360deg)}}
+@media (max-width:820px){
+  .mba-auth .auth-grid{grid-template-columns:1fr;}
+  .mba-auth .auth-panel{display:none;}
+  .mba-auth .auth-form-wrap{padding:56px 24px;}
+  .mba-auth .auth-h1{font-size:34px;}
+}
+`;
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -32,120 +67,55 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-cream">
-
-      {/* Left — Image Panel */}
-      <div className="hidden lg:flex relative bg-charcoal items-end p-12 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/30 to-transparent z-10" />
-        <div className="relative z-20">
-          <div
-            className="text-5xl text-cream italic font-light mb-3"
-            style={{ fontFamily: 'Playfair Display, serif' }}
-          >
-            Welcome Back
+    <div className="mba-auth">
+      <style>{AUTH_CSS}</style>
+      <div className="auth-grid">
+        <div className="auth-panel">
+          <div>
+            <div className="display panel-h">Welcome<br />back</div>
+            <p className="panel-sub">Continue your path to becoming an elite brow artist and beauty entrepreneur.</p>
           </div>
-          <p className="text-cream/50 text-sm leading-relaxed max-w-xs">
-            Continue your journey to becoming an elite brow artist and beauty entrepreneur.
-          </p>
+        </div>
+
+        <div className="auth-form-wrap">
+          <div className="auth-form">
+            <Link to="/" className="auth-logo">
+              <div className="al-name display">MARIELS</div>
+              <div className="al-sub">Brow · Academy</div>
+            </Link>
+
+            <div className="auth-kicker">Sign In</div>
+            <h1 className="display auth-h1">Good to see<br />you again</h1>
+
+            {error && <div className="auth-msg auth-error">{error}</div>}
+
+            <form onSubmit={handleSubmit} className="auth-fields">
+              <div>
+                <span className="fl">Email address</span>
+                <input type="email" className="auth-input" value={email}
+                  onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+              </div>
+              <div>
+                <span className="fl">Password</span>
+                <div className="pw-wrap">
+                  <input type={showPassword ? 'text' : 'password'} className="auth-input" style={{ paddingRight: 44 }}
+                    value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
+                  <button type="button" className="pw-toggle" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <button type="submit" className="auth-submit" disabled={loading}>
+                {loading ? <span className="spin" /> : 'Sign In'}
+              </button>
+            </form>
+
+            <p className="auth-alt">
+              Don't have an account? <Link to="/signup">Create one</Link>
+            </p>
+          </div>
         </div>
       </div>
-
-      {/* Right — Form */}
-      <motion.div
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6 }}
-        className="flex items-center justify-center px-8 py-24"
-      >
-        <div className="w-full max-w-sm">
-
-          {/* Logo */}
-          <Link to="/">
-            <div
-              className="text-3xl text-charcoal italic font-light mb-1"
-              style={{ fontFamily: 'Playfair Display, serif' }}
-            >
-              Mariels
-            </div>
-            <div className="text-[0.55rem] tracking-[0.3em] uppercase text-mocha/40 mb-10">
-              Brow Academy
-            </div>
-          </Link>
-
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-5 h-px bg-mocha/30" />
-            <span className="text-[0.58rem] tracking-[0.2em] uppercase text-mocha/50">Sign In</span>
-          </div>
-
-          <h1
-            className="text-3xl text-charcoal font-light mb-8 leading-tight"
-            style={{ fontFamily: 'Playfair Display, serif' }}
-          >
-            Good to see<br />
-            <span className="italic">you again</span>
-          </h1>
-
-          {error && (
-            <div className="border border-red-200 bg-red-50 text-red-600 px-4 py-3 text-xs tracking-wide mb-6">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className={labelClass}>Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={inputClass}
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={inputClass + ' pr-12'}
-                  placeholder="••••••••"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-mocha/40 hover:text-mocha transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-4 bg-charcoal text-cream text-[0.62rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
-            >
-              {loading ? (
-                <span className="w-4 h-4 border-2 border-cream/30 border-t-cream rounded-full animate-spin" />
-              ) : (
-                <>Sign In <ArrowRight className="w-3.5 h-3.5" /></>
-              )}
-            </button>
-          </form>
-
-          <p className="text-center text-xs text-mocha/50 mt-8">
-            Don't have an account?{' '}
-            <Link to="/signup" className="text-charcoal hover:text-mocha transition-colors underline underline-offset-2">
-              Create one
-            </Link>
-          </p>
-        </div>
-      </motion.div>
     </div>
   );
 };
@@ -183,138 +153,61 @@ export const SignUpPage = () => {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-cream">
-
-      {/* Left — Image Panel */}
-      <div className="hidden lg:flex relative bg-charcoal items-end p-12 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/30 to-transparent z-10" />
-        <div className="relative z-20">
-          <div
-            className="text-5xl text-cream italic font-light mb-3"
-            style={{ fontFamily: 'Playfair Display, serif' }}
-          >
-            Begin Your<br />Journey
+    <div className="mba-auth">
+      <style>{AUTH_CSS}</style>
+      <div className="auth-grid">
+        <div className="auth-panel">
+          <div>
+            <div className="display panel-h">Begin your<br />journey</div>
+            <p className="panel-sub">Learn the craft behind beautiful, intentional brows — and turn your passion into a profession.</p>
           </div>
-          <p className="text-cream/50 text-sm leading-relaxed max-w-xs">
-            Join thousands of successful brow artists who have transformed their passion into a profitable career.
-          </p>
+        </div>
+
+        <div className="auth-form-wrap">
+          <div className="auth-form">
+            <Link to="/" className="auth-logo">
+              <div className="al-name display">MARIELS</div>
+              <div className="al-sub">Brow · Academy</div>
+            </Link>
+
+            <div className="auth-kicker">Create Account</div>
+            <h1 className="display auth-h1">Start your<br />brow journey</h1>
+
+            {error && <div className="auth-msg auth-error">{error}</div>}
+            {success && <div className="auth-msg auth-success">Account created — taking you to your dashboard…</div>}
+
+            <form onSubmit={handleSubmit} className="auth-fields">
+              <div>
+                <span className="fl">Full name</span>
+                <input type="text" className="auth-input" value={fullName}
+                  onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" required />
+              </div>
+              <div>
+                <span className="fl">Email address</span>
+                <input type="email" className="auth-input" value={email}
+                  onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+              </div>
+              <div>
+                <span className="fl">Password</span>
+                <div className="pw-wrap">
+                  <input type={showPassword ? 'text' : 'password'} className="auth-input" style={{ paddingRight: 44 }}
+                    value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" required />
+                  <button type="button" className="pw-toggle" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <button type="submit" className="auth-submit" disabled={loading || success}>
+                {loading ? <span className="spin" /> : 'Create Account'}
+              </button>
+            </form>
+
+            <p className="auth-alt">
+              Already have an account? <Link to="/login">Sign in</Link>
+            </p>
+          </div>
         </div>
       </div>
-
-      {/* Right — Form */}
-      <motion.div
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6 }}
-        className="flex items-center justify-center px-8 py-24"
-      >
-        <div className="w-full max-w-sm">
-
-          {/* Logo */}
-          <Link to="/">
-            <div
-              className="text-3xl text-charcoal italic font-light mb-1"
-              style={{ fontFamily: 'Playfair Display, serif' }}
-            >
-              Mariels
-            </div>
-            <div className="text-[0.55rem] tracking-[0.3em] uppercase text-mocha/40 mb-10">
-              Brow Academy
-            </div>
-          </Link>
-
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-5 h-px bg-mocha/30" />
-            <span className="text-[0.58rem] tracking-[0.2em] uppercase text-mocha/50">Create Account</span>
-          </div>
-
-          <h1
-            className="text-3xl text-charcoal font-light mb-8 leading-tight"
-            style={{ fontFamily: 'Playfair Display, serif' }}
-          >
-            Start your<br />
-            <span className="italic">brow empire</span>
-          </h1>
-
-          {error && (
-            <div className="border border-red-200 bg-red-50 text-red-600 px-4 py-3 text-xs tracking-wide mb-6">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="border border-mocha/20 bg-mocha/5 text-mocha px-4 py-3 text-xs tracking-wide mb-6">
-              Account created! Redirecting to your dashboard...
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className={labelClass}>Full Name</label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className={inputClass}
-                placeholder="Your full name"
-                required
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={inputClass}
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={inputClass + ' pr-12'}
-                  placeholder="At least 6 characters"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-mocha/40 hover:text-mocha transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading || success}
-              className="w-full py-4 bg-charcoal text-cream text-[0.62rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
-            >
-              {loading ? (
-                <span className="w-4 h-4 border-2 border-cream/30 border-t-cream rounded-full animate-spin" />
-              ) : (
-                <>Create Account <ArrowRight className="w-3.5 h-3.5" /></>
-              )}
-            </button>
-          </form>
-
-          <p className="text-center text-xs text-mocha/50 mt-8">
-            Already have an account?{' '}
-            <Link to="/login" className="text-charcoal hover:text-mocha transition-colors underline underline-offset-2">
-              Sign in
-            </Link>
-          </p>
-        </div>
-      </motion.div>
     </div>
   );
 };
