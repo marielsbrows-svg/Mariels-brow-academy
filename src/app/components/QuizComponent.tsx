@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle, XCircle, ArrowRight, RotateCcw, Lock } from 'lucide-react';
+import { CheckCircle, XCircle, RotateCcw, Lock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -22,6 +22,7 @@ interface QuizComponentProps {
 
 const PASS_SCORE = 80;
 const MAX_ATTEMPTS = 3;
+const HEAD = { fontFamily: "'Anton', Impact, sans-serif", textTransform: 'uppercase' as const, letterSpacing: '0.02em' };
 
 export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
   const { user } = useAuth();
@@ -76,7 +77,6 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
         const hasPassed = data.some(a => a.passed);
         if (hasPassed) {
           setAlreadyPassed(true);
-          // Don't call onPass() here — only call it when they actually complete the quiz
         }
       }
     } catch (error) {
@@ -123,7 +123,6 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
 
       if (didPass) {
         setAlreadyPassed(true);
-        // Only call onPass when they actually pass the quiz right now
         setTimeout(() => onPass(), 2000);
       }
     } catch (error) {
@@ -144,26 +143,20 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
   if (loading || !initialized) {
     return (
       <div className="bg-white p-8 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-mocha/20 border-t-mocha rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-neutral-200 border-t-black rounded-full animate-spin" />
       </div>
     );
   }
 
-  // No questions — don't show quiz at all
   if (questions.length === 0) return null;
 
   // Already passed
   if (alreadyPassed && !submitted) {
     return (
-      <div className="bg-white p-8 text-center border border-mocha/15">
-        <CheckCircle className="w-10 h-10 text-mocha mx-auto mb-4" />
-        <h3
-          className="text-2xl text-charcoal font-light italic mb-2"
-          style={{ fontFamily: 'Playfair Display, serif' }}
-        >
-          Quiz Passed!
-        </h3>
-        <p className="text-xs text-mocha/50 tracking-wide">You've already passed this quiz. Continue to the next lesson!</p>
+      <div className="bg-white p-8 text-center border border-neutral-200">
+        <CheckCircle className="w-10 h-10 text-black mx-auto mb-4" />
+        <h3 className="text-2xl text-black mb-2" style={HEAD}>Quiz Passed</h3>
+        <p className="text-xs text-neutral-500 tracking-wide">You've already passed this quiz. Continue to the next lesson!</p>
       </div>
     );
   }
@@ -171,15 +164,10 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
   // Max attempts reached without passing
   if (attempts >= MAX_ATTEMPTS && !passed && !submitted) {
     return (
-      <div className="bg-white p-8 text-center border border-mocha/15">
-        <Lock className="w-10 h-10 text-mocha/30 mx-auto mb-4" />
-        <h3
-          className="text-2xl text-charcoal font-light italic mb-2"
-          style={{ fontFamily: 'Playfair Display, serif' }}
-        >
-          Maximum Attempts Reached
-        </h3>
-        <p className="text-xs text-mocha/50 tracking-wide max-w-xs mx-auto">
+      <div className="bg-white p-8 text-center border border-neutral-200">
+        <Lock className="w-10 h-10 text-neutral-400 mx-auto mb-4" />
+        <h3 className="text-2xl text-black mb-2" style={HEAD}>Maximum Attempts Reached</h3>
+        <p className="text-xs text-neutral-500 tracking-wide max-w-xs mx-auto">
           You've used all 3 attempts. Please review the lesson material and contact support if you need help.
         </p>
       </div>
@@ -192,39 +180,39 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white border border-mocha/15 overflow-hidden"
+        className="bg-white border border-neutral-200 overflow-hidden"
       >
-        <div className={`p-8 text-center ${passed ? 'bg-charcoal' : 'bg-linen'}`}>
+        <div className={`p-8 text-center ${passed ? 'bg-black' : 'bg-neutral-100'}`}>
           {passed ? (
             <>
-              <CheckCircle className="w-12 h-12 text-cream mx-auto mb-4" />
-              <h3 className="text-3xl text-cream font-light italic mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Congratulations!</h3>
-              <p className="text-cream/60 text-sm">You passed the quiz</p>
+              <CheckCircle className="w-12 h-12 text-white mx-auto mb-4" />
+              <h3 className="text-3xl text-white mb-2" style={HEAD}>Congratulations</h3>
+              <p className="text-white/60 text-sm">You passed the quiz</p>
             </>
           ) : (
             <>
-              <XCircle className="w-12 h-12 text-mocha/50 mx-auto mb-4" />
-              <h3 className="text-3xl text-charcoal font-light italic mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Not Quite Yet</h3>
-              <p className="text-mocha/60 text-sm">Review the material and try again</p>
+              <XCircle className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
+              <h3 className="text-3xl text-black mb-2" style={HEAD}>Not Quite Yet</h3>
+              <p className="text-neutral-500 text-sm">Review the material and try again</p>
             </>
           )}
         </div>
 
         <div className="p-8">
-          <div className="flex items-center justify-between mb-6 pb-6 border-b border-mocha/10">
+          <div className="flex items-center justify-between mb-6 pb-6 border-b border-neutral-200">
             <div className="text-center flex-1">
-              <div className="text-5xl text-charcoal font-light mb-1" style={{ fontFamily: 'Playfair Display, serif' }}>{score}%</div>
-              <div className="text-[0.55rem] tracking-[0.2em] uppercase text-mocha/40">Your Score</div>
+              <div className="text-5xl text-black mb-1" style={HEAD}>{score}%</div>
+              <div className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-400">Your Score</div>
             </div>
-            <div className="w-px h-12 bg-mocha/10" />
+            <div className="w-px h-12 bg-neutral-200" />
             <div className="text-center flex-1">
-              <div className="text-5xl text-charcoal font-light mb-1" style={{ fontFamily: 'Playfair Display, serif' }}>{PASS_SCORE}%</div>
-              <div className="text-[0.55rem] tracking-[0.2em] uppercase text-mocha/40">Required</div>
+              <div className="text-5xl text-black mb-1" style={HEAD}>{PASS_SCORE}%</div>
+              <div className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-400">Required</div>
             </div>
-            <div className="w-px h-12 bg-mocha/10" />
+            <div className="w-px h-12 bg-neutral-200" />
             <div className="text-center flex-1">
-              <div className="text-5xl text-charcoal font-light mb-1" style={{ fontFamily: 'Playfair Display, serif' }}>{Math.max(0, MAX_ATTEMPTS - (attempts + 1))}</div>
-              <div className="text-[0.55rem] tracking-[0.2em] uppercase text-mocha/40">Attempts Left</div>
+              <div className="text-5xl text-black mb-1" style={HEAD}>{Math.max(0, MAX_ATTEMPTS - (attempts + 1))}</div>
+              <div className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-400">Attempts Left</div>
             </div>
           </div>
 
@@ -233,14 +221,14 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
               const studentAnswer = answers[q.id];
               const isCorrect = studentAnswer === q.correct_answer;
               return (
-                <div key={q.id} className={`p-4 border ${isCorrect ? 'border-mocha/20 bg-linen' : 'border-red-100 bg-red-50/50'}`}>
+                <div key={q.id} className={`p-4 border ${isCorrect ? 'border-neutral-200 bg-neutral-50' : 'border-red-100 bg-red-50/50'}`}>
                   <div className="flex items-start gap-3">
-                    {isCorrect ? <CheckCircle className="w-4 h-4 text-mocha flex-shrink-0 mt-0.5" /> : <XCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />}
+                    {isCorrect ? <CheckCircle className="w-4 h-4 text-black flex-shrink-0 mt-0.5" /> : <XCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />}
                     <div className="flex-1">
-                      <p className="text-xs text-charcoal mb-1">{i + 1}. {q.question}</p>
+                      <p className="text-xs text-black mb-1">{i + 1}. {q.question}</p>
                       {!isCorrect && (
-                        <p className="text-[0.6rem] text-mocha/60">
-                          Correct: <span className="text-charcoal font-medium">{q[`option_${q.correct_answer.toLowerCase()}` as keyof Question]}</span>
+                        <p className="text-[0.6rem] text-neutral-500">
+                          Correct: <span className="text-black font-medium">{q[`option_${q.correct_answer.toLowerCase()}` as keyof Question]}</span>
                         </p>
                       )}
                     </div>
@@ -252,11 +240,11 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
 
           {passed ? (
             <div className="text-center">
-              <p className="text-xs text-mocha/40 tracking-wide mb-4">Unlocking next lesson...</p>
-              <div className="w-8 h-8 border-2 border-mocha/20 border-t-mocha rounded-full animate-spin mx-auto" />
+              <p className="text-xs text-neutral-400 tracking-wide mb-4">Unlocking next lesson...</p>
+              <div className="w-8 h-8 border-2 border-neutral-200 border-t-black rounded-full animate-spin mx-auto" />
             </div>
           ) : attempts + 1 < MAX_ATTEMPTS && (
-            <button onClick={retakeQuiz} className="flex items-center justify-center gap-2 w-full py-4 border border-charcoal text-charcoal text-[0.62rem] tracking-[0.2em] uppercase hover:bg-charcoal hover:text-cream transition-all">
+            <button onClick={retakeQuiz} className="flex items-center justify-center gap-2 w-full py-4 border border-black text-black text-[0.62rem] tracking-[0.2em] uppercase hover:bg-black hover:text-white transition-all">
               <RotateCcw className="w-3.5 h-3.5" />
               Retake Quiz ({MAX_ATTEMPTS - (attempts + 1)} attempts left)
             </button>
@@ -276,23 +264,23 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
   ];
 
   return (
-    <div className="bg-white border border-mocha/15 overflow-hidden">
-      <div className="bg-charcoal px-6 py-4 flex items-center justify-between">
+    <div className="bg-white border border-neutral-200 overflow-hidden">
+      <div className="bg-black px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-4 h-px bg-cream/20" />
-          <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/40">Lesson Quiz</span>
+          <div className="w-4 h-px bg-white/20" />
+          <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/40">Lesson Quiz</span>
         </div>
-        <span className="text-[0.55rem] tracking-[0.15em] uppercase text-cream/30">Question {currentQ + 1} of {questions.length}</span>
+        <span className="text-[0.55rem] tracking-[0.15em] uppercase text-white/30">Question {currentQ + 1} of {questions.length}</span>
       </div>
 
-      <div className="h-0.5 bg-mocha/10">
-        <div className="h-full bg-charcoal transition-all duration-500" style={{ width: `${(currentQ / questions.length) * 100}%` }} />
+      <div className="h-0.5 bg-neutral-200">
+        <div className="h-full bg-black transition-all duration-500" style={{ width: `${(currentQ / questions.length) * 100}%` }} />
       </div>
 
       <div className="p-8">
         <AnimatePresence mode="wait">
           <motion.div key={currentQ} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
-            <h3 className="text-xl text-charcoal font-light mb-6 leading-relaxed" style={{ fontFamily: 'Playfair Display, serif' }}>
+            <h3 className="text-xl text-black mb-6 leading-relaxed" style={HEAD}>
               {question.question}
             </h3>
 
@@ -301,17 +289,16 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
                 <button
                   key={key}
                   onClick={() => handleSelect(key)}
-                  className={`w-full text-left p-4 border transition-all flex items-center gap-4 ${selected === key ? 'border-charcoal bg-charcoal text-cream' : 'border-mocha/15 bg-cream hover:border-mocha/40 text-charcoal'}`}
+                  className={`w-full text-left p-4 border transition-all flex items-center gap-4 ${selected === key ? 'border-black bg-black text-white' : 'border-neutral-200 bg-neutral-50 hover:border-neutral-400 text-black'}`}
                 >
-                  <span className={`w-7 h-7 flex items-center justify-center text-[0.65rem] font-medium flex-shrink-0 border transition-all ${selected === key ? 'border-cream/30 text-cream' : 'border-mocha/20 text-mocha/50'}`}>{key}</span>
+                  <span className={`w-7 h-7 flex items-center justify-center text-[0.65rem] font-medium flex-shrink-0 border transition-all ${selected === key ? 'border-white/30 text-white' : 'border-neutral-300 text-neutral-500'}`}>{key}</span>
                   <span className="text-sm leading-relaxed">{text}</span>
                 </button>
               ))}
             </div>
 
-            <button onClick={handleNext} disabled={!selected} className="flex items-center justify-center gap-2 w-full py-4 bg-charcoal text-cream text-[0.62rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+            <button onClick={handleNext} disabled={!selected} className="flex items-center justify-center gap-2 w-full py-4 bg-black text-white text-[0.62rem] tracking-[0.2em] uppercase hover:opacity-80 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
               {currentQ < questions.length - 1 ? 'Next Question' : 'Submit Quiz'}
-              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </motion.div>
         </AnimatePresence>
