@@ -43,6 +43,12 @@ interface Course {
   title: string;
 }
 
+const DISP_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500&display=swap');
+.mba-lesson{font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:300;}
+.mba-lesson .disp{font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0.02em;line-height:0.98;}
+`;
+
 // ── Audio Player Component ──────────────────────────────────────────────────
 const AudioPlayer = ({ src }: { src: string }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -77,7 +83,7 @@ const AudioPlayer = ({ src }: { src: string }) => {
   };
 
   return (
-    <div className="bg-charcoal border border-white/10 p-5">
+    <div className="bg-black border border-white/10 p-5">
       <audio
         ref={audioRef}
         src={src}
@@ -86,27 +92,27 @@ const AudioPlayer = ({ src }: { src: string }) => {
         onEnded={() => setPlaying(false)}
       />
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-4 h-px bg-cream/20" />
-        <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/30">Lesson Voiceover</span>
+        <div className="w-4 h-px bg-white/20" />
+        <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/30">Lesson Voiceover</span>
       </div>
       <div className="flex items-center gap-4">
-        <button onClick={togglePlay} className="w-10 h-10 bg-cream text-charcoal flex items-center justify-center hover:bg-linen transition-colors flex-shrink-0">
+        <button onClick={togglePlay} className="w-10 h-10 bg-white text-black flex items-center justify-center hover:bg-neutral-200 transition-colors flex-shrink-0">
           {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
         </button>
         <div className="flex-1">
           <div className="h-1 bg-white/10 cursor-pointer relative" onClick={handleSeek}>
-            <div className="h-full bg-cream transition-all" style={{ width: `${progress}%` }} />
+            <div className="h-full bg-white transition-all" style={{ width: `${progress}%` }} />
           </div>
           <div className="flex justify-between mt-1.5">
-            <span className="text-[0.52rem] text-cream/30">{formatTime(currentTime)}</span>
-            <span className="text-[0.52rem] text-cream/30">{formatTime(duration)}</span>
+            <span className="text-[0.52rem] text-white/30">{formatTime(currentTime)}</span>
+            <span className="text-[0.52rem] text-white/30">{formatTime(duration)}</span>
           </div>
         </div>
-        <button onClick={toggleMute} className="text-cream/40 hover:text-cream transition-colors flex-shrink-0">
+        <button onClick={toggleMute} className="text-white/40 hover:text-white transition-colors flex-shrink-0">
           {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
         </button>
       </div>
-      <p className="text-[0.55rem] text-cream/20 tracking-wide mt-3">
+      <p className="text-[0.55rem] text-white/20 tracking-wide mt-3">
         Play the voiceover while clicking through the slides above
       </p>
     </div>
@@ -225,14 +231,16 @@ export const LessonViewer = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-charcoal flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-cream/20 border-t-cream rounded-full animate-spin" />
+      <div className="mba-lesson min-h-screen bg-black flex items-center justify-center">
+        <style>{DISP_CSS}</style>
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-charcoal text-cream pt-20">
+    <div className="mba-lesson min-h-screen bg-black text-white pt-20">
+      <style>{DISP_CSS}</style>
       <div className="flex h-[calc(100vh-80px)]">
 
         {/* SIDEBAR */}
@@ -240,14 +248,14 @@ export const LessonViewer = () => {
           initial={false}
           animate={{ width: sidebarOpen ? 320 : 0 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
-          className="bg-charcoal border-r border-white/08 overflow-hidden flex-shrink-0"
+          className="bg-black border-r border-white/10 overflow-hidden flex-shrink-0"
         >
           <div className="w-[320px] h-full overflow-y-auto">
-            <div className="p-6 border-b border-white/08">
-              <Link to="/dashboard" className="inline-flex items-center gap-2 text-[0.58rem] tracking-[0.2em] uppercase text-cream/30 hover:text-cream/60 transition-colors mb-5">
+            <div className="p-6 border-b border-white/10">
+              <Link to="/dashboard" className="inline-flex items-center gap-2 text-[0.58rem] tracking-[0.2em] uppercase text-white/30 hover:text-white/60 transition-colors mb-5">
                 <ArrowLeft className="w-3 h-3" /> Dashboard
               </Link>
-              <h2 className="text-xl text-cream font-light leading-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
+              <h2 className="disp text-xl text-white leading-tight">
                 {course?.title}
               </h2>
             </div>
@@ -255,8 +263,8 @@ export const LessonViewer = () => {
               {modules.map((module) => (
                 <div key={module.id} className="mb-8">
                   <div className="flex items-center gap-2 mb-3 px-2">
-                    <div className="w-3 h-px bg-cream/20" />
-                    <h3 className="text-[0.52rem] tracking-[0.2em] uppercase text-cream/30">{module.title}</h3>
+                    <div className="w-3 h-px bg-white/20" />
+                    <h3 className="text-[0.52rem] tracking-[0.2em] uppercase text-white/30">{module.title}</h3>
                   </div>
                   <div className="space-y-0.5">
                     {module.lessons.map((lesson) => (
@@ -265,20 +273,20 @@ export const LessonViewer = () => {
                         onClick={() => setCurrentLesson(lesson)}
                         className={`w-full text-left px-4 py-3 transition-all flex items-center gap-3 ${
                           currentLesson?.id === lesson.id
-                            ? 'bg-white/10 border-l-2 border-cream'
-                            : 'hover:bg-white/05 border-l-2 border-transparent'
+                            ? 'bg-white/10 border-l-2 border-white'
+                            : 'hover:bg-white/5 border-l-2 border-transparent'
                         }`}
                       >
                         <div className="flex-shrink-0">
                           {lesson.progress?.completed
-                            ? <CheckCircle className="w-4 h-4 text-cream/60" />
-                            : <div className="w-4 h-4 border border-cream/20 rounded-full" />
+                            ? <CheckCircle className="w-4 h-4 text-white/60" />
+                            : <div className="w-4 h-4 border border-white/20 rounded-full" />
                           }
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs text-cream/70 truncate leading-relaxed">{lesson.title}</div>
+                          <div className="text-xs text-white/70 truncate leading-relaxed">{lesson.title}</div>
                           {lesson.duration && (
-                            <div className="text-[0.52rem] tracking-wide text-cream/30 mt-0.5">{lesson.duration} min</div>
+                            <div className="text-[0.52rem] tracking-wide text-white/30 mt-0.5">{lesson.duration} min</div>
                           )}
                         </div>
                       </button>
@@ -292,11 +300,11 @@ export const LessonViewer = () => {
 
         {/* MAIN CONTENT */}
         <div className="flex-1 overflow-y-auto">
-          <div className="sticky top-0 z-10 bg-charcoal border-b border-white/08 px-6 py-4 flex items-center gap-4">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-white/05 transition-colors">
-              <Menu className="w-4 h-4 text-cream/50" />
+          <div className="sticky top-0 z-10 bg-black border-b border-white/10 px-6 py-4 flex items-center gap-4">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-white/5 transition-colors">
+              <Menu className="w-4 h-4 text-white/50" />
             </button>
-            <h1 className="text-sm text-cream/70 flex-1 truncate">{currentLesson?.title}</h1>
+            <h1 className="text-sm text-white/70 flex-1 truncate">{currentLesson?.title}</h1>
           </div>
 
           <div className="p-8 max-w-4xl">
@@ -304,15 +312,15 @@ export const LessonViewer = () => {
               <div className="space-y-6">
 
                 {/* Lesson Info */}
-                <div className="bg-white text-charcoal p-8">
+                <div className="bg-white text-black p-8">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-4 h-px bg-mocha/40" />
-                    <span className="text-[0.55rem] tracking-[0.2em] uppercase text-mocha/50">Current Lesson</span>
+                    <div className="w-4 h-px bg-neutral-400" />
+                    <span className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500">Current Lesson</span>
                   </div>
-                  <h2 className="text-3xl text-charcoal font-light mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+                  <h2 className="disp text-3xl text-black mb-4">
                     {currentLesson.title}
                   </h2>
-                  <p className="text-sm text-mocha-dark leading-relaxed">{currentLesson.description}</p>
+                  <p className="text-sm text-neutral-600 leading-relaxed">{currentLesson.description}</p>
                 </div>
 
                 {/* Slides */}
@@ -330,28 +338,28 @@ export const LessonViewer = () => {
 
                 {/* Workbooks */}
                 {currentLesson.resources && currentLesson.resources.filter(r => !['slides', 'audio'].includes(r.resource_type)).length > 0 && (
-                  <div className="bg-white text-charcoal p-8">
+                  <div className="bg-white text-black p-8">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="w-4 h-px bg-mocha/40" />
-                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-mocha/50">Materials</span>
+                      <div className="w-4 h-px bg-neutral-400" />
+                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500">Materials</span>
                     </div>
-                    <h3 className="text-2xl text-charcoal font-light mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
-                      Workbooks & <span className="italic">Resources</span>
+                    <h3 className="disp text-2xl text-black mb-6">
+                      Workbooks &amp; Resources
                     </h3>
                     <div className="space-y-2">
                       {currentLesson.resources.filter(r => !['slides', 'audio'].includes(r.resource_type)).map((resource) => (
                         <a key={resource.id} href={resource.file_url} target="_blank" rel="noopener noreferrer" download
-                          className="flex items-center gap-4 p-4 border border-mocha/10 hover:border-mocha/30 hover:bg-linen transition-all group">
-                          <div className="w-9 h-9 border border-mocha/20 flex items-center justify-center group-hover:bg-charcoal group-hover:border-charcoal transition-all">
-                            <Download className="w-3.5 h-3.5 text-mocha group-hover:text-cream" />
+                          className="flex items-center gap-4 p-4 border border-neutral-200 hover:border-neutral-400 hover:bg-neutral-100 transition-all group">
+                          <div className="w-9 h-9 border border-neutral-300 flex items-center justify-center group-hover:bg-black group-hover:border-black transition-all">
+                            <Download className="w-3.5 h-3.5 text-neutral-600 group-hover:text-white" />
                           </div>
                           <div className="flex-1">
-                            <div className="text-sm text-charcoal">{resource.title}</div>
-                            <div className="text-[0.55rem] tracking-wide text-mocha/40 uppercase mt-0.5">
+                            <div className="text-sm text-black">{resource.title}</div>
+                            <div className="text-[0.55rem] tracking-wide text-neutral-400 uppercase mt-0.5">
                               {resource.resource_type === 'workbook' ? 'Workbook' : 'Resource'}
                             </div>
                           </div>
-                          <span className="text-[0.58rem] tracking-[0.15em] uppercase text-mocha/40">Download →</span>
+                          <span className="text-[0.58rem] tracking-[0.15em] uppercase text-neutral-400">Download</span>
                         </a>
                       ))}
                     </div>
@@ -362,8 +370,8 @@ export const LessonViewer = () => {
                 {currentLesson.video_url && (
                   <div>
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-4 h-px bg-cream/20" />
-                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/30">Video Lesson</span>
+                      <div className="w-4 h-px bg-white/20" />
+                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/30">Video Lesson</span>
                     </div>
                     <div className="aspect-video bg-black overflow-hidden">
                       {currentLesson.video_url.includes('youtube.com') || currentLesson.video_url.includes('youtu.be') ? (
@@ -399,28 +407,28 @@ export const LessonViewer = () => {
                 />
 
                 {/* Community */}
-                <div className="bg-white text-charcoal p-8 text-center">
-                  <div className="w-10 h-10 border border-mocha/20 flex items-center justify-center mx-auto mb-4">
-                    <MessageSquare className="w-4 h-4 text-mocha" />
+                <div className="bg-white text-black p-8 text-center">
+                  <div className="w-10 h-10 border border-neutral-300 flex items-center justify-center mx-auto mb-4">
+                    <MessageSquare className="w-4 h-4 text-black" />
                   </div>
-                  <h3 className="text-2xl text-charcoal font-light mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>
-                    Join the <span className="italic">Discussion</span>
+                  <h3 className="disp text-2xl text-black mb-2">
+                    Join the Discussion
                   </h3>
-                  <p className="text-xs text-mocha/50 tracking-wide mb-6">Connect with fellow students and share insights</p>
-                  <Link to={`/community/${courseId}`} className="inline-flex items-center gap-2 px-6 py-3 bg-charcoal text-cream text-[0.58rem] tracking-[0.15em] uppercase hover:bg-mocha transition-all">
+                  <p className="text-xs text-neutral-500 tracking-wide mb-6">Connect with fellow students and share insights</p>
+                  <Link to={`/community/${courseId}`} className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[0.58rem] tracking-[0.15em] uppercase hover:opacity-80 transition-all">
                     Go to Community
                   </Link>
                 </div>
 
                 {/* Mark Complete */}
                 {!currentLesson.progress?.completed && (
-                  <div className="bg-white text-charcoal p-8 text-center">
-                    <h4 className="text-xl text-charcoal font-light mb-5" style={{ fontFamily: 'Playfair Display, serif' }}>
+                  <div className="bg-white text-black p-8 text-center">
+                    <h4 className="disp text-xl text-black mb-5">
                       Finished this lesson?
                     </h4>
                     <button
                       onClick={() => markLessonComplete(currentLesson.id)}
-                      className="inline-flex items-center gap-2 px-8 py-4 bg-charcoal text-cream text-[0.6rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all"
+                      className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white text-[0.6rem] tracking-[0.2em] uppercase hover:opacity-80 transition-all"
                     >
                       <CheckCircle className="w-3.5 h-3.5" />
                       Mark as Complete
@@ -429,18 +437,18 @@ export const LessonViewer = () => {
                 )}
 
                 {/* Navigation */}
-                <div className="flex justify-between items-center pt-4 border-t border-white/08">
+                <div className="flex justify-between items-center pt-4 border-t border-white/10">
                   <button
                     onClick={() => { const prev = getPreviousLesson(); if (prev) setCurrentLesson(prev); }}
                     disabled={!getPreviousLesson()}
-                    className="flex items-center gap-2 px-6 py-3 border border-cream/20 text-cream/60 text-[0.58rem] tracking-[0.15em] uppercase hover:border-cream/40 hover:text-cream transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-6 py-3 border border-white/20 text-white/60 text-[0.58rem] tracking-[0.15em] uppercase hover:border-white/40 hover:text-white transition-all disabled:opacity-20 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" /> Previous
                   </button>
                   <button
                     onClick={() => { const next = getNextLesson(); if (next) setCurrentLesson(next); }}
                     disabled={!getNextLesson()}
-                    className="flex items-center gap-2 px-6 py-3 bg-cream text-charcoal text-[0.58rem] tracking-[0.15em] uppercase hover:bg-linen transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-6 py-3 bg-white text-black text-[0.58rem] tracking-[0.15em] uppercase hover:bg-neutral-200 transition-all disabled:opacity-20 disabled:cursor-not-allowed"
                   >
                     Next Lesson <ChevronRight className="w-3.5 h-3.5" />
                   </button>
@@ -448,7 +456,7 @@ export const LessonViewer = () => {
               </div>
             ) : (
               <div className="flex items-center justify-center h-64">
-                <p className="text-xs text-cream/30 tracking-widests uppercase">No lessons available</p>
+                <p className="text-xs text-white/30 tracking-widest uppercase">No lessons available</p>
               </div>
             )}
           </div>
