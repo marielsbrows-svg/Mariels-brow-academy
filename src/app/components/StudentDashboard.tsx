@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { BookOpen, Award, Clock, Play, CheckCircle, Download, FileText, Upload, ArrowRight } from 'lucide-react';
+import { BookOpen, Award, Clock, Play, CheckCircle, Download, FileText, Upload } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { ImageWithFallback } from './ImageWithFallback';
@@ -41,6 +41,12 @@ interface Assignment {
   file_url?: string;
   submission_text?: string;
 }
+
+const DISP_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500&display=swap');
+.mba-dash{font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:300;}
+.mba-dash .disp{font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0.02em;line-height:0.98;}
+`;
 
 export const StudentDashboard = () => {
   const { user, profile } = useAuth();
@@ -136,7 +142,8 @@ export const StudentDashboard = () => {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-cream pt-24 pb-20">
+    <div className="mba-dash min-h-screen bg-white pt-24 pb-20">
+      <style>{DISP_CSS}</style>
       <div className="max-w-7xl mx-auto px-8">
 
         {/* Header */}
@@ -144,23 +151,19 @@ export const StudentDashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-16 pb-12 border-b border-mocha/10"
+          className="mb-16 pb-12 border-b border-neutral-200"
         >
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-5 h-px bg-mocha/40" />
-            <span className="text-[0.58rem] tracking-[0.25em] uppercase text-mocha/50">Student Portal</span>
+            <div className="w-5 h-px bg-neutral-400" />
+            <span className="text-[0.58rem] tracking-[0.25em] uppercase text-neutral-500">Student Portal</span>
           </div>
-          <h1
-            className="text-5xl md:text-6xl text-charcoal font-light leading-tight"
-            style={{ fontFamily: 'Playfair Display, serif' }}
-          >
-            Welcome back,{' '}
-            <span className="italic">{profile?.full_name?.split(' ')[0] || 'Student'}</span>
+          <h1 className="disp text-5xl md:text-6xl text-black leading-none">
+            Welcome back, {profile?.full_name?.split(' ')[0] || 'Student'}
           </h1>
         </motion.div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-px bg-mocha/10 mb-16">
+        <div className="grid grid-cols-3 gap-px bg-neutral-200 mb-16">
           {[
             { icon: BookOpen, value: enrollments.length, label: 'Enrolled Courses' },
             { icon: CheckCircle, value: enrollments.filter(e => e.completed_at).length, label: 'Completed' },
@@ -173,37 +176,30 @@ export const StudentDashboard = () => {
               transition={{ delay: i * 0.1 }}
               className="bg-white px-8 py-6 flex items-center gap-5"
             >
-              <div className="w-10 h-10 border border-mocha/20 flex items-center justify-center flex-shrink-0">
-                <Icon className="w-4 h-4 text-mocha" />
+              <div className="w-10 h-10 border border-neutral-300 flex items-center justify-center flex-shrink-0">
+                <Icon className="w-4 h-4 text-black" />
               </div>
               <div>
-                <div
-                  className="text-3xl text-charcoal font-light"
-                  style={{ fontFamily: 'Playfair Display, serif' }}
-                >
-                  {value}
-                </div>
-                <div className="text-[0.55rem] tracking-[0.2em] uppercase text-mocha/50 mt-0.5">{label}</div>
+                <div className="disp text-3xl text-black">{value}</div>
+                <div className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500 mt-0.5">{label}</div>
               </div>
             </motion.div>
           ))}
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-0 border-b border-mocha/10 mb-12">
+        <div className="flex gap-0 border-b border-neutral-200 mb-12">
           {tabs.map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`px-6 py-4 text-[0.6rem] tracking-[0.2em] uppercase transition-all relative ${
-                activeTab === tab.key
-                  ? 'text-charcoal'
-                  : 'text-mocha/40 hover:text-mocha/70'
+                activeTab === tab.key ? 'text-black' : 'text-neutral-400 hover:text-neutral-700'
               }`}
             >
               {tab.label}
               {activeTab === tab.key && (
-                <div className="absolute bottom-0 left-0 right-0 h-px bg-charcoal" />
+                <div className="absolute bottom-0 left-0 right-0 h-px bg-black" />
               )}
             </button>
           ))}
@@ -214,10 +210,10 @@ export const StudentDashboard = () => {
           <div>
             {loading ? (
               <div className="flex items-center justify-center py-32">
-                <div className="w-8 h-8 border-2 border-mocha/20 border-t-mocha rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-neutral-200 border-t-black rounded-full animate-spin" />
               </div>
             ) : enrollments.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-mocha/10">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-neutral-200">
                 {enrollments.map((enrollment, index) => (
                   <motion.div
                     key={enrollment.id}
@@ -232,66 +228,57 @@ export const StudentDashboard = () => {
                         alt={enrollment.courses.title}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
-                      <div className="absolute inset-0 bg-charcoal/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <Link
                           to={`/learn/${enrollment.course_id}`}
-                          className="flex items-center gap-2 px-5 py-2.5 bg-white text-charcoal text-[0.58rem] tracking-[0.15em] uppercase"
+                          className="flex items-center gap-2 px-5 py-2.5 bg-white text-black text-[0.58rem] tracking-[0.15em] uppercase"
                         >
                           <Play className="w-3 h-3" />
                           Continue
                         </Link>
                       </div>
                       {enrollment.completed_at && (
-                        <div className="absolute top-3 right-3 bg-charcoal text-cream px-2.5 py-1 text-[0.5rem] tracking-[0.15em] uppercase flex items-center gap-1">
+                        <div className="absolute top-3 right-3 bg-black text-white px-2.5 py-1 text-[0.5rem] tracking-[0.15em] uppercase flex items-center gap-1">
                           <CheckCircle className="w-2.5 h-2.5" />
                           Complete
                         </div>
                       )}
                     </div>
                     <div className="p-6">
-                      <h3
-                        className="text-xl text-charcoal font-light mb-2"
-                        style={{ fontFamily: 'Playfair Display, serif' }}
-                      >
+                      <h3 className="disp text-xl text-black mb-2">
                         {enrollment.courses.title}
                       </h3>
-                      <p className="text-xs text-mocha-dark line-clamp-2 mb-5 leading-relaxed">
+                      <p className="text-xs text-neutral-600 line-clamp-2 mb-5 leading-relaxed">
                         {enrollment.courses.description}
                       </p>
                       {enrollment.courses.duration_hours && (
-                        <div className="flex items-center gap-1.5 text-[0.58rem] tracking-widest uppercase text-mocha/40 mb-5">
+                        <div className="flex items-center gap-1.5 text-[0.58rem] tracking-widest uppercase text-neutral-400 mb-5">
                           <Clock className="w-3 h-3" />
                           {enrollment.courses.duration_hours} Hours
                         </div>
                       )}
                       <Link
                         to={`/learn/${enrollment.course_id}`}
-                        className="flex items-center justify-center gap-2 w-full py-3 bg-charcoal text-cream text-[0.58rem] tracking-[0.15em] uppercase hover:bg-mocha transition-all"
+                        className="flex items-center justify-center gap-2 w-full py-3 bg-black text-white text-[0.58rem] tracking-[0.15em] uppercase hover:opacity-80 transition-all"
                       >
                         {enrollment.completed_at ? 'Review Course' : 'Continue Learning'}
-                        <ArrowRight className="w-3 h-3" />
                       </Link>
                     </div>
                   </motion.div>
                 ))}
               </div>
             ) : (
-              <div className="border border-mocha/15 bg-white p-16 text-center">
-                <BookOpen className="w-10 h-10 mx-auto mb-5 text-mocha/20" />
-                <h3
-                  className="text-2xl text-charcoal font-light italic mb-3"
-                  style={{ fontFamily: 'Playfair Display, serif' }}
-                >
-                  No Courses Yet
-                </h3>
-                <p className="text-xs text-mocha/50 tracking-wide mb-8">
+              <div className="border border-neutral-200 bg-white p-16 text-center">
+                <BookOpen className="w-10 h-10 mx-auto mb-5 text-neutral-300" />
+                <h3 className="disp text-2xl text-black mb-3">No Courses Yet</h3>
+                <p className="text-xs text-neutral-500 tracking-wide mb-8">
                   Start your journey by enrolling in your first course
                 </p>
                 <Link
                   to="/courses"
-                  className="inline-flex items-center gap-2 px-8 py-3 bg-charcoal text-cream text-[0.6rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all"
+                  className="inline-flex items-center gap-2 px-8 py-3 bg-black text-white text-[0.6rem] tracking-[0.2em] uppercase hover:opacity-80 transition-all"
                 >
-                  Browse Courses <ArrowRight className="w-3 h-3" />
+                  Browse Courses
                 </Link>
               </div>
             )}
@@ -302,25 +289,22 @@ export const StudentDashboard = () => {
         {activeTab === 'workbooks' && (
           <div>
             {workbooks.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-mocha/10">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-neutral-200">
                 {workbooks.map((workbook) => (
                   <div key={workbook.id} className="bg-white p-8">
-                    <div className="w-10 h-10 border border-mocha/20 flex items-center justify-center mb-5">
-                      <Download className="w-4 h-4 text-mocha" />
+                    <div className="w-10 h-10 border border-neutral-300 flex items-center justify-center mb-5">
+                      <Download className="w-4 h-4 text-black" />
                     </div>
-                    <h3
-                      className="text-xl text-charcoal font-light mb-2"
-                      style={{ fontFamily: 'Playfair Display, serif' }}
-                    >
+                    <h3 className="disp text-xl text-black mb-2">
                       {workbook.title}
                     </h3>
-                    <p className="text-xs text-mocha/50 tracking-wide mb-6">{workbook.lesson_title}</p>
+                    <p className="text-xs text-neutral-500 tracking-wide mb-6">{workbook.lesson_title}</p>
                     <a
                       href={workbook.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       download
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-charcoal text-cream text-[0.58rem] tracking-[0.15em] uppercase hover:bg-mocha transition-all"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[0.58rem] tracking-[0.15em] uppercase hover:opacity-80 transition-all"
                     >
                       Download <Download className="w-3 h-3" />
                     </a>
@@ -328,15 +312,10 @@ export const StudentDashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="border border-mocha/15 bg-white p-16 text-center">
-                <Download className="w-10 h-10 mx-auto mb-5 text-mocha/20" />
-                <h3
-                  className="text-2xl text-charcoal font-light italic mb-3"
-                  style={{ fontFamily: 'Playfair Display, serif' }}
-                >
-                  No Workbooks Yet
-                </h3>
-                <p className="text-xs text-mocha/50 tracking-wide">
+              <div className="border border-neutral-200 bg-white p-16 text-center">
+                <Download className="w-10 h-10 mx-auto mb-5 text-neutral-300" />
+                <h3 className="disp text-2xl text-black mb-3">No Workbooks Yet</h3>
+                <p className="text-xs text-neutral-500 tracking-wide">
                   Workbooks will appear here as you progress through your courses
                 </p>
               </div>
@@ -349,18 +328,15 @@ export const StudentDashboard = () => {
           <div className="space-y-12">
 
             {/* Upload Form */}
-            <div className="border border-mocha/15 bg-white p-10">
+            <div className="border border-neutral-200 bg-white p-10">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-5 h-px bg-mocha/40" />
-                <span className="text-[0.58rem] tracking-[0.25em] uppercase text-mocha/50">Upload Assignment</span>
+                <div className="w-5 h-px bg-neutral-400" />
+                <span className="text-[0.58rem] tracking-[0.25em] uppercase text-neutral-500">Upload Assignment</span>
               </div>
-              <h3
-                className="text-3xl text-charcoal font-light mb-2"
-                style={{ fontFamily: 'Playfair Display, serif' }}
-              >
-                Submit Your <span className="italic">Work</span>
+              <h3 className="disp text-3xl text-black mb-2">
+                Submit Your Work
               </h3>
-              <p className="text-xs text-mocha/50 tracking-wide mb-8">
+              <p className="text-xs text-neutral-500 tracking-wide mb-8">
                 Upload completed workbooks, photos, or videos for instructor review
               </p>
 
@@ -387,12 +363,12 @@ export const StudentDashboard = () => {
               }} className="space-y-6">
 
                 <div>
-                  <label className="block text-[0.6rem] tracking-[0.2em] uppercase text-mocha/60 mb-2">Select Assignment</label>
+                  <label className="block text-[0.6rem] tracking-[0.2em] uppercase text-neutral-500 mb-2">Select Assignment</label>
                   <select
                     value={selectedAssignment}
                     onChange={(e) => setSelectedAssignment(e.target.value)}
                     required
-                    className="w-full px-4 py-3.5 border border-mocha/20 bg-cream text-charcoal text-sm outline-none focus:border-charcoal transition-colors"
+                    className="w-full px-4 py-3.5 border border-neutral-300 bg-white text-black text-sm outline-none focus:border-black transition-colors"
                   >
                     <option value="">Choose an assignment...</option>
                     {assignments.map((a) => (
@@ -402,24 +378,24 @@ export const StudentDashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[0.6rem] tracking-[0.2em] uppercase text-mocha/60 mb-2">Upload File</label>
-                  <div className="border border-dashed border-mocha/30 p-10 text-center hover:border-mocha/50 transition-colors">
+                  <label className="block text-[0.6rem] tracking-[0.2em] uppercase text-neutral-500 mb-2">Upload File</label>
+                  <div className="border border-dashed border-neutral-300 p-10 text-center hover:border-neutral-500 transition-colors">
                     <input type="file" accept="image/*,video/*,.pdf" onChange={(e) => setUploadFile(e.target.files?.[0] || null)} className="hidden" id="submission-file-upload" required />
                     <label htmlFor="submission-file-upload" className="cursor-pointer">
-                      <Upload className="w-8 h-8 mx-auto mb-3 text-mocha/30" />
-                      <p className="text-xs text-charcoal mb-1">{uploadFile ? uploadFile.name : 'Click to upload'}</p>
-                      <p className="text-[0.6rem] text-mocha/40 tracking-wide">PDF, Images, or Videos — Max 100MB</p>
+                      <Upload className="w-8 h-8 mx-auto mb-3 text-neutral-400" />
+                      <p className="text-xs text-black mb-1">{uploadFile ? uploadFile.name : 'Click to upload'}</p>
+                      <p className="text-[0.6rem] text-neutral-400 tracking-wide">PDF, Images, or Videos — Max 100MB</p>
                     </label>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[0.6rem] tracking-[0.2em] uppercase text-mocha/60 mb-2">Notes (Optional)</label>
+                  <label className="block text-[0.6rem] tracking-[0.2em] uppercase text-neutral-500 mb-2">Notes (Optional)</label>
                   <textarea
                     value={uploadText}
                     onChange={(e) => setUploadText(e.target.value)}
                     rows={4}
-                    className="w-full px-4 py-3.5 border border-mocha/20 bg-cream text-charcoal text-sm outline-none focus:border-charcoal transition-colors resize-none"
+                    className="w-full px-4 py-3.5 border border-neutral-300 bg-white text-black text-sm outline-none focus:border-black transition-colors resize-none"
                     placeholder="Add any notes about your submission..."
                   />
                 </div>
@@ -427,9 +403,9 @@ export const StudentDashboard = () => {
                 <button
                   type="submit"
                   disabled={uploading || !uploadFile || !selectedAssignment}
-                  className="flex items-center justify-center gap-2 w-full py-4 bg-charcoal text-cream text-[0.62rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 w-full py-4 bg-black text-white text-[0.62rem] tracking-[0.2em] uppercase hover:opacity-80 transition-all disabled:opacity-50"
                 >
-                  {uploading ? <span className="w-4 h-4 border-2 border-cream/30 border-t-cream rounded-full animate-spin" /> : <><Upload className="w-3.5 h-3.5" /> Submit Work</>}
+                  {uploading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Upload className="w-3.5 h-3.5" /> Submit Work</>}
                 </button>
               </form>
             </div>
@@ -437,28 +413,28 @@ export const StudentDashboard = () => {
             {/* Previous Submissions */}
             <div>
               <div className="flex items-center gap-3 mb-8">
-                <div className="w-5 h-px bg-mocha/40" />
-                <span className="text-[0.58rem] tracking-[0.25em] uppercase text-mocha/50">Previous Submissions</span>
+                <div className="w-5 h-px bg-neutral-400" />
+                <span className="text-[0.58rem] tracking-[0.25em] uppercase text-neutral-500">Previous Submissions</span>
               </div>
 
               {assignments.filter(a => a.submission_status !== 'not_submitted').length > 0 ? (
-                <div className="space-y-px bg-mocha/10">
+                <div className="space-y-px bg-neutral-200">
                   {assignments.filter(a => a.submission_status !== 'not_submitted').map((assignment) => (
                     <div key={assignment.id} className="bg-white p-6 flex items-start justify-between gap-4">
                       <div>
-                        <h4 className="text-sm font-medium text-charcoal mb-1">{assignment.title}</h4>
-                        <p className="text-xs text-mocha/50">{assignment.lesson_title}</p>
+                        <h4 className="text-sm font-medium text-black mb-1">{assignment.title}</h4>
+                        <p className="text-xs text-neutral-500">{assignment.lesson_title}</p>
                         {assignment.file_url && (
-                          <a href={assignment.file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[0.6rem] tracking-wide text-mocha hover:text-charcoal mt-2 transition-colors">
+                          <a href={assignment.file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[0.6rem] tracking-wide text-neutral-600 hover:text-black mt-2 transition-colors">
                             <FileText className="w-3 h-3" /> View File
                           </a>
                         )}
                         {assignment.submission_status === 'graded' && assignment.score !== undefined && (
-                          <div className="mt-2 text-xs text-charcoal font-medium">Score: {assignment.score}/{assignment.max_score}</div>
+                          <div className="mt-2 text-xs text-black font-medium">Score: {assignment.score}/{assignment.max_score}</div>
                         )}
                       </div>
                       <div className="flex-shrink-0">
-                        <span className={`px-3 py-1 text-[0.52rem] tracking-[0.15em] uppercase ${assignment.submission_status === 'graded' ? 'bg-charcoal text-cream' : 'border border-mocha/20 text-mocha/60'}`}>
+                        <span className={`px-3 py-1 text-[0.52rem] tracking-[0.15em] uppercase ${assignment.submission_status === 'graded' ? 'bg-black text-white' : 'border border-neutral-300 text-neutral-500'}`}>
                           {assignment.submission_status === 'graded' ? 'Graded' : 'Submitted'}
                         </span>
                       </div>
@@ -466,9 +442,9 @@ export const StudentDashboard = () => {
                   ))}
                 </div>
               ) : (
-                <div className="border border-mocha/15 bg-white p-12 text-center">
-                  <FileText className="w-8 h-8 mx-auto mb-4 text-mocha/20" />
-                  <p className="text-xs text-mocha/40 tracking-widests uppercase">No submissions yet</p>
+                <div className="border border-neutral-200 bg-white p-12 text-center">
+                  <FileText className="w-8 h-8 mx-auto mb-4 text-neutral-300" />
+                  <p className="text-xs text-neutral-400 tracking-widest uppercase">No submissions yet</p>
                 </div>
               )}
             </div>
