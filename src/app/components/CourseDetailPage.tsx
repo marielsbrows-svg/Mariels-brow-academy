@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Clock, Award, CheckCircle, Play, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Clock, Award, CheckCircle, Play, Lock, ShieldCheck } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { ImageWithFallback } from './ImageWithFallback';
@@ -22,6 +22,12 @@ interface Module {
   description: string;
   order_index: number;
 }
+
+const DISP_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500&display=swap');
+.mba-cd{font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:300;}
+.mba-cd .disp{font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0.02em;line-height:0.98;}
+`;
 
 export const CourseDetailPage = () => {
   const { id } = useParams();
@@ -100,27 +106,24 @@ export const CourseDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-mocha/20 border-t-mocha rounded-full animate-spin" />
+      <div className="mba-cd min-h-screen bg-white flex items-center justify-center">
+        <style>{DISP_CSS}</style>
+        <div className="w-8 h-8 border-2 border-neutral-200 border-t-black rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
+      <div className="mba-cd min-h-screen bg-white flex items-center justify-center">
+        <style>{DISP_CSS}</style>
         <div className="text-center">
-          <h1
-            className="text-4xl text-charcoal font-light italic mb-6"
-            style={{ fontFamily: 'Playfair Display, serif' }}
-          >
-            Course Not Found
-          </h1>
+          <h1 className="disp text-4xl text-black mb-6">Course Not Found</h1>
           <Link
             to="/courses"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-charcoal text-cream text-[0.62rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white text-[0.62rem] tracking-[0.2em] uppercase hover:opacity-80 transition-all"
           >
-            Browse Courses <ArrowRight className="w-3.5 h-3.5" />
+            Browse Courses
           </Link>
         </div>
       </div>
@@ -128,14 +131,15 @@ export const CourseDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-cream pt-24 pb-20">
+    <div className="mba-cd min-h-screen bg-white pt-24 pb-20">
+      <style>{DISP_CSS}</style>
       <div className="max-w-7xl mx-auto px-8">
 
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 mb-12 text-[0.58rem] tracking-[0.2em] uppercase text-mocha/40">
-          <Link to="/courses" className="hover:text-mocha transition-colors">Courses</Link>
+        <div className="flex items-center gap-2 mb-12 text-[0.58rem] tracking-[0.2em] uppercase text-neutral-400">
+          <Link to="/courses" className="hover:text-black transition-colors">Courses</Link>
           <span>—</span>
-          <span className="text-charcoal">{course.title}</span>
+          <span className="text-black">{course.title}</span>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-16">
@@ -154,88 +158,82 @@ export const CourseDetailPage = () => {
                   alt={course.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
               </div>
 
               {/* Title */}
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-5 h-px bg-mocha/40" />
-                <span className="text-[0.58rem] tracking-[0.25em] uppercase text-mocha/50">
+                <div className="w-5 h-px bg-neutral-400" />
+                <span className="text-[0.58rem] tracking-[0.25em] uppercase text-neutral-500">
                   Signature Program
                 </span>
               </div>
 
-              <h1
-                className="text-5xl md:text-6xl text-charcoal font-light leading-tight mb-6"
-                style={{ fontFamily: 'Playfair Display, serif' }}
-              >
+              <h1 className="disp text-5xl md:text-6xl text-black leading-none mb-6">
                 {course.title}
               </h1>
 
               {/* Meta */}
-              <div className="flex flex-wrap items-center gap-6 mb-8 pb-8 border-b border-mocha/10">
+              <div className="flex flex-wrap items-center gap-6 mb-8 pb-8 border-b border-neutral-200">
                 {course.level && (
-                  <div className="flex items-center gap-2 text-[0.6rem] tracking-widest uppercase text-mocha/50">
-                    <span className="w-1.5 h-1.5 rounded-full bg-mocha/40" />
+                  <div className="flex items-center gap-2 text-[0.6rem] tracking-widest uppercase text-neutral-500">
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
                     {course.level}
                   </div>
                 )}
                 {course.duration_hours && (
-                  <div className="flex items-center gap-2 text-[0.6rem] tracking-widest uppercase text-mocha/50">
+                  <div className="flex items-center gap-2 text-[0.6rem] tracking-widest uppercase text-neutral-500">
                     <Clock className="w-3.5 h-3.5" />
                     {course.duration_hours} Hours
                   </div>
                 )}
-                <div className="flex items-center gap-2 text-[0.6rem] tracking-widest uppercase text-mocha/50">
+                <div className="flex items-center gap-2 text-[0.6rem] tracking-widest uppercase text-neutral-500">
                   <Award className="w-3.5 h-3.5" />
                   Certificate Included
                 </div>
               </div>
 
               {/* Description */}
-              <p className="text-sm text-mocha-dark leading-relaxed mb-12">
+              <p className="text-sm text-neutral-600 leading-relaxed mb-12">
                 {course.description}
               </p>
 
               {/* Curriculum */}
               <div>
                 <div className="flex items-center gap-3 mb-8">
-                  <div className="w-5 h-px bg-mocha/40" />
-                  <span className="text-[0.58rem] tracking-[0.25em] uppercase text-mocha/50">
+                  <div className="w-5 h-px bg-neutral-400" />
+                  <span className="text-[0.58rem] tracking-[0.25em] uppercase text-neutral-500">
                     Course Curriculum
                   </span>
                 </div>
 
-                <h2
-                  className="text-3xl text-charcoal font-light mb-8"
-                  style={{ fontFamily: 'Playfair Display, serif' }}
-                >
-                  What You'll <span className="italic">Learn</span>
+                <h2 className="disp text-3xl text-black mb-8">
+                  What You'll Learn
                 </h2>
 
-                <div className="space-y-px bg-mocha/10">
+                <div className="space-y-px bg-neutral-200">
                   {modules.length > 0 ? (
                     modules.map((module, index) => (
                       <div key={module.id} className="bg-white p-6 flex items-start gap-5">
-                        <div className="w-8 h-8 border border-mocha/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-8 h-8 border border-neutral-300 flex items-center justify-center flex-shrink-0 mt-0.5">
                           {isEnrolled ? (
-                            <Play className="w-3.5 h-3.5 text-mocha" />
+                            <Play className="w-3.5 h-3.5 text-black" />
                           ) : (
-                            <Lock className="w-3.5 h-3.5 text-mocha/40" />
+                            <Lock className="w-3.5 h-3.5 text-neutral-400" />
                           )}
                         </div>
                         <div>
-                          <div className="text-[0.58rem] tracking-[0.15em] uppercase text-mocha/40 mb-1">
+                          <div className="text-[0.58rem] tracking-[0.15em] uppercase text-neutral-400 mb-1">
                             Module {index + 1}
                           </div>
-                          <h3 className="text-sm font-medium text-charcoal mb-1">{module.title}</h3>
-                          <p className="text-xs text-mocha-dark leading-relaxed">{module.description}</p>
+                          <h3 className="text-sm font-medium text-black mb-1">{module.title}</h3>
+                          <p className="text-xs text-neutral-600 leading-relaxed">{module.description}</p>
                         </div>
                       </div>
                     ))
                   ) : (
                     <div className="bg-white p-12 text-center">
-                      <p className="text-xs text-mocha/40 tracking-widest uppercase">Curriculum coming soon</p>
+                      <p className="text-xs text-neutral-400 tracking-widest uppercase">Curriculum coming soon</p>
                     </div>
                   )}
                 </div>
@@ -251,35 +249,32 @@ export const CourseDetailPage = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="sticky top-24"
             >
-              <div className="border border-mocha/15 bg-white">
+              <div className="border border-neutral-200 bg-white">
 
                 {isEnrolled ? (
                   <div className="p-8">
-                    <div className="flex items-center gap-3 mb-6 pb-6 border-b border-mocha/10">
-                      <CheckCircle className="w-5 h-5 text-mocha" />
+                    <div className="flex items-center gap-3 mb-6 pb-6 border-b border-neutral-200">
+                      <CheckCircle className="w-5 h-5 text-black" />
                       <div>
-                        <div className="text-[0.6rem] tracking-[0.15em] uppercase text-charcoal font-medium">Enrolled</div>
-                        <div className="text-xs text-mocha/60 mt-0.5">You have full access</div>
+                        <div className="text-[0.6rem] tracking-[0.15em] uppercase text-black font-medium">Enrolled</div>
+                        <div className="text-xs text-neutral-500 mt-0.5">You have full access</div>
                       </div>
                     </div>
                     <button
                       onClick={() => navigate(`/learn/${course.id}`)}
-                      className="w-full py-4 bg-charcoal text-cream text-[0.62rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all flex items-center justify-center gap-2"
+                      className="w-full py-4 bg-black text-white text-[0.62rem] tracking-[0.2em] uppercase hover:opacity-80 transition-all"
                     >
-                      Continue Learning <ArrowRight className="w-3.5 h-3.5" />
+                      Continue Learning
                     </button>
                   </div>
                 ) : (
                   <div className="p-8">
                     {/* Price */}
-                    <div className="text-center mb-6 pb-6 border-b border-mocha/10">
-                      <div
-                        className="text-5xl text-charcoal font-light mb-1"
-                        style={{ fontFamily: 'Playfair Display, serif' }}
-                      >
+                    <div className="text-center mb-6 pb-6 border-b border-neutral-200">
+                      <div className="disp text-5xl text-black mb-1">
                         ${course.price}
                       </div>
-                      <div className="text-[0.55rem] tracking-widests uppercase text-mocha/40">
+                      <div className="text-[0.55rem] tracking-widest uppercase text-neutral-400">
                         One-time payment
                       </div>
                     </div>
@@ -288,23 +283,23 @@ export const CourseDetailPage = () => {
                     <button
                       onClick={handleEnroll}
                       disabled={purchasing}
-                      className="w-full py-4 bg-charcoal text-cream text-[0.62rem] tracking-[0.2em] uppercase hover:bg-mocha transition-all disabled:opacity-50 flex items-center justify-center gap-2 mb-3"
+                      className="w-full py-4 bg-black text-white text-[0.62rem] tracking-[0.2em] uppercase hover:opacity-80 transition-all disabled:opacity-50 flex items-center justify-center gap-2 mb-3"
                     >
                       {purchasing ? (
-                        <span className="w-4 h-4 border-2 border-cream/30 border-t-cream rounded-full animate-spin" />
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
-                        <>Enroll Now <ArrowRight className="w-3.5 h-3.5" /></>
+                        'Enroll Now'
                       )}
                     </button>
 
                     {/* BNPL */}
                     <div className="text-center mb-6">
-                      <div className="text-[0.55rem] tracking-widests uppercase text-mocha/40 mb-2">
+                      <div className="text-[0.55rem] tracking-widest uppercase text-neutral-400 mb-2">
                         Pay later with
                       </div>
                       <div className="flex justify-center gap-2">
                         {['Klarna', 'Afterpay', 'Affirm'].map((m) => (
-                          <span key={m} className="px-2.5 py-1 border border-mocha/15 text-[0.52rem] tracking-wide text-mocha/50">
+                          <span key={m} className="px-2.5 py-1 border border-neutral-200 text-[0.52rem] tracking-wide text-neutral-500">
                             {m}
                           </span>
                         ))}
@@ -312,7 +307,7 @@ export const CourseDetailPage = () => {
                     </div>
 
                     {/* Includes */}
-                    <div className="border-t border-mocha/10 pt-6 space-y-3">
+                    <div className="border-t border-neutral-200 pt-6 space-y-3">
                       {[
                         'Lifetime access to all materials',
                         'Certificate of completion',
@@ -321,16 +316,16 @@ export const CourseDetailPage = () => {
                         'Mobile & desktop access',
                       ].map((item) => (
                         <div key={item} className="flex items-center gap-3">
-                          <span className="text-charcoal text-xs">—</span>
-                          <span className="text-xs text-mocha-dark">{item}</span>
+                          <span className="text-black text-xs">—</span>
+                          <span className="text-xs text-neutral-600">{item}</span>
                         </div>
                       ))}
                     </div>
 
                     {/* Guarantee */}
-                    <div className="mt-6 pt-6 border-t border-mocha/10 flex items-start gap-3">
-                      <ShieldCheck className="w-4 h-4 text-mocha/40 flex-shrink-0 mt-0.5" />
-                      <p className="text-[0.6rem] text-mocha/50 leading-relaxed">
+                    <div className="mt-6 pt-6 border-t border-neutral-200 flex items-start gap-3">
+                      <ShieldCheck className="w-4 h-4 text-neutral-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-[0.6rem] text-neutral-500 leading-relaxed">
                         30-day money back guarantee. No questions asked.
                       </p>
                     </div>
