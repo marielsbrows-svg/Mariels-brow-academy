@@ -22,6 +22,10 @@ const DISP_CSS = `
 .mba-courses .disp{font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0.02em;line-height:0.95;}
 `;
 
+// Struck-through "regular" price shown next to the founding price.
+// Set to 0 to hide, or update when the price rises.
+const ANCHOR_PRICE = 297;
+
 export const CoursesPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,11 +128,14 @@ export const CoursesPage = () => {
         {/* Price + CTA */}
         <div className="flex items-end justify-between">
           <div>
-            <div className="disp text-3xl text-black">
-              ${course.price}
+            <div className="flex items-baseline gap-2">
+              {ANCHOR_PRICE > course.price && (
+                <span className="text-neutral-400 line-through text-lg">${ANCHOR_PRICE}</span>
+              )}
+              <span className="disp text-3xl text-black">${course.price}</span>
             </div>
             <div className="text-[0.55rem] tracking-widest uppercase text-neutral-400 mt-0.5">
-              Klarna · Afterpay · Affirm
+              Founding price · going up soon
             </div>
           </div>
           <Link
