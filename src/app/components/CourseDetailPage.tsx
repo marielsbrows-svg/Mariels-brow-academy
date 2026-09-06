@@ -29,6 +29,10 @@ const DISP_CSS = `
 .mba-cd .disp{font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0.02em;line-height:0.98;}
 `;
 
+// Struck-through "regular" price shown above the founding price.
+// Set to 0 to hide, or update when the price rises.
+const ANCHOR_PRICE = 297;
+
 export const CourseDetailPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
@@ -271,11 +275,14 @@ export const CourseDetailPage = () => {
                   <div className="p-8">
                     {/* Price */}
                     <div className="text-center mb-6 pb-6 border-b border-neutral-200">
+                      {ANCHOR_PRICE > course.price && (
+                        <div className="text-neutral-400 line-through text-xl mb-1">${ANCHOR_PRICE}</div>
+                      )}
                       <div className="disp text-5xl text-black mb-1">
                         ${course.price}
                       </div>
                       <div className="text-[0.55rem] tracking-widest uppercase text-neutral-400">
-                        One-time payment
+                        Founding price · going up soon
                       </div>
                     </div>
 
@@ -326,7 +333,7 @@ export const CourseDetailPage = () => {
                     <div className="mt-6 pt-6 border-t border-neutral-200 flex items-start gap-3">
                       <ShieldCheck className="w-4 h-4 text-neutral-400 flex-shrink-0 mt-0.5" />
                       <p className="text-[0.6rem] text-neutral-500 leading-relaxed">
-                        30-day money back guarantee. No questions asked.
+                        All sales are final. This is a digital program and is non-refundable.
                       </p>
                     </div>
                   </div>
