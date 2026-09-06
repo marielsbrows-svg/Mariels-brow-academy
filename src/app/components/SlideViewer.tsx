@@ -65,9 +65,9 @@ export const SlideViewer = ({ lessonId, onComplete }: SlideViewerProps) => {
     <div className="flex gap-1.5">
       {Array.from({ length: Math.min(numPages, 10) }).map((_, i) => (
         <button key={i} onClick={() => setCurrentSlide(i + 1)}
-          className={`h-1.5 rounded-full transition-all ${currentSlide === i + 1 ? 'bg-cream w-4' : 'bg-cream/20 w-1.5'}`} />
+          className={`h-1.5 rounded-full transition-all ${currentSlide === i + 1 ? 'bg-white w-4' : 'bg-white/20 w-1.5'}`} />
       ))}
-      {numPages > 10 && <span className="text-cream/30 text-xs">+{numPages - 10}</span>}
+      {numPages > 10 && <span className="text-white/30 text-xs">+{numPages - 10}</span>}
     </div>
   );
 
@@ -78,7 +78,7 @@ export const SlideViewer = ({ lessonId, onComplete }: SlideViewerProps) => {
           if (!audioRef.current) return;
           if (playing) { audioRef.current.pause(); setPlaying(false); }
           else { audioRef.current.play(); setPlaying(true); }
-        }} className="w-9 h-9 bg-white text-charcoal rounded-full flex items-center justify-center hover:bg-cream flex-shrink-0">
+        }} className="w-9 h-9 bg-white text-black rounded-full flex items-center justify-center hover:bg-neutral-200 flex-shrink-0">
           {playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
         </button>
         <div className="flex-1 h-1 bg-white/20 cursor-pointer" onClick={e => {
@@ -104,14 +104,14 @@ export const SlideViewer = ({ lessonId, onComplete }: SlideViewerProps) => {
   );
 
   const NavBar = () => (
-    <div className="flex items-center justify-between px-6 py-4 bg-charcoal border-t border-white/08">
+    <div className="flex items-center justify-between px-6 py-4 bg-black border-t border-white/10">
       <button onClick={goPrev} disabled={currentSlide === 1}
-        className="flex items-center gap-2 px-5 py-2.5 border border-cream/20 text-cream text-[0.58rem] tracking-[0.15em] uppercase hover:border-cream/40 disabled:opacity-20 disabled:cursor-not-allowed">
+        className="flex items-center gap-2 px-5 py-2.5 border border-white/20 text-white text-[0.58rem] tracking-[0.15em] uppercase hover:border-white/40 disabled:opacity-20 disabled:cursor-not-allowed">
         <ChevronLeft className="w-3.5 h-3.5" /> Previous
       </button>
       <Dots />
       <button onClick={goNext}
-        className="flex items-center gap-2 px-5 py-2.5 bg-cream text-charcoal text-[0.58rem] tracking-[0.15em] uppercase hover:bg-linen">
+        className="flex items-center gap-2 px-5 py-2.5 bg-white text-black text-[0.58rem] tracking-[0.15em] uppercase hover:bg-neutral-200">
         {currentSlide < numPages ? <>Next <ChevronRight className="w-3.5 h-3.5" /></> : <>Continue <ChevronRight className="w-3.5 h-3.5" /></>}
       </button>
     </div>
@@ -119,12 +119,12 @@ export const SlideViewer = ({ lessonId, onComplete }: SlideViewerProps) => {
 
   if (loading) {
     return (
-      <div className="border border-white/08 overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-3 bg-charcoal border-b border-white/08">
-          <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/30">Course Slides</span>
+      <div className="border border-white/10 overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-3 bg-black border-b border-white/10">
+          <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/30">Course Slides</span>
         </div>
-        <div className="flex items-center justify-center bg-charcoal py-20">
-          <Loader className="w-7 h-7 text-cream/40 animate-spin" />
+        <div className="flex items-center justify-center bg-black py-20">
+          <Loader className="w-7 h-7 text-white/40 animate-spin" />
         </div>
       </div>
     );
@@ -142,13 +142,13 @@ export const SlideViewer = ({ lessonId, onComplete }: SlideViewerProps) => {
       )}
 
       {!isFullscreen && (
-        <div className="border border-white/08 overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-3 bg-charcoal border-b border-white/08">
+        <div className="border border-white/10 overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-3 bg-black border-b border-white/10">
             <div className="flex items-center gap-3">
-              <div className="w-4 h-px bg-cream/20" />
-              <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/30">Course Slides</span>
+              <div className="w-4 h-px bg-white/20" />
+              <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/30">Course Slides</span>
             </div>
-            <button onClick={() => setIsFullscreen(true)} className="p-1.5 text-cream/30 hover:text-cream">
+            <button onClick={() => setIsFullscreen(true)} className="p-1.5 text-white/30 hover:text-white">
               <Maximize2 className="w-4 h-4" />
             </button>
           </div>
@@ -168,10 +168,10 @@ export const SlideViewer = ({ lessonId, onComplete }: SlideViewerProps) => {
       <AnimatePresence>
         {isFullscreen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-charcoal flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/08 flex-shrink-0">
-              <span className="text-[0.55rem] tracking-[0.2em] uppercase text-cream/30">Course Slides</span>
-              <button onClick={() => setIsFullscreen(false)} className="p-2 text-cream/40 hover:text-cream">
+            className="fixed inset-0 z-50 bg-black flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 flex-shrink-0">
+              <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/30">Course Slides</span>
+              <button onClick={() => setIsFullscreen(false)} className="p-2 text-white/40 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
