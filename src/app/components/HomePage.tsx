@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 
 // ============================================================
-//  PASTE YOUR BOOKING LINK HERE (e.g. your Square booking URL)
-const BOOKING_URL = 'https://square.site/book/7Z5H2G6FRKT6H/mariels-brows';
+//  PASTE YOUR FREE MINI CLASS LINK HERE (e.g. an unlisted YouTube video, or a page hosting it)
+const MINI_CLASS_URL = 'PASTE-YOUR-FREE-MINI-CLASS-LINK-HERE';
 
 // Flip this to true on launch day → the waitlist box becomes an "Enroll now" button:
 const ENROLLMENT_OPEN = false;
@@ -14,24 +14,24 @@ const TICKER = ['Online', 'Brow Mapping Mastery', 'Get Certified', 'En Español'
 const WORK = [1, 2, 3, 4, 5, 6, 7];
 
 export const HomePage = () => {
-  const [bookingEmail, setBookingEmail] = useState('');
+  const [miniClassEmail, setMiniClassEmail] = useState('');
   const [waitEmail, setWaitEmail] = useState('');
-  const [bookingBusy, setBookingBusy] = useState(false);
+  const [miniClassBusy, setMiniClassBusy] = useState(false);
   const [waitBusy, setWaitBusy] = useState(false);
   const [waitDone, setWaitDone] = useState(false);
 
-  async function handleBooking(e: React.FormEvent) {
+  async function handleMiniClass(e: React.FormEvent) {
     e.preventDefault();
-    const email = bookingEmail.trim().toLowerCase();
+    const email = miniClassEmail.trim().toLowerCase();
     if (!email) return;
-    setBookingBusy(true);
+    setMiniClassBusy(true);
     try {
-      const { error } = await supabase.from('waitlist').insert({ email, source: 'booking' });
-      if (error && error.code !== '23505') console.error('Booking capture failed:', error.message);
+      const { error } = await supabase.from('waitlist').insert({ email, source: 'mini-class' });
+      if (error && error.code !== '23505') console.error('Mini class capture failed:', error.message);
     } catch (err) {
-      console.error('Booking capture error:', err);
+      console.error('Mini class capture error:', err);
     } finally {
-      window.location.href = BOOKING_URL;
+      window.location.href = MINI_CLASS_URL;
     }
   }
 
@@ -63,12 +63,12 @@ export const HomePage = () => {
         </div>
         <div className="hero-copy">
           <div className="action">
-            <div className="display title">Book<br />here</div>
-            <p className="lede">Enter your email and I'll send you the booking link.</p>
-            <form className="form" onSubmit={handleBooking}>
-              <input type="email" placeholder="your@email.com" aria-label="Email for booking link"
-                value={bookingEmail} onChange={(e) => setBookingEmail(e.target.value)} required />
-              <button type="submit" disabled={bookingBusy}>{bookingBusy ? '…' : 'Get the link'}</button>
+            <div className="display title">Free<br />mini class</div>
+            <p className="lede">Enter your email for instant access to my free brow mapping mini class.</p>
+            <form className="form" onSubmit={handleMiniClass}>
+              <input type="email" placeholder="your@email.com" aria-label="Email for free mini class"
+                value={miniClassEmail} onChange={(e) => setMiniClassEmail(e.target.value)} required />
+              <button type="submit" disabled={miniClassBusy}>{miniClassBusy ? '…' : 'Watch now'}</button>
             </form>
           </div>
 
