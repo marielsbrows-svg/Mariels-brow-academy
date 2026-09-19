@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Eye, EyeOff } from 'lucide-react';
@@ -125,7 +125,9 @@ export const LoginPage = () => {
 };
 
 export const SignUpPage = () => {
-  const [email, setEmail] = useState('');
+  // If they came from the homepage mini class form, their email arrives as ?email=…
+  const [searchParams] = useSearchParams();
+  const [email, setEmail] = useState(searchParams.get('email')?.trim().toLowerCase() ?? '');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
