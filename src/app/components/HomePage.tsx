@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 
 // ============================================================
-//  PASTE YOUR FREE MINI CLASS LINK HERE (e.g. an unlisted YouTube video, or a page hosting it)
-const MINI_CLASS_URL = 'PASTE-YOUR-FREE-MINI-CLASS-LINK-HERE';
+//  Where the "Watch now" button sends people.
+//  /signup creates their account and drops them straight into the free mini class.
+const MINI_CLASS_URL = '/signup';
 
 // Flip this to true on launch day → the waitlist box becomes an "Enroll now" button:
 const ENROLLMENT_OPEN = false;
@@ -31,7 +32,7 @@ export const HomePage = () => {
     } catch (err) {
       console.error('Mini class capture error:', err);
     } finally {
-      window.location.href = MINI_CLASS_URL;
+      window.location.href = `${MINI_CLASS_URL}?email=${encodeURIComponent(email)}`;
     }
   }
 
