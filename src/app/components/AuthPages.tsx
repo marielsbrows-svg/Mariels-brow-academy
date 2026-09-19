@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 import { Eye, EyeOff } from 'lucide-react';
+
+// Free mini class — every new account is auto-enrolled in this one only.
+const FREE_COURSE_ID = '1ea01504-3e9d-4eea-95ce-b9bfcdfd4702';
 
 const AUTH_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500&display=swap');
@@ -131,6 +135,37 @@ export const SignUpPage = () => {
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
+  // Give every new account access to the free mini class only.
+  const enrollInFreeCourse = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // No session yet — email confirmation is likely turned on in Supabase.
+    if (!user) {
+      return 'Account created. Please confirm your email, then sign in to access your free class.';
+    }
+
+    // Don't duplicate if a row somehow already exists.
+    const { data: existing } = await supabase
+      .from('enrollments')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('course_id', FREE_COURSE_ID)
+      .maybeSingle();
+
+    if (existing) return null;
+
+    const { error: enrollError } = await supabase
+      .from('enrollments')
+      .insert({ user_id: user.id, course_id: FREE_COURSE_ID });
+
+    if (enrollError) {
+      console.error('Auto-enroll failed:', enrollError);
+      return 'Your account was created, but we could not open your free class automatically. Please email mariel@marielsbrowacademy.com.';
+    }
+
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -146,10 +181,20 @@ export const SignUpPage = () => {
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
-      setSuccess(true);
-      setTimeout(() => navigate('/dashboard'), 2000);
+      return;
     }
+
+    const enrollMessage = await enrollInFreeCourse();
+
+    if (enrollMessage) {
+      // Account exists but access isn't ready — tell them plainly.
+      setError(enrollMessage);
+      setLoading(false);
+      return;
+    }
+
+    setSuccess(true);
+    setTimeout(() => navigate(`/learn/${FREE_COURSE_ID}`), 1500);
   };
 
   return (
@@ -174,7 +219,7 @@ export const SignUpPage = () => {
             <h1 className="display auth-h1">Start your<br />brow journey</h1>
 
             {error && <div className="auth-msg auth-error">{error}</div>}
-            {success && <div className="auth-msg auth-success">Account created — taking you to your dashboard…</div>}
+            {success && <div className="auth-msg auth-success">Account created — opening your free class…</div>}
 
             <form onSubmit={handleSubmit} className="auth-fields">
               <div>
