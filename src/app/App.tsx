@@ -12,6 +12,7 @@ import { LessonViewer } from './components/LessonViewer';
 import { AdminDashboard } from './components/AdminDashboard';
 import { PaymentPage } from './PaymentPage';
 import { CommunityPage } from './components/CommunityPage';
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
@@ -79,14 +80,15 @@ const AppContent = () => {
               </AdminRoute>
             }
           />
-<Route
-  path="/community"
-  element={
-    <ProtectedRoute>
-      <CommunityPage />
-    </ProtectedRoute>
-  }
-/><Route
+          <Route
+            path="/community"
+            element={
+              <ProtectedRoute>
+                <CommunityPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/community/:courseId"
             element={
               <ProtectedRoute>
@@ -94,6 +96,8 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
+          {/* Any unknown URL goes home instead of rendering a blank page */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
       {!hideFooter && <Footer />}
