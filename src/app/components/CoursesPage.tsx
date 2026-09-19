@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Clock } from 'lucide-react';
+import { Clock, Lock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { ImageWithFallback } from './ImageWithFallback';
 
@@ -23,13 +23,23 @@ const DISP_CSS = `
 `;
 
 // Struck-through "regular" price shown next to the founding price.
-// Set to 0 to hide, or update when the price rises.
-const ANCHOR_PRICE = 297;
+// 0 = no strikethrough. Set to 97 only if you genuinely raise the price after the founding window.
+const ANCHOR_PRICE = 0;
+
+// Doors open for paid courses. Edit this if the hour changes.
+const LAUNCH_DATE = new Date('2026-09-24T00:00:00-04:00');
+
+// Before LAUNCH_DATE, paid courses are hidden from this page completely.
+// Flip to false if you'd rather tease them as locked "Opens Sept 24" cards.
+const HIDE_PAID_UNTIL_LAUNCH = true;
 
 export const CoursesPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'ALL' | 'EN' | 'ES'>('ALL');
+
+  // Re-evaluated on mount; paid courses unlock at LAUNCH_DATE.
+  const doorsOpen = new Date() >= LAUNCH_DATE;
 
   useEffect(() => {
     fetchCourses();
@@ -61,93 +71,130 @@ export const CoursesPage = () => {
     return `${images[index % images.length]}?w=800`;
   };
 
-  const filteredCourses = courses.filter(c =>
+  // Hide paid courses until the doors open.
+  const visibleCourses = courses.filter(c => {
+    const isFree = !c.price || c.price === 0;
+    if (isFree || doorsOpen) return true;
+    return !HIDE_PAID_UNTIL_LAUNCH;
+  });
+
+  const filteredCourses = visibleCourses.filter(c =>
     filter === 'ALL' ? true : c.language === filter
   );
 
   const enCourses = filteredCourses.filter(c => c.language === 'EN');
   const esCourses = filteredCourses.filter(c => c.language === 'ES');
 
-  const CourseCard = ({ course, index }: { course: Course; index: number }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.08 }}
-      className="bg-white group"
-    >
-      {/* Image */}
-      <div className="relative aspect-[4/3] overflow-hidden">
-        <ImageWithFallback
-          src={course.thumbnail_url || getDefaultImage(index)}
-          alt={course.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+  const CourseCard = ({ course, index }: { course: Course; index: number }) => {
+    const isFree = !course.price || course.price === 0;
+    const isLocked = !isFree && !doorsOpen;
 
-        {/* Language Badge */}
-        <div className={`absolute top-3 left-3 px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase font-semibold text-white ${
-          course.language === 'EN' ? 'bg-black' : 'bg-neutral-500'
-        }`}>
-          {course.language}
-        </div>
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.08 }}
+        className="bg-white group"
+      >
+        {/* Image */}
+        <div className="relative aspect-[4/3] overflow-hidden">
+          <ImageWithFallback
+            src={course.thumbnail_url || getDefaultImage(index)}
+            alt={course.title}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
 
-        {/* Level Badge */}
-        {course.level && (
-          <div className="absolute top-3 right-3 bg-white px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase text-black">
-            {course.level}
+          {/* Language Badge */}
+          <div className={`absolute top-3 left-3 px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase font-semibold text-white ${
+            course.language === 'EN' ? 'bg-black' : 'bg-neutral-500'
+          }`}>
+            {course.language}
           </div>
-        )}
-      </div>
 
-      {/* Content */}
-      <div className="p-8">
-        <h3 className="disp text-2xl text-black mb-3">
-          {course.title}
-        </h3>
-
-        <p className="text-xs text-neutral-600 leading-relaxed mb-6 line-clamp-3">
-          {course.description}
-        </p>
-
-        {/* Meta */}
-        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-neutral-200">
-          {course.duration_hours && (
-            <div className="flex items-center gap-1.5 text-[0.6rem] tracking-widest uppercase text-neutral-400">
-              <Clock className="w-3 h-3" />
-              {course.duration_hours}h
+          {/* Free / Level Badge */}
+          {isFree ? (
+            <div className="absolute top-3 right-3 bg-white px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase text-black">
+              Free
             </div>
-          )}
-          <div className="text-[0.6rem] tracking-widest uppercase text-neutral-400">
-            Lifetime Access
-          </div>
-          <div className="text-[0.6rem] tracking-widest uppercase text-neutral-400">
-            {course.language === 'EN' ? 'English' : 'Español'}
-          </div>
+          ) : course.level ? (
+            <div className="absolute top-3 right-3 bg-white px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase text-black">
+              {course.level}
+            </div>
+          ) : null}
         </div>
 
-        {/* Price + CTA */}
-        <div className="flex items-end justify-between">
-          <div>
-            <div className="flex items-baseline gap-2">
-              {ANCHOR_PRICE > course.price && (
-                <span className="text-neutral-400 line-through text-lg">${ANCHOR_PRICE}</span>
+        {/* Content */}
+        <div className="p-8">
+          <h3 className="disp text-2xl text-black mb-3">
+            {course.title}
+          </h3>
+
+          <p className="text-xs text-neutral-600 leading-relaxed mb-6 line-clamp-3">
+            {course.description}
+          </p>
+
+          {/* Meta */}
+          <div className="flex items-center gap-4 mb-6 pb-6 border-b border-neutral-200">
+            {course.duration_hours && (
+              <div className="flex items-center gap-1.5 text-[0.6rem] tracking-widest uppercase text-neutral-400">
+                <Clock className="w-3 h-3" />
+                {course.duration_hours}h
+              </div>
+            )}
+            <div className="text-[0.6rem] tracking-widest uppercase text-neutral-400">
+              {isFree ? 'Limited Time' : 'Lifetime Access'}
+            </div>
+            <div className="text-[0.6rem] tracking-widest uppercase text-neutral-400">
+              {course.language === 'EN' ? 'English' : 'Español'}
+            </div>
+          </div>
+
+          {/* Price + CTA */}
+          <div className="flex items-end justify-between">
+            <div>
+              {isFree ? (
+                <>
+                  <div className="disp text-3xl text-black">Free</div>
+                  <div className="text-[0.55rem] tracking-widest uppercase text-neutral-400 mt-0.5">
+                    Available for a limited time
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2">
+                    {ANCHOR_PRICE > course.price && (
+                      <span className="text-neutral-400 line-through text-lg">${ANCHOR_PRICE}</span>
+                    )}
+                    <span className="disp text-3xl text-black">${course.price}</span>
+                  </div>
+                  <div className="text-[0.55rem] tracking-widest uppercase text-neutral-400 mt-0.5">
+                    {isLocked ? 'Founding price · September 24' : 'Founding price · going up soon'}
+                  </div>
+                </>
               )}
-              <span className="disp text-3xl text-black">${course.price}</span>
             </div>
-            <div className="text-[0.55rem] tracking-widest uppercase text-neutral-400 mt-0.5">
-              Founding price · going up soon
-            </div>
+
+            {isLocked ? (
+              <div className="inline-flex items-center gap-2 px-6 py-3 border border-neutral-300 text-neutral-400 text-[0.58rem] tracking-[0.15em] uppercase cursor-default">
+                <Lock className="w-3 h-3" />
+                {course.language === 'ES' ? 'Abre Sept 24' : 'Opens Sept 24'}
+              </div>
+            ) : (
+              <Link
+                to={`/course/${course.id}`}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[0.58rem] tracking-[0.15em] uppercase hover:opacity-80 transition-opacity duration-300"
+              >
+                {isFree
+                  ? (course.language === 'ES' ? 'Empezar Gratis' : 'Start Free')
+                  : (course.language === 'ES' ? 'Ver Curso' : 'View Course')}
+              </Link>
+            )}
           </div>
-          <Link
-            to={`/course/${course.id}`}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[0.58rem] tracking-[0.15em] uppercase hover:opacity-80 transition-opacity duration-300"
-          >
-            {course.language === 'ES' ? 'Ver Curso' : 'View Course'}
-          </Link>
         </div>
-      </div>
-    </motion.div>
-  );
+      </motion.div>
+    );
+  };
 
   const SectionDivider = ({ label }: { label: string }) => (
     <div className="flex items-center gap-4 mb-8">
@@ -177,7 +224,7 @@ export const CoursesPage = () => {
             Our Courses
           </h1>
           <p className="text-sm text-neutral-600 max-w-lg leading-relaxed">
-            Professional brow certification programs available in English and Spanish. Lifetime access included with every course.
+            Professional brow certification programs available in English and Spanish. Lifetime access included with every paid course.
           </p>
         </motion.div>
       </div>
