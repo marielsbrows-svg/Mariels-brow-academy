@@ -88,25 +88,6 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* MAP */}
-      <section className="map">
-        <h2 className="display">It starts with the map</h2>
-        <p className="intro">Before the wax, the tint, or the tweezers, the brow is won or lost in the mapping. Get it right and everything after falls into place. That's where the Academy begins.</p>
-        <div className="points">
-          <div className="point">
-            <div className="pt-label">The start</div>
-            <p>Where the brow begins, placed to the face — not guessed by eye.</p>
-          </div>
-          <div className="point">
-            <div className="pt-label">The arch</div>
-            <p>The peak set with intention, the same way on every client.</p>
-          </div>
-          <div className="point">
-            <div className="pt-label">The tail</div>
-            <p>A clean finish that balances the shape instead of fighting it.</p>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };
