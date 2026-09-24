@@ -2,10 +2,6 @@ import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 
 // ============================================================
-//  Where the "Watch now" button sends people.
-//  /signup creates their account and drops them straight into the free mini class.
-const MINI_CLASS_URL = '/signup';
-
 // Flip this to true on launch day → the waitlist box becomes an "Enroll now" button:
 const ENROLLMENT_OPEN = true;
 const ENROLL_URL = 'https://buy.stripe.com/8x25kD94m6Khe0cfcAd7q00'; // Stripe checkout
@@ -15,26 +11,9 @@ const TICKER = ['Online', 'Brow Mapping Mastery', 'Get Certified', 'En Español'
 const WORK = [1, 2, 3, 4, 5, 6, 7];
 
 export const HomePage = () => {
-  const [miniClassEmail, setMiniClassEmail] = useState('');
   const [waitEmail, setWaitEmail] = useState('');
-  const [miniClassBusy, setMiniClassBusy] = useState(false);
   const [waitBusy, setWaitBusy] = useState(false);
   const [waitDone, setWaitDone] = useState(false);
-
-  async function handleMiniClass(e: React.FormEvent) {
-    e.preventDefault();
-    const email = miniClassEmail.trim().toLowerCase();
-    if (!email) return;
-    setMiniClassBusy(true);
-    try {
-      const { error } = await supabase.from('waitlist').insert({ email, source: 'mini-class' });
-      if (error && error.code !== '23505') console.error('Mini class capture failed:', error.message);
-    } catch (err) {
-      console.error('Mini class capture error:', err);
-    } finally {
-      window.location.href = `${MINI_CLASS_URL}?email=${encodeURIComponent(email)}`;
-    }
-  }
 
   async function handleWaitlist(e: React.FormEvent) {
     e.preventDefault();
@@ -63,17 +42,6 @@ export const HomePage = () => {
           <img className="portrait" src="/Brand/portrait.png" alt="Mariel, founder of Mariels Brow Academy" />
         </div>
         <div className="hero-copy">
-          <div className="action">
-            <div className="display title">Free<br />mini class</div>
-            <p className="lede">Enter your email for instant access to my free brow mapping mini class.</p>
-            <form className="form" onSubmit={handleMiniClass}>
-              <input type="email" placeholder="your@email.com" aria-label="Email for free mini class"
-                value={miniClassEmail} onChange={(e) => setMiniClassEmail(e.target.value)} required />
-              <button type="submit" disabled={miniClassBusy}>{miniClassBusy ? '…' : 'Watch now'}</button>
-            </form>
-          </div>
-
-          <div className="rule" />
 
           <div className="action">
             <div className="display title">Brow mapping<br />mastery</div>
