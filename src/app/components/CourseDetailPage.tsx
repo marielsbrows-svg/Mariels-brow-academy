@@ -82,30 +82,7 @@ export const CourseDetailPage = () => {
   };
 
   const handleEnroll = async () => {
-    if (!user) {
-      navigate('/login', { state: { from: `/course/${id}` } });
-      return;
-    }
-    setPurchasing(true);
-    try {
-      const { error: enrollError } = await supabase
-        .from('enrollments')
-        .insert({ user_id: user.id, course_id: id });
-      if (enrollError) throw enrollError;
-      await supabase.from('payments').insert({
-        user_id: user.id,
-        course_id: id,
-        amount: course?.price || 0,
-        status: 'completed',
-        payment_method: 'stripe',
-      });
-      setIsEnrolled(true);
-      navigate(`/learn/${id}`);
-    } catch (error) {
-      console.error('Error enrolling:', error);
-    } finally {
-      setPurchasing(false);
-    }
+    window.location.href = 'https://buy.stripe.com/8x25kD94m6Khe0cfcAd7q00';
   };
 
   if (loading) {
