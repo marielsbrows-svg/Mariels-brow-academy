@@ -7,8 +7,8 @@ import { supabase } from '../../lib/supabase';
 const MINI_CLASS_URL = '/signup';
 
 // Flip this to true on launch day → the waitlist box becomes an "Enroll now" button:
-const ENROLLMENT_OPEN = false;
-const ENROLL_URL = '/courses'; // where "Enroll now" sends people
+const ENROLLMENT_OPEN = true;
+const ENROLL_URL = 'https://buy.stripe.com/8x25kD94m6Khe0cfcAd7q00'; // Stripe checkout
 // ============================================================
 
 const TICKER = ['Online', 'Brow Mapping Mastery', 'Get Certified', 'En Español'];
