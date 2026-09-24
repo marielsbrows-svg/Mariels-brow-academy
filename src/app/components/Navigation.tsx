@@ -140,7 +140,7 @@ export const Navigation = () => {
                 </button>
               </>
             ) : (
-              <Link to="/login" className="nav-login">Login</Link>
+              <Link to="/login" className="nav-login">Sign Up / Login</Link>
             )}
           </div>
 
