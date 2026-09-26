@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mariels Brow Academy — The Tools I Map With</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#FFFFFF; --panel:#F4F4F4; --line:#E6E6E6; --muted:#9A9A9A; --soft:#4F4F4F; --ink:#000000;
+    --logo-sub:rgba(0,0,0,.42);
+    --btn-bg:#000000; --btn-text:#FFFFFF;
+    --anton:'Anton',Impact,'Arial Narrow',sans-serif;
+    --bebas:'Bebas Neue',Impact,sans-serif;
+    --inter:'Inter',Helvetica,Arial,sans-serif;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme: dark){
+      --white:#0D0D0D; --panel:#181818; --line:#2A2A2A; --muted:#8A8A8A; --soft:#B7B4AC; --ink:#F4F2EC;
+      --logo-sub:rgba(255,255,255,.4); --btn-bg:#F4F2EC; --btn-text:#0D0D0D;
+    }
+  }
+  :root[data-theme="dark"]{
+    --white:#0D0D0D; --panel:#181818; --line:#2A2A2A; --muted:#8A8A8A; --soft:#B7B4AC; --ink:#F4F2EC;
+    --logo-sub:rgba(255,255,255,.4); --btn-bg:#F4F2EC; --btn-text:#0D0D0D;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    margin:0;background:var(--white);color:var(--ink);
+    font-family:var(--inter);font-weight:300;line-height:1.6;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  body.lang-en .es{display:none !important;}
+  body.lang-es .en{display:none !important;}
+  .wrap{max-width:900px;margin:0 auto;padding:0 clamp(20px,5vw,44px);}
+
+  /* top bar */
+  .topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;padding:clamp(24px,5vw,40px) 0 clamp(18px,4vw,28px);}
+  .logo{display:flex;flex-direction:column;align-items:flex-start;text-decoration:none;color:var(--ink);}
+  .logo-main{font-family:var(--bebas);font-size:1.6rem;letter-spacing:.15em;line-height:1;}
+  .logo-sub{font-family:var(--inter);font-weight:200;font-size:.46rem;letter-spacing:.45em;
+    text-transform:uppercase;color:var(--logo-sub);margin-top:4px;}
+  .toggle{display:inline-flex;border:1px solid var(--line);}
+  .toggle button{font-family:var(--inter);font-weight:400;font-size:.62rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--muted);background:transparent;border:0;padding:.5rem .7rem;cursor:pointer;}
+  .toggle button[aria-pressed="true"]{background:var(--ink);color:var(--white);}
+
+  /* hero */
+  .hero{padding:clamp(18px,4vw,40px) 0 clamp(34px,7vw,60px);}
+  .hero h1{font-family:var(--anton);font-weight:400;text-transform:uppercase;
+    font-size:clamp(2.7rem,10vw,4.6rem);line-height:.9;letter-spacing:.01em;margin:0 0 1.3rem;max-width:15ch;}
+  .hero p{margin:0;color:var(--soft);font-size:clamp(.98rem,2.7vw,1.08rem);line-height:1.6;max-width:36ch;}
+
+  .rule{height:1px;background:var(--line);border:0;margin:0;}
+
+  /* marquee */
+  .marquee{background:#000;color:#fff;overflow:hidden;white-space:nowrap;padding:20px 0;}
+  .marquee-track{display:inline-block;white-space:nowrap;animation:mbascroll 34s linear infinite;}
+  .marquee-track span{font-family:var(--anton);text-transform:uppercase;font-size:20px;letter-spacing:2px;}
+  .marquee-track .dot{color:#6f6f6f;padding:0 14px;}
+  .marquee:hover .marquee-track{animation-play-state:paused;}
+  @keyframes mbascroll{from{transform:translateX(0)}to{transform:translateX(-33.33%)}}
+
+  section{padding:clamp(40px,8vw,64px) 0;}
+  .label{font-family:var(--anton);text-transform:uppercase;font-size:clamp(1rem,3.4vw,1.22rem);
+    letter-spacing:.06em;margin:0 0 2rem;color:var(--ink);}
+
+  .item h2{font-family:var(--anton);font-weight:400;text-transform:uppercase;
+    font-size:clamp(2rem,7.5vw,3.1rem);line-height:.95;margin:0 0 1rem;}
+  .item p{margin:0 0 1.7rem;color:var(--soft);font-size:1.02rem;line-height:1.65;max-width:46ch;}
+
+  .btn{display:inline-block;font-family:var(--inter);font-weight:500;font-size:.72rem;
+    letter-spacing:.2em;text-transform:uppercase;text-decoration:none;
+    color:var(--btn-text);background:var(--btn-bg);padding:16px 42px;border:1px solid var(--btn-bg);
+    transition:opacity .2s ease;}
+  .btn:hover,.btn:focus-visible{opacity:.85;}
+  .btn.ghost{color:var(--ink);background:transparent;border:1px solid var(--ink);transition:background .2s ease,color .2s ease,opacity .2s ease;}
+  .btn.ghost:hover,.btn.ghost:focus-visible{background:var(--ink);color:var(--white);opacity:1;}
+
+  .shades{margin-top:2.8rem;border-top:1px solid var(--line);padding-top:2rem;}
+  .shades p{margin:0 0 1.4rem;color:var(--soft);font-size:1rem;max-width:42ch;}
+  .shades .row{display:flex;flex-wrap:wrap;gap:.8rem;}
+  .disclose-inline{font-family:var(--inter);font-weight:300;font-size:.72rem;letter-spacing:.02em;
+    color:var(--muted);margin:1.8rem 0 0;}
+
+  /* course panel */
+  .course-panel{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .course-panel .inner{padding:clamp(46px,9vw,84px) 0;}
+  .course-panel h2{font-family:var(--anton);font-weight:400;text-transform:uppercase;
+    font-size:clamp(2rem,7vw,3.4rem);line-height:.95;margin:0 0 1.1rem;max-width:16ch;}
+  .course-panel p{margin:0 0 2rem;color:var(--soft);font-size:1.04rem;line-height:1.65;max-width:42ch;}
+
+  footer{padding:clamp(40px,7vw,56px) 0 clamp(48px,9vw,72px);}
+  .disclose{font-family:var(--inter);font-weight:300;font-size:.8rem;letter-spacing:.02em;
+    color:var(--soft);line-height:1.7;margin:0 0 1.5rem;max-width:48ch;}
+  .foot-meta{font-family:var(--inter);font-weight:300;font-size:.68rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);}
+  .foot-meta a{color:inherit;text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px;}
+  .foot-meta a:hover{color:var(--ink);border-color:var(--ink);}
+
+  .reveal{opacity:0;transform:translateY(12px);animation:rise .85s cubic-bezier(.2,.7,.2,1) .05s forwards;}
+  @keyframes rise{to{opacity:1;transform:none;}}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{animation:none;opacity:1;transform:none;}
+    .marquee-track{animation:none !important;}
+    .btn{transition:none;}
+  }
+</style>
+</head>
+<body class="lang-en">
+
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="https://marielsbrowacademy.com" target="_blank" rel="noopener">
+        <span class="logo-main">MARIELS</span>
+        <span class="logo-sub">Brow · Academy</span>
+      </a>
+      <div class="toggle" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="es" aria-pressed="false">ES</button>
+      </div>
+    </div>
+
+    <header class="hero reveal">
+      <h1 class="en">The tools I map with</h1>
+      <h1 class="es">Mis herramientas de mapping</h1>
+      <p class="en">Nine years of brows, kept to a short list. The exact professional tools I reach for — and the ones I teach with inside Brow Mapping Mastery.</p>
+      <p class="es">Nueve años de cejas, resumidos en una lista corta. Las herramientas profesionales exactas que uso — y con las que enseño dentro de Brow Mapping Mastery.</p>
+    </header>
+  </div>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Mariels Brow Academy<span class="dot">—</span>The Tools I Map With<span class="dot">—</span>Brow Mapping Mastery<span class="dot">—</span>English &amp; Español<span class="dot">—</span></span>
+      <span>Mariels Brow Academy<span class="dot">—</span>The Tools I Map With<span class="dot">—</span>Brow Mapping Mastery<span class="dot">—</span>English &amp; Español<span class="dot">—</span></span>
+      <span>Mariels Brow Academy<span class="dot">—</span>The Tools I Map With<span class="dot">—</span>Brow Mapping Mastery<span class="dot">—</span>English &amp; Español<span class="dot">—</span></span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section aria-labelledby="mapping-label">
+      <p class="label en" id="mapping-label">Mapping String</p>
+      <p class="label es">Hilo de Mapping</p>
+
+      <div class="item">
+        <h2 class="en">White Mapping String</h2>
+        <h2 class="es">Hilo de Mapping Blanco</h2>
+        <p class="en">My everyday string. Pre-inked, it snaps a crisp, clean guideline every time and reads beautifully on most skin tones. If you buy one thing on this page, start here.</p>
+        <p class="es">Mi hilo de todos los días. Pre-entintado, marca una línea guía limpia y precisa siempre, y se ve hermoso en la mayoría de los tonos de piel. Si compras una sola cosa en esta página, empieza aquí.</p>
+        <a class="btn en" href="https://www.amazon.com/dp/B0C5GC2P4G?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Shop the white string</a>
+        <a class="btn es" href="https://www.amazon.com/dp/B0C5GC2P4G?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Comprar el hilo blanco</a>
+      </div>
+
+      <div class="shades">
+        <p class="en">Also in two more shades — for crisp contrast on lighter and deeper skin tones.</p>
+        <p class="es">También en dos tonos más — para un contraste nítido en pieles más claras y más profundas.</p>
+        <div class="row">
+          <a class="btn ghost en" href="https://www.amazon.com/dp/B0HFM2S6DN?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Shop this shade</a>
+          <a class="btn ghost es" href="https://www.amazon.com/dp/B0HFM2S6DN?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Comprar este tono</a>
+          <a class="btn ghost en" href="https://www.amazon.com/dp/B0HFQ6KGD3?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Shop this shade</a>
+          <a class="btn ghost es" href="https://www.amazon.com/dp/B0HFQ6KGD3?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Comprar este tono</a>
+        </div>
+        <p class="disclose-inline en">As an Amazon Associate, I earn from qualifying purchases.</p>
+        <p class="disclose-inline es">Como Afiliada de Amazon, gano con las compras que califican.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="course-panel">
+    <div class="wrap"><div class="inner">
+      <h2 class="en">Learn the full method</h2>
+      <h2 class="es">Aprende el método completo</h2>
+      <p class="en">The rest of my kit — brow paste, aftercare, brushes — I walk through step by step inside the course. Brow Mapping Mastery teaches the exact system behind these tools, in English and Spanish.</p>
+      <p class="es">El resto de mi kit — brow paste, aftercare, brochas — lo enseño paso a paso dentro del curso. Brow Mapping Mastery enseña el sistema exacto detrás de estas herramientas, en inglés y español.</p>
+      <a class="btn en" href="https://marielsbrowacademy.com" target="_blank" rel="noopener">Enroll now</a>
+      <a class="btn es" href="https://marielsbrowacademy.com" target="_blank" rel="noopener">Inscríbete ahora</a>
+    </div></div>
+  </div>
+
+  <div class="wrap">
+    <footer>
+      <p class="disclose en">As an Amazon Associate, I earn from qualifying purchases. The links above are affiliate links, which means I may earn a small commission at no extra cost to you.</p>
+      <p class="disclose es">Como Afiliada de Amazon, gano con las compras que califican. Los enlaces de arriba son enlaces de afiliada, lo que significa que puedo ganar una pequeña comisión sin costo adicional para ti.</p>
+      <p class="foot-meta">© 2026 Mariels Brow Academy &nbsp;·&nbsp; <a href="https://marielsbrowacademy.com" target="_blank" rel="noopener">marielsbrowacademy.com</a></p>
+    </footer>
+  </div>
+
+<script>
+  (function(){
+    var body=document.body;
+    var btns=document.querySelectorAll('.toggle button');
+    function set(lang){
+      body.classList.remove('lang-en','lang-es');
+      body.classList.add('lang-'+lang);
+      document.documentElement.lang=lang;
+      btns.forEach(function(b){b.setAttribute('aria-pressed', b.dataset.lang===lang ? 'true':'false');});
+      try{localStorage.setItem('mba-lang',lang);}catch(e){}
+    }
+    var saved='en';
+    try{var s=localStorage.getItem('mba-lang'); if(s==='es'||s==='en'){saved=s;}}catch(e){}
+    set(saved);
+    btns.forEach(function(b){b.addEventListener('click',function(){set(b.dataset.lang);});});
+  })();
+</script>
+</body>
+</html>
