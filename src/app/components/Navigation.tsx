@@ -123,6 +123,7 @@ export const Navigation = () => {
 
           {/* RIGHT */}
           <div className="nav-right">
+            <a href="/tools.html" className="nav-link">Shop</a>
             {user ? (
               <>
                 <Link to="/courses" className={`nav-link ${isActive('/courses') ? 'active' : ''}`}>Courses</Link>
