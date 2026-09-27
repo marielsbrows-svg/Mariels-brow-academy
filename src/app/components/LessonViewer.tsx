@@ -126,7 +126,7 @@ export const LessonViewer = () => {
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [slidesCompleted, setSlidesCompleted] = useState(false);
 
@@ -238,140 +238,118 @@ export const LessonViewer = () => {
     );
   }
 
+  const allLessons = modules.flatMap((m) => m.lessons);
+  const total = allLessons.length;
+  const currentIndex = allLessons.findIndex((l) => l.id === currentLesson?.id);
+  const completedCount = allLessons.filter((l) => l.progress?.completed).length;
+  const pct = total ? Math.round((completedCount / total) * 100) : 0;
+
+  const LessonList = ({ onPick }: { onPick?: () => void }) => (
+    <div className="p-4">
+      {modules.map((module) => (
+        <div key={module.id} className="mb-8">
+          <div className="flex items-center gap-2 mb-3 px-2">
+            <div className="w-3 h-px bg-white/20" />
+            <h3 className="text-[0.52rem] tracking-[0.2em] uppercase text-white/30">{module.title}</h3>
+          </div>
+          <div className="space-y-0.5">
+            {module.lessons.map((lesson) => (
+              <button
+                key={lesson.id}
+                onClick={() => { setCurrentLesson(lesson); onPick?.(); }}
+                className={`w-full text-left px-4 py-3 transition-all flex items-center gap-3 ${
+                  currentLesson?.id === lesson.id
+                    ? 'bg-white/10 border-l-2 border-white'
+                    : 'hover:bg-white/5 border-l-2 border-transparent'
+                }`}
+              >
+                <div className="flex-shrink-0">
+                  {lesson.progress?.completed
+                    ? <CheckCircle className="w-4 h-4 text-white/60" />
+                    : <div className="w-4 h-4 border border-white/20 rounded-full" />
+                  }
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-white/70 truncate leading-relaxed">{lesson.title}</div>
+                  {lesson.duration && (
+                    <div className="text-[0.52rem] tracking-wide text-white/30 mt-0.5">{lesson.duration} min</div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="mba-lesson min-h-screen bg-black text-white pt-20">
       <style>{DISP_CSS}</style>
-      <div className="flex h-[calc(100vh-80px)]">
 
-        {/* SIDEBAR */}
-        <motion.div
-          initial={false}
-          animate={{ width: sidebarOpen ? 320 : 0 }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
-          className="bg-black border-r border-white/10 overflow-hidden flex-shrink-0"
-        >
-          <div className="w-[320px] h-full overflow-y-auto">
-            <div className="p-6 border-b border-white/10">
-              <Link to="/dashboard" className="inline-flex items-center gap-2 text-[0.58rem] tracking-[0.2em] uppercase text-white/30 hover:text-white/60 transition-colors mb-5">
-                <ArrowLeft className="w-3 h-3" /> Dashboard
-              </Link>
-              <h2 className="disp text-xl text-white leading-tight">
-                {course?.title}
-              </h2>
+      {/* MOBILE top bar + progress */}
+      <div className="lg:hidden sticky top-20 z-20 bg-black border-b border-white/10">
+        <div className="flex items-center gap-3 px-4 py-3">
+          <Link to="/dashboard" className="text-white/40"><ArrowLeft className="w-4 h-4" /></Link>
+          <span className="flex-1 text-sm text-white/80 truncate">{currentLesson?.title}</span>
+          <span className="text-[0.6rem] tracking-[0.15em] text-white/40">{total ? currentIndex + 1 : 0} / {total}</span>
+        </div>
+        <div className="h-[3px] bg-white/10">
+          <div className="h-full bg-white transition-all" style={{ width: `${pct}%` }} />
+        </div>
+      </div>
+
+      <div className="flex lg:h-[calc(100vh-80px)]">
+
+        {/* DESKTOP / iPad SIDEBAR */}
+        <aside className="hidden lg:block w-[320px] flex-shrink-0 bg-black border-r border-white/10 overflow-y-auto">
+          <div className="p-6 border-b border-white/10">
+            <Link to="/dashboard" className="inline-flex items-center gap-2 text-[0.58rem] tracking-[0.2em] uppercase text-white/30 hover:text-white/60 transition-colors mb-5">
+              <ArrowLeft className="w-3 h-3" /> Dashboard
+            </Link>
+            <h2 className="disp text-xl text-white leading-tight">{course?.title}</h2>
+            <div className="mt-4 h-[3px] bg-white/10">
+              <div className="h-full bg-white transition-all" style={{ width: `${pct}%` }} />
             </div>
-            <div className="p-4">
-              {modules.map((module) => (
-                <div key={module.id} className="mb-8">
-                  <div className="flex items-center gap-2 mb-3 px-2">
-                    <div className="w-3 h-px bg-white/20" />
-                    <h3 className="text-[0.52rem] tracking-[0.2em] uppercase text-white/30">{module.title}</h3>
-                  </div>
-                  <div className="space-y-0.5">
-                    {module.lessons.map((lesson) => (
-                      <button
-                        key={lesson.id}
-                        onClick={() => setCurrentLesson(lesson)}
-                        className={`w-full text-left px-4 py-3 transition-all flex items-center gap-3 ${
-                          currentLesson?.id === lesson.id
-                            ? 'bg-white/10 border-l-2 border-white'
-                            : 'hover:bg-white/5 border-l-2 border-transparent'
-                        }`}
-                      >
-                        <div className="flex-shrink-0">
-                          {lesson.progress?.completed
-                            ? <CheckCircle className="w-4 h-4 text-white/60" />
-                            : <div className="w-4 h-4 border border-white/20 rounded-full" />
-                          }
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-white/70 truncate leading-relaxed">{lesson.title}</div>
-                          {lesson.duration && (
-                            <div className="text-[0.52rem] tracking-wide text-white/30 mt-0.5">{lesson.duration} min</div>
-                          )}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="mt-2 text-[0.55rem] tracking-[0.15em] uppercase text-white/30">{pct}% complete</div>
           </div>
-        </motion.div>
+          <LessonList />
+        </aside>
 
-        {/* MAIN CONTENT */}
+        {/* CONTENT */}
         <div className="flex-1 overflow-y-auto">
-          <div className="sticky top-0 z-10 bg-black border-b border-white/10 px-6 py-4 flex items-center gap-4">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-white/5 transition-colors">
-              <Menu className="w-4 h-4 text-white/50" />
-            </button>
-            <h1 className="text-sm text-white/70 flex-1 truncate">{currentLesson?.title}</h1>
-          </div>
-
-          <div className="p-8 max-w-4xl">
+          <div className="p-5 lg:p-8 max-w-4xl mx-auto space-y-6 pb-28 lg:pb-10">
             {currentLesson ? (
-              <div className="space-y-6">
-
+              <>
                 {/* Lesson Info */}
-                <div className="bg-white text-black p-8">
+                <div className="bg-white text-black p-6 lg:p-8">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-4 h-px bg-neutral-400" />
                     <span className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500">Current Lesson</span>
                   </div>
-                  <h2 className="disp text-3xl text-black mb-4">
-                    {currentLesson.title}
-                  </h2>
+                  <h2 className="disp text-2xl lg:text-3xl text-black mb-4">{currentLesson.title}</h2>
                   <p className="text-sm text-neutral-600 leading-relaxed">{currentLesson.description}</p>
                 </div>
 
-                {/* Slides */}
+                {/* 1 — Slides */}
                 <SlideViewer
                   lessonId={currentLesson.id}
                   onComplete={() => setSlidesCompleted(true)}
                 />
 
-                {/* Standalone audio player (if uploaded as separate audio resource) */}
+                {/* Voiceover (audio, if separate) */}
                 {currentLesson.resources?.some(r => r.resource_type === 'audio') && (
                   <AudioPlayer
                     src={currentLesson.resources.find(r => r.resource_type === 'audio')!.file_url}
                   />
                 )}
 
-                {/* Workbooks */}
-                {currentLesson.resources && currentLesson.resources.filter(r => !['slides', 'audio'].includes(r.resource_type)).length > 0 && (
-                  <div className="bg-white text-black p-8">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-4 h-px bg-neutral-400" />
-                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500">Materials</span>
-                    </div>
-                    <h3 className="disp text-2xl text-black mb-6">
-                      Workbooks &amp; Resources
-                    </h3>
-                    <div className="space-y-2">
-                      {currentLesson.resources.filter(r => !['slides', 'audio'].includes(r.resource_type)).map((resource) => (
-                        <a key={resource.id} href={resource.file_url} target="_blank" rel="noopener noreferrer" download
-                          className="flex items-center gap-4 p-4 border border-neutral-200 hover:border-neutral-400 hover:bg-neutral-100 transition-all group">
-                          <div className="w-9 h-9 border border-neutral-300 flex items-center justify-center group-hover:bg-black group-hover:border-black transition-all">
-                            <Download className="w-3.5 h-3.5 text-neutral-600 group-hover:text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm text-black">{resource.title}</div>
-                            <div className="text-[0.55rem] tracking-wide text-neutral-400 uppercase mt-0.5">
-                              {resource.resource_type === 'workbook' ? 'Workbook' : 'Resource'}
-                            </div>
-                          </div>
-                          <span className="text-[0.58rem] tracking-[0.15em] uppercase text-neutral-400">Download</span>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Video */}
+                {/* 2 — Video */}
                 {currentLesson.video_url && (
                   <div>
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-4 h-px bg-white/20" />
-                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/30">Video Lesson</span>
+                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/30">Watch the Demo</span>
                     </div>
                     <div className="aspect-video bg-black overflow-hidden">
                       {currentLesson.video_url.includes('youtube.com') || currentLesson.video_url.includes('youtu.be') ? (
@@ -399,7 +377,34 @@ export const LessonViewer = () => {
                   </div>
                 )}
 
-                {/* Quiz */}
+                {/* Downloads & links */}
+                {currentLesson.resources && currentLesson.resources.filter(r => !['slides', 'audio'].includes(r.resource_type)).length > 0 && (
+                  <div className="bg-white text-black p-6 lg:p-8">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-4 h-px bg-neutral-400" />
+                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500">Materials</span>
+                    </div>
+                    <div className="space-y-2">
+                      {currentLesson.resources.filter(r => !['slides', 'audio'].includes(r.resource_type)).map((resource) => (
+                        <a key={resource.id} href={resource.file_url} target="_blank" rel="noopener noreferrer" download
+                          className="flex items-center gap-4 p-4 border border-neutral-200 hover:border-neutral-400 hover:bg-neutral-100 transition-all group">
+                          <div className="w-9 h-9 border border-neutral-300 flex items-center justify-center group-hover:bg-black group-hover:border-black transition-all">
+                            <Download className="w-3.5 h-3.5 text-neutral-600 group-hover:text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm text-black">{resource.title}</div>
+                            <div className="text-[0.55rem] tracking-wide text-neutral-400 uppercase mt-0.5">
+                              {resource.resource_type === 'workbook' ? 'Workbook' : 'Resource'}
+                            </div>
+                          </div>
+                          <span className="text-[0.58rem] tracking-[0.15em] uppercase text-neutral-400">Open</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3 — Quiz */}
                 <QuizComponent
                   key={currentLesson.id}
                   lessonId={currentLesson.id}
@@ -407,13 +412,11 @@ export const LessonViewer = () => {
                 />
 
                 {/* Community */}
-                <div className="bg-white text-black p-8 text-center">
+                <div className="bg-white text-black p-6 lg:p-8 text-center">
                   <div className="w-10 h-10 border border-neutral-300 flex items-center justify-center mx-auto mb-4">
                     <MessageSquare className="w-4 h-4 text-black" />
                   </div>
-                  <h3 className="disp text-2xl text-black mb-2">
-                    Join the Discussion
-                  </h3>
+                  <h3 className="disp text-2xl text-black mb-2">Join the Discussion</h3>
                   <p className="text-xs text-neutral-500 tracking-wide mb-6">Connect with fellow students and share insights</p>
                   <Link to={`/community/${courseId}`} className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[0.58rem] tracking-[0.15em] uppercase hover:opacity-80 transition-all">
                     Go to Community
@@ -422,22 +425,19 @@ export const LessonViewer = () => {
 
                 {/* Mark Complete */}
                 {!currentLesson.progress?.completed && (
-                  <div className="bg-white text-black p-8 text-center">
-                    <h4 className="disp text-xl text-black mb-5">
-                      Finished this lesson?
-                    </h4>
+                  <div className="bg-white text-black p-6 lg:p-8 text-center">
+                    <h4 className="disp text-xl text-black mb-5">Finished this lesson?</h4>
                     <button
                       onClick={() => markLessonComplete(currentLesson.id)}
                       className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white text-[0.6rem] tracking-[0.2em] uppercase hover:opacity-80 transition-all"
                     >
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      Mark as Complete
+                      <CheckCircle className="w-3.5 h-3.5" /> Mark as Complete
                     </button>
                   </div>
                 )}
 
-                {/* Navigation */}
-                <div className="flex justify-between items-center pt-4 border-t border-white/10">
+                {/* DESKTOP prev / next */}
+                <div className="hidden lg:flex justify-between items-center pt-4 border-t border-white/10">
                   <button
                     onClick={() => { const prev = getPreviousLesson(); if (prev) setCurrentLesson(prev); }}
                     disabled={!getPreviousLesson()}
@@ -453,7 +453,7 @@ export const LessonViewer = () => {
                     Next Lesson <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
-              </div>
+              </>
             ) : (
               <div className="flex items-center justify-center h-64">
                 <p className="text-xs text-white/30 tracking-widest uppercase">No lessons available</p>
@@ -462,6 +462,50 @@ export const LessonViewer = () => {
           </div>
         </div>
       </div>
+
+      {/* MOBILE bottom nav: Prev · Lessons · Next */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-black border-t border-white/10 px-3 py-3 flex items-center gap-2" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
+        <button
+          onClick={() => { const prev = getPreviousLesson(); if (prev) setCurrentLesson(prev); }}
+          disabled={!getPreviousLesson()}
+          aria-label="Previous lesson"
+          className="w-12 h-12 flex-shrink-0 rounded-xl bg-white/[0.06] flex items-center justify-center disabled:opacity-25"
+        >
+          <ChevronLeft className="w-5 h-5 text-white" />
+        </button>
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="flex-1 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center gap-2 text-white text-xs tracking-[0.05em]"
+        >
+          <Menu className="w-4 h-4" /> Lessons
+        </button>
+        <button
+          onClick={() => { const next = getNextLesson(); if (next) setCurrentLesson(next); }}
+          disabled={!getNextLesson()}
+          aria-label="Next lesson"
+          className="w-12 h-12 flex-shrink-0 rounded-xl bg-white flex items-center justify-center disabled:opacity-25"
+        >
+          <ChevronRight className="w-5 h-5 text-black" />
+        </button>
+      </div>
+
+      {/* MOBILE lessons sheet */}
+      {sidebarOpen && (
+        <div onClick={() => setSidebarOpen(false)} className="lg:hidden fixed inset-0 z-30 bg-black/60" />
+      )}
+      <div className={`lg:hidden fixed left-0 right-0 bottom-0 z-40 max-h-[78vh] bg-[#141414] rounded-t-2xl flex flex-col transform transition-transform duration-300 ${sidebarOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+        <div className="pt-3 pb-1 flex justify-center"><span className="w-10 h-1 rounded-full bg-white/25" /></div>
+        <div className="px-5 py-3 flex items-center justify-between border-b border-white/10">
+          <span className="text-sm text-white font-medium tracking-wide">Lessons</span>
+          <button onClick={() => setSidebarOpen(false)} aria-label="Close" className="text-white/50">
+            <ChevronLeft className="w-4 h-4 rotate-90" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto pb-6">
+          <LessonList onPick={() => setSidebarOpen(false)} />
+        </div>
+      </div>
+
       <AIAssistant />
     </div>
   );
