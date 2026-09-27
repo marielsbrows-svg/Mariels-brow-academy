@@ -5,7 +5,6 @@ import { ChevronLeft, ChevronRight, CheckCircle, Download, Menu, MessageSquare, 
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { SlideViewer } from './SlideViewer';
-import { AIAssistant } from './AIAssistant';
 import { QuizComponent } from './QuizComponent';
 
 interface Module {
@@ -506,7 +505,6 @@ export const LessonViewer = () => {
         </div>
       </div>
 
-      <AIAssistant />
     </div>
   );
 };
