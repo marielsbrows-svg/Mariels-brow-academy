@@ -44,8 +44,27 @@ interface Course {
 
 const DISP_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500&display=swap');
-.mba-lesson{font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:300;}
+.mba-lesson{--ease:cubic-bezier(.2,.8,.2,1);font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:300;}
 .mba-lesson .disp{font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0.02em;line-height:0.98;}
+@keyframes mbaUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes mbaFade{from{opacity:0}to{opacity:1}}
+.mba-reveal>*{animation:mbaUp .7s var(--ease) both;}
+.mba-reveal>*:nth-child(1){animation-delay:.03s}.mba-reveal>*:nth-child(2){animation-delay:.09s}.mba-reveal>*:nth-child(3){animation-delay:.15s}.mba-reveal>*:nth-child(4){animation-delay:.21s}.mba-reveal>*:nth-child(5){animation-delay:.27s}.mba-reveal>*:nth-child(6){animation-delay:.33s}.mba-reveal>*:nth-child(n+7){animation-delay:.38s}
+.mba-btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;border:0;transition:transform .25s var(--ease),opacity .25s var(--ease);}
+.mba-btn:hover{transform:translateY(-2px)}
+.mba-btn .ar{transition:transform .25s var(--ease)}
+.mba-btn:hover .ar{transform:translateX(4px)}
+.mba-btn::after{content:'';position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);animation:mbaSheen 4s ease-in-out infinite;}
+@keyframes mbaSheen{0%{left:-60%}55%{left:130%}100%{left:130%}}
+.mba-prog{position:relative;overflow:hidden;transition:width .8s var(--ease)}
+.mba-prog::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);animation:mbaSheen 3s ease-in-out infinite;}
+.mba-row{transition:background .2s var(--ease),border-color .2s var(--ease),transform .2s var(--ease)}
+.mba-row:hover{transform:translateX(3px)}
+@keyframes mbaPop{0%{transform:scale(.4);opacity:0}45%{transform:scale(1.08);opacity:1}70%{transform:scale(.97)}100%{transform:scale(1)}}
+@keyframes mbaRing{0%{transform:scale(.6);opacity:0}40%{opacity:.6}100%{transform:scale(1.9);opacity:0}}
+.mba-celebrate{animation:mbaFade .3s ease both}
+.mba-celebrate .pop{animation:mbaPop .6s var(--ease) both}
+.mba-celebrate .ring{animation:mbaRing 1s var(--ease) both}
 `;
 
 // ── Audio Player Component ──────────────────────────────────────────────────
@@ -126,6 +145,7 @@ export const LessonViewer = () => {
   const [modules, setModules] = useState<Module[]>([]);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [justCompleted, setJustCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [slidesCompleted, setSlidesCompleted] = useState(false);
 
@@ -191,6 +211,8 @@ export const LessonViewer = () => {
             : lesson
         ),
       })));
+      setJustCompleted(true);
+      setTimeout(() => setJustCompleted(false), 1700);
     } catch (error) {
       console.error('Error marking lesson complete:', error);
     }
@@ -242,6 +264,10 @@ export const LessonViewer = () => {
   const currentIndex = allLessons.findIndex((l) => l.id === currentLesson?.id);
   const completedCount = allLessons.filter((l) => l.progress?.completed).length;
   const pct = total ? Math.round((completedCount / total) * 100) : 0;
+  const isES = (course?.language || '').toUpperCase() === 'ES';
+  const L = isES
+    ? { dashboard:'Panel', current:'Lección Actual', watch:'Mira la Demostración', materials:'Materiales', open:'Abrir', workbook:'Cuaderno', resource:'Recurso', community_t:'Únete a la Conversación', community_s:'Conecta con otras estudiantes y comparte ideas', community_b:'Ir a la Comunidad', finished:'¿Terminaste esta lección?', mark:'Marcar como Completada', prev:'Anterior', next:'Siguiente Lección', lessons:'Lecciones', complete:'completado', none:'No hay lecciones disponibles', celebrate:'¡Completada!' }
+    : { dashboard:'Dashboard', current:'Current Lesson', watch:'Watch the Demo', materials:'Materials', open:'Open', workbook:'Workbook', resource:'Resource', community_t:'Join the Discussion', community_s:'Connect with fellow students and share insights', community_b:'Go to Community', finished:'Finished this lesson?', mark:'Mark as Complete', prev:'Previous', next:'Next Lesson', lessons:'Lessons', complete:'complete', none:'No lessons available', celebrate:'Complete!' };
 
   const LessonList = ({ onPick }: { onPick?: () => void }) => (
     <div className="p-4">
@@ -256,7 +282,7 @@ export const LessonViewer = () => {
               <button
                 key={lesson.id}
                 onClick={() => { setCurrentLesson(lesson); onPick?.(); }}
-                className={`w-full text-left px-4 py-3 transition-all flex items-center gap-3 ${
+                className={`mba-row w-full text-left px-4 py-3 flex items-center gap-3 ${
                   currentLesson?.id === lesson.id
                     ? 'bg-white/10 border-l-2 border-white'
                     : 'hover:bg-white/5 border-l-2 border-transparent'
@@ -286,6 +312,18 @@ export const LessonViewer = () => {
     <div className="mba-lesson min-h-screen bg-black text-white pt-20">
       <style>{DISP_CSS}</style>
 
+      {justCompleted && (
+        <div className="mba-celebrate fixed inset-0 z-[60] flex items-center justify-center bg-black/70 pointer-events-none">
+          <div className="relative flex flex-col items-center">
+            <span className="ring absolute top-0 w-24 h-24 rounded-full border border-white/40" />
+            <div className="pop w-24 h-24 rounded-full bg-white flex items-center justify-center">
+              <CheckCircle className="w-12 h-12 text-black" />
+            </div>
+            <p className="pop disp text-2xl text-white mt-6">{L.celebrate}</p>
+          </div>
+        </div>
+      )}
+
       {/* MOBILE top bar + progress */}
       <div className="lg:hidden sticky top-20 z-20 bg-black border-b border-white/10">
         <div className="flex items-center gap-3 px-4 py-3">
@@ -294,7 +332,7 @@ export const LessonViewer = () => {
           <span className="text-[0.6rem] tracking-[0.15em] text-white/40">{total ? currentIndex + 1 : 0} / {total}</span>
         </div>
         <div className="h-[3px] bg-white/10">
-          <div className="h-full bg-white transition-all" style={{ width: `${pct}%` }} />
+          <div className="mba-prog h-full bg-white" style={{ width: `${pct}%` }} />
         </div>
       </div>
 
@@ -304,27 +342,27 @@ export const LessonViewer = () => {
         <aside className="hidden lg:block w-[320px] flex-shrink-0 bg-black border-r border-white/10 overflow-y-auto">
           <div className="p-6 border-b border-white/10">
             <Link to="/dashboard" className="inline-flex items-center gap-2 text-[0.58rem] tracking-[0.2em] uppercase text-white/30 hover:text-white/60 transition-colors mb-5">
-              <ArrowLeft className="w-3 h-3" /> Dashboard
+              <ArrowLeft className="w-3 h-3" /> {L.dashboard}
             </Link>
             <h2 className="disp text-xl text-white leading-tight">{course?.title}</h2>
             <div className="mt-4 h-[3px] bg-white/10">
-              <div className="h-full bg-white transition-all" style={{ width: `${pct}%` }} />
+              <div className="mba-prog h-full bg-white" style={{ width: `${pct}%` }} />
             </div>
-            <div className="mt-2 text-[0.55rem] tracking-[0.15em] uppercase text-white/30">{pct}% complete</div>
+            <div className="mt-2 text-[0.55rem] tracking-[0.15em] uppercase text-white/30">{pct}% {L.complete}</div>
           </div>
           <LessonList />
         </aside>
 
         {/* CONTENT */}
         <div className="flex-1 overflow-y-auto">
-          <div className="p-5 lg:p-8 max-w-4xl mx-auto space-y-6 pb-28 lg:pb-10">
+          <div key={currentLesson?.id} className="mba-reveal p-5 lg:p-8 max-w-4xl mx-auto space-y-6 pb-28 lg:pb-10">
             {currentLesson ? (
               <>
                 {/* Lesson Info */}
                 <div className="bg-white text-black p-6 lg:p-8">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-4 h-px bg-neutral-400" />
-                    <span className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500">Current Lesson</span>
+                    <span className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500">{L.current}</span>
                   </div>
                   <h2 className="disp text-2xl lg:text-3xl text-black mb-4">{currentLesson.title}</h2>
                   <p className="text-sm text-neutral-600 leading-relaxed">{currentLesson.description}</p>
@@ -348,7 +386,7 @@ export const LessonViewer = () => {
                   <div>
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-4 h-px bg-white/20" />
-                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/30">Watch the Demo</span>
+                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/30">{L.watch}</span>
                     </div>
                     <div className="aspect-video bg-black overflow-hidden">
                       {currentLesson.video_url.includes('youtube.com') || currentLesson.video_url.includes('youtu.be') ? (
@@ -381,7 +419,7 @@ export const LessonViewer = () => {
                   <div className="bg-white text-black p-6 lg:p-8">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-4 h-px bg-neutral-400" />
-                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500">Materials</span>
+                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500">{L.materials}</span>
                     </div>
                     <div className="space-y-2">
                       {currentLesson.resources.filter(r => !['slides', 'audio'].includes(r.resource_type)).map((resource) => (
@@ -393,10 +431,10 @@ export const LessonViewer = () => {
                           <div className="flex-1">
                             <div className="text-sm text-black">{resource.title}</div>
                             <div className="text-[0.55rem] tracking-wide text-neutral-400 uppercase mt-0.5">
-                              {resource.resource_type === 'workbook' ? 'Workbook' : 'Resource'}
+                              {resource.resource_type === 'workbook' ? L.workbook : L.resource}
                             </div>
                           </div>
-                          <span className="text-[0.58rem] tracking-[0.15em] uppercase text-neutral-400">Open</span>
+                          <span className="text-[0.58rem] tracking-[0.15em] uppercase text-neutral-400">{L.open}</span>
                         </a>
                       ))}
                     </div>
@@ -415,22 +453,22 @@ export const LessonViewer = () => {
                   <div className="w-10 h-10 border border-neutral-300 flex items-center justify-center mx-auto mb-4">
                     <MessageSquare className="w-4 h-4 text-black" />
                   </div>
-                  <h3 className="disp text-2xl text-black mb-2">Join the Discussion</h3>
-                  <p className="text-xs text-neutral-500 tracking-wide mb-6">Connect with fellow students and share insights</p>
-                  <Link to={`/community/${courseId}`} className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[0.58rem] tracking-[0.15em] uppercase hover:opacity-80 transition-all">
-                    Go to Community
+                  <h3 className="disp text-2xl text-black mb-2">{L.community_t}</h3>
+                  <p className="text-xs text-neutral-500 tracking-wide mb-6">{L.community_s}</p>
+                  <Link to={`/community/${courseId}`} className="mba-btn px-6 py-3 bg-black text-white text-[0.58rem] tracking-[0.15em] uppercase">
+                    {L.community_b}
                   </Link>
                 </div>
 
                 {/* Mark Complete */}
                 {!currentLesson.progress?.completed && (
                   <div className="bg-white text-black p-6 lg:p-8 text-center">
-                    <h4 className="disp text-xl text-black mb-5">Finished this lesson?</h4>
+                    <h4 className="disp text-xl text-black mb-5">{L.finished}</h4>
                     <button
                       onClick={() => markLessonComplete(currentLesson.id)}
-                      className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white text-[0.6rem] tracking-[0.2em] uppercase hover:opacity-80 transition-all"
+                      className="mba-btn px-8 py-4 bg-black text-white text-[0.6rem] tracking-[0.2em] uppercase"
                     >
-                      <CheckCircle className="w-3.5 h-3.5" /> Mark as Complete
+                      <CheckCircle className="w-3.5 h-3.5" /> {L.mark}
                     </button>
                   </div>
                 )}
@@ -440,22 +478,22 @@ export const LessonViewer = () => {
                   <button
                     onClick={() => { const prev = getPreviousLesson(); if (prev) setCurrentLesson(prev); }}
                     disabled={!getPreviousLesson()}
-                    className="flex items-center gap-2 px-6 py-3 border border-white/20 text-white/60 text-[0.58rem] tracking-[0.15em] uppercase hover:border-white/40 hover:text-white transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+                    className="mba-btn px-6 py-3 border border-white/20 text-white/60 text-[0.58rem] tracking-[0.15em] uppercase hover:border-white/40 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed"
                   >
-                    <ChevronLeft className="w-3.5 h-3.5" /> Previous
+                    <ChevronLeft className="w-3.5 h-3.5 ar" /> {L.prev}
                   </button>
                   <button
                     onClick={() => { const next = getNextLesson(); if (next) setCurrentLesson(next); }}
                     disabled={!getNextLesson()}
-                    className="flex items-center gap-2 px-6 py-3 bg-white text-black text-[0.58rem] tracking-[0.15em] uppercase hover:bg-neutral-200 transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+                    className="mba-btn px-6 py-3 bg-white text-black text-[0.58rem] tracking-[0.15em] uppercase disabled:opacity-20 disabled:cursor-not-allowed"
                   >
-                    Next Lesson <ChevronRight className="w-3.5 h-3.5" />
+                    {L.next} <ChevronRight className="w-3.5 h-3.5 ar" />
                   </button>
                 </div>
               </>
             ) : (
               <div className="flex items-center justify-center h-64">
-                <p className="text-xs text-white/30 tracking-widest uppercase">No lessons available</p>
+                <p className="text-xs text-white/30 tracking-widest uppercase">{L.none}</p>
               </div>
             )}
           </div>
@@ -476,7 +514,7 @@ export const LessonViewer = () => {
           onClick={() => setSidebarOpen(true)}
           className="flex-1 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center gap-2 text-white text-xs tracking-[0.05em]"
         >
-          <Menu className="w-4 h-4" /> Lessons
+          <Menu className="w-4 h-4" /> {L.lessons}
         </button>
         <button
           onClick={() => { const next = getNextLesson(); if (next) setCurrentLesson(next); }}
@@ -495,7 +533,7 @@ export const LessonViewer = () => {
       <div className={`lg:hidden fixed left-0 right-0 bottom-0 z-40 max-h-[78vh] bg-[#141414] rounded-t-2xl flex flex-col transform transition-transform duration-300 ${sidebarOpen ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="pt-3 pb-1 flex justify-center"><span className="w-10 h-1 rounded-full bg-white/25" /></div>
         <div className="px-5 py-3 flex items-center justify-between border-b border-white/10">
-          <span className="text-sm text-white font-medium tracking-wide">Lessons</span>
+          <span className="text-sm text-white font-medium tracking-wide">{L.lessons}</span>
           <button onClick={() => setSidebarOpen(false)} aria-label="Close" className="text-white/50">
             <ChevronLeft className="w-4 h-4 rotate-90" />
           </button>
