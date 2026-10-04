@@ -6,6 +6,8 @@ import { Eye, EyeOff } from 'lucide-react';
 
 // Free mini class — every new account is auto-enrolled in this one only.
 const FREE_COURSE_ID = '1ea01504-3e9d-4eea-95ce-b9bfcdfd4702';
+// Spanish free class — used when someone signs up from the Spanish homepage (?lang=es)
+const FREE_COURSE_ID_ES = '9ad4cee5-aadd-4462-b5e5-783022f2280b';
 
 const AUTH_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500&display=swap');
@@ -127,6 +129,7 @@ export const LoginPage = () => {
 export const SignUpPage = () => {
   // If they came from the homepage mini class form, their email arrives as ?email=…
   const [searchParams] = useSearchParams();
+  const freeCourseId = searchParams.get('lang') === 'es' ? FREE_COURSE_ID_ES : FREE_COURSE_ID;
   const [email, setEmail] = useState(searchParams.get('email')?.trim().toLowerCase() ?? '');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -151,14 +154,14 @@ export const SignUpPage = () => {
       .from('enrollments')
       .select('id')
       .eq('user_id', user.id)
-      .eq('course_id', FREE_COURSE_ID)
+      .eq('course_id', freeCourseId)
       .maybeSingle();
 
     if (existing) return null;
 
     const { error: enrollError } = await supabase
       .from('enrollments')
-      .insert({ user_id: user.id, course_id: FREE_COURSE_ID });
+      .insert({ user_id: user.id, course_id: freeCourseId });
 
     if (enrollError) {
       console.error('Auto-enroll failed:', enrollError);
@@ -196,7 +199,7 @@ export const SignUpPage = () => {
     }
 
     setSuccess(true);
-    setTimeout(() => navigate(`/learn/${FREE_COURSE_ID}`), 1500);
+    setTimeout(() => navigate(`/learn/${freeCourseId}`), 1500);
   };
 
   return (
