@@ -3,209 +3,440 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mariels Brow Academy — The Tools I Map With</title>
+<title>The Tools I Map With · Mariels Brow Academy</title>
+<meta name="description" content="The exact brow mapping tools Mariel uses on every client. Shop the kit, in English and Spanish.">
+<meta property="og:title" content="The Tools I Map With · Mariels Brow Academy">
+<meta property="og:description" content="The exact brow mapping tools Mariel uses on every client.">
+<meta name="theme-color" content="#000000">
+<meta property="og:image" content="https://marielsbrowacademy.com/Brand/string-white.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="/Brand/string-white.webp">
+<!--
+  PRODUCT PHOTOS live in public/Brand/:
+    string-white.webp · string-lilac.webp · string-baby-blue.webp
+-->
 <style>
   :root{
-    --white:#FFFFFF; --panel:#F4F4F4; --line:#E6E6E6; --muted:#9A9A9A; --soft:#4F4F4F; --ink:#000000;
-    --logo-sub:rgba(0,0,0,.42);
-    --btn-bg:#000000; --btn-text:#FFFFFF;
+    --ink:#000;--paper:#fff;--panel:#F4F4F4;--line:#E6E6E6;--muted:#9A9A9A;--soft:#4F4F4F;
     --anton:'Anton',Impact,'Arial Narrow',sans-serif;
     --bebas:'Bebas Neue',Impact,sans-serif;
     --inter:'Inter',Helvetica,Arial,sans-serif;
-    box-sizing:border-box;
-    padding-top:env(safe-area-inset-top,0px);
-    padding-bottom:env(safe-area-inset-bottom,0px);
-  }
-  :root:not([data-theme="light"]){
-    @media (prefers-color-scheme: dark){
-      --white:#0D0D0D; --panel:#181818; --line:#2A2A2A; --muted:#8A8A8A; --soft:#B7B4AC; --ink:#F4F2EC;
-      --logo-sub:rgba(255,255,255,.4); --btn-bg:#F4F2EC; --btn-text:#0D0D0D;
-    }
-  }
-  :root[data-theme="dark"]{
-    --white:#0D0D0D; --panel:#181818; --line:#2A2A2A; --muted:#8A8A8A; --soft:#B7B4AC; --ink:#F4F2EC;
-    --logo-sub:rgba(255,255,255,.4); --btn-bg:#F4F2EC; --btn-text:#0D0D0D;
+    --ease:cubic-bezier(.2,.8,.2,1);
   }
   *{box-sizing:border-box;}
-  html{-webkit-text-size-adjust:100%;scroll-padding-top:env(safe-area-inset-top,0px);}
-  body{
-    margin:0;background:var(--white);color:var(--ink);
-    font-family:var(--inter);font-weight:300;line-height:1.6;
-    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
-  }
+  [hidden]{display:none !important;}
+  html{-webkit-text-size-adjust:100%;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--inter);font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
   body.lang-en .es{display:none !important;}
   body.lang-es .en{display:none !important;}
-  .wrap{max-width:900px;margin:0 auto;padding:0 clamp(20px,5vw,44px);}
+  a{color:inherit;}
+  .display{font-family:var(--anton);font-weight:400;text-transform:uppercase;letter-spacing:.01em;line-height:.92;}
+  .txt-stroke{color:transparent;-webkit-text-stroke:1.5px var(--ink);}
+  .txt-stroke-w{color:transparent;-webkit-text-stroke:1.5px #fff;}
+  .kicker{display:inline-flex;align-items:center;gap:12px;font-size:11px;font-weight:400;letter-spacing:.3em;text-transform:uppercase;color:var(--soft);}
+  .kicker::before{content:'';width:28px;height:1px;background:currentColor;}
 
-  /* top bar */
-  .topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;padding:clamp(24px,5vw,40px) 0 clamp(18px,4vw,28px);}
-  .logo{display:flex;flex-direction:column;align-items:flex-start;text-decoration:none;color:var(--ink);}
-  .logo-main{font-family:var(--bebas);font-size:1.6rem;letter-spacing:.15em;line-height:1;}
-  .logo-sub{font-family:var(--inter);font-weight:200;font-size:.46rem;letter-spacing:.45em;
-    text-transform:uppercase;color:var(--logo-sub);margin-top:4px;}
-  .toggle{display:inline-flex;border:1px solid var(--line);}
-  .toggle button{font-family:var(--inter);font-weight:400;font-size:.62rem;letter-spacing:.16em;
-    text-transform:uppercase;color:var(--muted);background:transparent;border:0;padding:.5rem .7rem;cursor:pointer;}
-  .toggle button[aria-pressed="true"]{background:var(--ink);color:var(--white);}
+  /* top bar (matches the site navigation) */
+  .nav{position:sticky;top:0;z-index:30;background:#000;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:22px 40px;border-bottom:1px solid rgba(255,255,255,.08);}
+  .logo{display:flex;flex-direction:column;text-decoration:none;color:#fff;}
+  .logo-main{font-family:var(--bebas);font-size:1.5rem;letter-spacing:.15em;line-height:1;}
+  .logo-sub{font-size:.38rem;font-weight:200;letter-spacing:.45em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:3px;}
+  .lang{display:inline-flex;border:1px solid rgba(255,255,255,.5);}
+  .lang button{background:transparent;border:0;padding:8px 13px;font:500 10px/1 var(--inter);letter-spacing:.22em;color:#fff;cursor:pointer;}
+  .lang button[aria-pressed="true"]{background:#fff;color:#000;}
+
+  /* buttons */
+  .btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:14px;background:#000;color:#fff;padding:20px 30px;font-size:12px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;border:0;transition:transform .25s var(--ease);}
+  .btn::after{content:'';position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);animation:sheen 4.5s ease-in-out infinite;}
+  .btn:hover{transform:translateY(-2px);}
+  .btn .arrow{transition:transform .25s var(--ease);}
+  .btn:hover .arrow{transform:translateX(5px);}
+  .btn-w{background:#fff;color:#000;}
+  .btn-w::after{background:linear-gradient(100deg,transparent,rgba(0,0,0,.08),transparent);}
+  .btn-ghost{background:transparent;color:#000;box-shadow:inset 0 0 0 1px #000;}
+  .btn-ghost::after{display:none;}
+  .btn-ghost:hover{background:#000;color:#fff;}
+  .text-link{font-size:12px;font-weight:400;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:4px;}
+
+  /* floating product */
+  .stage{position:relative;display:flex;align-items:center;justify-content:center;perspective:900px;}
+  .pw{position:relative;z-index:2;height:70%;}
+  .floater{position:relative;z-index:2;height:100%;animation:float 6s ease-in-out infinite;will-change:transform;}
+  .tilt{height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d;}
+  .prod{display:block;height:100%;width:auto;filter:drop-shadow(18px 30px 26px rgba(0,0,0,.20)) drop-shadow(0 6px 8px rgba(0,0,0,.12));user-select:none;-webkit-user-drag:none;}
+  .ground{position:absolute;z-index:1;left:-34%;right:-34%;bottom:-9%;height:6%;min-height:16px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.36) 0%,rgba(0,0,0,.13) 42%,rgba(0,0,0,0) 70%);filter:blur(4px);animation:breathe 6s ease-in-out infinite;}
+  .bigword{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-family:var(--anton);font-size:clamp(150px,22vw,330px);line-height:.8;color:transparent;-webkit-text-stroke:1px #D2D2D2;white-space:nowrap;user-select:none;pointer-events:none;}
 
   /* hero */
-  .hero{padding:clamp(18px,4vw,40px) 0 clamp(34px,7vw,60px);}
-  .hero h1{font-family:var(--anton);font-weight:400;text-transform:uppercase;
-    font-size:clamp(2.7rem,10vw,4.6rem);line-height:.9;letter-spacing:.01em;margin:0 0 1.3rem;max-width:15ch;}
-  .hero p{margin:0;color:var(--soft);font-size:clamp(.98rem,2.7vw,1.08rem);line-height:1.6;max-width:36ch;}
-
-  .rule{height:1px;background:var(--line);border:0;margin:0;}
+  .hero{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 80px);}
+  .hero-copy{padding:56px;display:flex;flex-direction:column;justify-content:center;}
+  .hero h1{font-size:clamp(56px,7vw,116px);margin:26px 0 0;}
+  .hero h1 span{display:block;animation:rise 1.1s var(--ease) both;}
+  .hero h1 span+span{animation-delay:.14s;}
+  .lede{font-size:17px;line-height:1.7;color:var(--soft);max-width:42ch;margin:26px 0 0;animation:fade 1s ease .35s both;}
+  .hero-cta{display:flex;flex-wrap:wrap;align-items:center;gap:20px 28px;margin-top:34px;animation:fade 1s ease .5s both;}
+  .swatches{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;margin:30px 0 0;padding:18px 0 0;border-top:1px solid var(--line);max-width:460px;animation:fade 1s ease .55s both;}
+  .swatches .lbl{font-size:10.5px;font-weight:400;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);}
+  .sw{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:400;text-decoration:none;color:var(--ink);}
+  .sw i{width:14px;height:14px;border-radius:50%;background:var(--tone);box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);transition:transform .25s var(--ease);}
+  .sw:hover i{transform:scale(1.35);}
+  .hero-note{margin:16px 0 0;font-size:12px;color:var(--muted);animation:fade 1s ease .6s both;}
+  .hero-visual{position:relative;background:var(--panel);overflow:hidden;}
+  .hero-visual .stage{position:absolute;inset:0;display:block;}
+  .hero-visual .pw{position:absolute;top:50%;transform:translate(-50%,-50%);}
+  .hero-visual .p-main{left:50%;height:min(66%,600px);z-index:3;}
+  .hero-visual .p-side{height:min(45%,410px);z-index:2;transform:translate(-50%,-66%);}
+  .hero-visual .p-left{left:22%;}
+  .hero-visual .p-right{left:78%;}
+  .hero-visual .p-side .ground{opacity:.75;}
+  .pick{position:absolute;z-index:4;right:6%;bottom:9%;background:#000;color:#fff;padding:13px 16px;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;animation:bob 6s ease-in-out infinite;animation-delay:-3s;}
+  .pick b{display:block;font-family:var(--anton);font-weight:400;font-size:22px;letter-spacing:.03em;line-height:1;margin-bottom:4px;}
 
   /* marquee */
-  .marquee{background:#000;color:#fff;overflow:hidden;white-space:nowrap;padding:20px 0;}
-  .marquee-track{display:inline-block;white-space:nowrap;animation:mbascroll 34s linear infinite;}
-  .marquee-track span{font-family:var(--anton);text-transform:uppercase;font-size:20px;letter-spacing:2px;}
-  .marquee-track .dot{color:#6f6f6f;padding:0 14px;}
-  .marquee:hover .marquee-track{animation-play-state:paused;}
-  @keyframes mbascroll{from{transform:translateX(0)}to{transform:translateX(-33.33%)}}
+  .marquee{background:#000;color:#fff;overflow:hidden;white-space:nowrap;padding:20px 0 16px;}
+  .mq-row{overflow:hidden;}
+  .mq-track{display:inline-block;white-space:nowrap;animation:scroll 36s linear infinite;}
+  .mq-track span{font-family:var(--anton);text-transform:uppercase;font-size:24px;letter-spacing:.08em;}
+  .mq-track em{font-style:normal;color:#6f6f6f;}
+  .mq-outline{margin-top:8px;}
+  .mq-outline span{color:transparent;-webkit-text-stroke:1px #6a6a6a;font-size:40px;}
+  .mq-reverse{animation-direction:reverse;animation-duration:48s;}
 
-  section{padding:clamp(40px,8vw,64px) 0;}
-  .label{font-family:var(--anton);text-transform:uppercase;font-size:clamp(1rem,3.4vw,1.22rem);
-    letter-spacing:.06em;margin:0 0 2rem;color:var(--ink);}
+  /* product feature */
+  .feature{display:grid;grid-template-columns:1.05fr .95fr;gap:72px;align-items:center;padding:120px 56px;}
+  .feature .panel{position:relative;background:var(--panel);aspect-ratio:1/1;overflow:hidden;}
+  .feature .stage{position:absolute;inset:0;}
+  .feature .pw{height:74%;}
+  .num{font-family:var(--anton);font-size:15px;letter-spacing:.24em;color:#BDBDBD;}
+  .feature h2{font-size:clamp(44px,5.4vw,84px);margin:18px 0 0;}
+  .feature .desc{font-size:17px;line-height:1.75;color:var(--soft);max-width:44ch;margin:24px 0 0;}
+  .points{list-style:none;margin:30px 0 0;padding:0;border-top:1px solid #000;max-width:460px;}
+  .points li{display:flex;gap:14px;align-items:baseline;padding:15px 0;border-bottom:1px solid var(--line);font-size:15px;}
+  .points li::before{content:'';flex:0 0 16px;height:1px;background:#000;transform:translateY(-4px);}
+  .buy{display:flex;flex-wrap:wrap;align-items:center;gap:18px 26px;margin-top:34px;}
+  .disclose-inline{margin:14px 0 0;font-size:11.5px;color:var(--muted);}
 
-  .item h2{font-family:var(--anton);font-weight:400;text-transform:uppercase;
-    font-size:clamp(2rem,7.5vw,3.1rem);line-height:.95;margin:0 0 1rem;}
-  .item p{margin:0 0 1.7rem;color:var(--soft);font-size:1.02rem;line-height:1.65;max-width:46ch;}
+  /* shades */
+  .shades{padding:110px 56px;background:#000;color:#fff;}
+  .shades .kicker{color:var(--muted);}
+  .shades h2{font-size:clamp(42px,5vw,80px);margin:18px 0 0;}
+  .shades .sub{font-size:16px;line-height:1.7;color:#B5B5B5;max-width:46ch;margin:20px 0 0;}
+  .shade-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:56px;}
+  .shade{position:relative;display:flex;flex-direction:column;background:#111;border:1px solid #222;padding:0 0 34px;overflow:hidden;transition:border-color .3s var(--ease),transform .3s var(--ease);}
+  .shade:hover{border-color:#555;transform:translateY(-4px);}
+  .shade .stage{height:440px;}
+  .shade .stage::before{content:'';position:absolute;left:50%;top:48%;width:330px;height:330px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,var(--tone) 0%,rgba(0,0,0,0) 68%);opacity:.5;transition:opacity .4s var(--ease),transform .6s var(--ease);}
+  .shade:hover .stage::before{opacity:.75;transform:translate(-50%,-50%) scale(1.12);}
+  .shade .pw{height:78%;}
+  .shade .ground{background:radial-gradient(ellipse at center,rgba(255,255,255,.18) 0%,rgba(255,255,255,.06) 45%,rgba(255,255,255,0) 72%);}
+  .shade .prod{filter:drop-shadow(14px 28px 30px rgba(0,0,0,.7));}
+  .tone{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);}
+  .tone i{width:12px;height:12px;border-radius:50%;background:var(--tone);}
+  .shade-body{flex:1;display:flex;flex-direction:column;padding:0 34px;}
+  .shade-body .btn{margin-top:auto;}
+  .shade h3{font-family:var(--anton);font-weight:400;text-transform:uppercase;font-size:30px;line-height:1;margin:0;}
+  .shade p{margin:12px 0 24px;font-size:14.5px;line-height:1.65;color:#B5B5B5;}
+  .shade .btn{width:100%;justify-content:center;}
 
-  .btn{display:inline-block;font-family:var(--inter);font-weight:500;font-size:.72rem;
-    letter-spacing:.2em;text-transform:uppercase;text-decoration:none;
-    color:var(--btn-text);background:var(--btn-bg);padding:16px 42px;border:1px solid var(--btn-bg);
-    transition:opacity .2s ease;}
-  .btn:hover,.btn:focus-visible{opacity:.85;}
-  .btn.ghost{color:var(--ink);background:transparent;border:1px solid var(--ink);transition:background .2s ease,color .2s ease,opacity .2s ease;}
-  .btn.ghost:hover,.btn.ghost:focus-visible{background:var(--ink);color:var(--white);opacity:1;}
+  /* course */
+  .course{display:grid;grid-template-columns:1.1fr .9fr;gap:64px;align-items:center;padding:120px 56px;}
+  .course h2{font-size:clamp(44px,5.6vw,88px);margin:18px 0 0;}
+  .course p{font-size:17px;line-height:1.75;color:var(--soft);max-width:44ch;margin:24px 0 0;}
+  .course-cta{display:flex;flex-wrap:wrap;align-items:center;gap:20px 28px;margin-top:34px;}
+  .course-img{position:relative;aspect-ratio:4/5;overflow:hidden;background:#111;}
+  .course-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .8s var(--ease);}
+  .course-img:hover img{transform:scale(1.04);}
+  .course-img span{position:absolute;left:20px;bottom:20px;background:#fff;color:#000;padding:10px 14px;font-size:10.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;}
 
-  .shades{margin-top:2.8rem;border-top:1px solid var(--line);padding-top:2rem;}
-  .shades p{margin:0 0 1.4rem;color:var(--soft);font-size:1rem;max-width:42ch;}
-  .shades .row{display:flex;flex-wrap:wrap;gap:.8rem;}
-  .disclose-inline{font-family:var(--inter);font-weight:300;font-size:.72rem;letter-spacing:.02em;
-    color:var(--muted);margin:1.8rem 0 0;}
+  footer{background:#000;color:#fff;padding:56px;}
+  .disclose{font-size:13px;line-height:1.7;color:#B5B5B5;max-width:60ch;margin:0 0 20px;}
+  .foot-meta{font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:#6f6f6f;}
+  .foot-meta a{text-decoration:none;border-bottom:1px solid #444;padding-bottom:2px;}
 
-  /* course panel */
-  .course-panel{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
-  .course-panel .inner{padding:clamp(46px,9vw,84px) 0;}
-  .course-panel h2{font-family:var(--anton);font-weight:400;text-transform:uppercase;
-    font-size:clamp(2rem,7vw,3.4rem);line-height:.95;margin:0 0 1.1rem;max-width:16ch;}
-  .course-panel p{margin:0 0 2rem;color:var(--soft);font-size:1.04rem;line-height:1.65;max-width:42ch;}
+  /* reveal on scroll */
+  .js [data-reveal]{opacity:0;transform:translateY(28px);transition:opacity .9s ease,transform .9s var(--ease);}
+  .js [data-reveal].in{opacity:1;transform:none;}
 
-  footer{padding:clamp(40px,7vw,56px) 0 clamp(48px,9vw,72px);}
-  .disclose{font-family:var(--inter);font-weight:300;font-size:.8rem;letter-spacing:.02em;
-    color:var(--soft);line-height:1.7;margin:0 0 1.5rem;max-width:48ch;}
-  .foot-meta{font-family:var(--inter);font-weight:300;font-size:.68rem;letter-spacing:.14em;
-    text-transform:uppercase;color:var(--muted);}
-  .foot-meta a{color:inherit;text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px;}
-  .foot-meta a:hover{color:var(--ink);border-color:var(--ink);}
+  @keyframes float{0%,100%{transform:translateY(0) rotate(-2.5deg)}50%{transform:translateY(-22px) rotate(1.5deg)}}
+  @keyframes breathe{0%,100%{transform:scaleX(1);opacity:.9}50%{transform:scaleX(.78);opacity:.5}}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  @keyframes rise{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+  @keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes sheen{0%,60%{left:-60%}100%{left:130%}}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-33.333%)}}
 
-  .reveal{opacity:0;transform:translateY(12px);animation:rise .85s cubic-bezier(.2,.7,.2,1) .05s forwards;}
-  @keyframes rise{to{opacity:1;transform:none;}}
+  @media (max-width:900px){
+    .nav{padding:18px 20px;}
+    .logo-main{font-size:1.1rem;}
+    .hero{grid-template-columns:1fr;min-height:0;}
+    .hero-copy{padding:36px 22px 44px;}
+    .hero h1{font-size:clamp(50px,14vw,80px);}
+    .lede{font-size:16px;}
+    .hero-cta .btn{width:100%;justify-content:center;}
+    .hero-visual{height:72vh;min-height:420px;max-height:620px;order:-1;}
+    .hero-visual .p-main{height:64%;}
+    .hero-visual .p-side{height:42%;}
+    .hero-visual .p-left{left:19%;}
+    .hero-visual .p-right{left:81%;}
+    .pick{right:4%;bottom:5%;padding:10px 12px;font-size:9px;}
+    .swatches{max-width:none;}
+    .pick b{font-size:18px;}
+    .mq-track span{font-size:20px;}
+    .mq-outline span{font-size:30px;}
+    .feature,.course{grid-template-columns:1fr;gap:40px;padding:80px 22px;}
+    .feature .buy .btn{width:100%;justify-content:center;}
+    .shades{padding:80px 22px;}
+    .shade-grid{grid-template-columns:1fr;gap:18px;margin-top:40px;}
+    .shade .stage{height:380px;}
+    .shade .stage::before{width:280px;height:280px;}
+    footer{padding:44px 22px;}
+  }
   @media (prefers-reduced-motion:reduce){
-    .reveal{animation:none;opacity:1;transform:none;}
-    .marquee-track{animation:none !important;}
-    .btn{transition:none;}
+    *,*::before,*::after{animation:none !important;transition:none !important;}
+    .js [data-reveal]{opacity:1;transform:none;}
   }
 </style>
 </head>
 <body class="lang-en">
 
-  <div class="wrap">
-    <div class="topbar">
-      <a class="logo" href="https://marielsbrowacademy.com" target="_blank" rel="noopener">
-        <span class="logo-main">MARIELS</span>
-        <span class="logo-sub">Brow · Academy</span>
-      </a>
-      <div class="toggle" role="group" aria-label="Language">
-        <button type="button" data-lang="en" aria-pressed="true">EN</button>
-        <button type="button" data-lang="es" aria-pressed="false">ES</button>
+<nav class="nav">
+  <a class="logo" href="/">
+    <span class="logo-main">MARIELS</span>
+    <span class="logo-sub">Brow · Academy</span>
+  </a>
+  <div class="lang" role="group" aria-label="Language">
+    <button type="button" data-lang="en" aria-pressed="true">EN</button>
+    <button type="button" data-lang="es" aria-pressed="false">ES</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-copy">
+    <span class="kicker en">Mariel's kit · Shop my tools</span>
+    <span class="kicker es">El kit de Mariel · Mis herramientas</span>
+    <h1 class="display en"><span>The tools</span><span class="txt-stroke">I map with.</span></h1>
+    <h1 class="display es"><span>Las herramientas</span><span class="txt-stroke">con las que mapeo.</span></h1>
+    <p class="lede en">Nine years of brows, kept to a short list. The exact professional tools I reach for on every client, and the ones I teach with inside Brow Mapping Mastery.</p>
+    <p class="lede es">Nueve años de cejas, resumidos en una lista corta. Las herramientas profesionales exactas que uso con cada clienta, y con las que enseño dentro de Brow Mapping Mastery.</p>
+    <div class="hero-cta">
+      <a class="btn en" href="https://www.amazon.com/dp/B0C5GC2P4G?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Shop my #1 tool <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="btn es" href="https://www.amazon.com/dp/B0C5GC2P4G?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Comprar mi herramienta #1 <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="text-link en" href="#kit">See the full kit</a>
+      <a class="text-link es" href="#kit">Ver el kit completo</a>
+    </div>
+    <div class="swatches">
+      <span class="lbl en">3 colors</span><span class="lbl es">3 colores</span>
+      <a class="sw" href="#kit" style="--tone:#FFFFFF"><i></i><span class="en">White</span><span class="es">Blanco</span></a>
+      <a class="sw" href="#lilac" style="--tone:#C7B1EE"><i></i><span class="en">Lilac</span><span class="es">Lila</span></a>
+      <a class="sw" href="#baby-blue" style="--tone:#9FD3F5"><i></i><span class="en">Baby Blue</span><span class="es">Azul Bebé</span></a>
+    </div>
+    <p class="hero-note en">As an Amazon Associate, I earn from qualifying purchases.</p>
+    <p class="hero-note es">Como Afiliada de Amazon, gano con las compras que califican.</p>
+  </div>
+  <div class="hero-visual">
+    <div class="bigword" aria-hidden="true">MAP</div>
+    <div class="stage">
+      <div class="pw p-side p-left">
+        <div class="floater" style="animation-delay:-2.2s"><div class="tilt">
+          <img class="prod" src="/Brand/string-lilac.webp" alt="Lilac brow mapping string" onerror="this.style.visibility='hidden'">
+        </div></div>
+        <div class="ground" aria-hidden="true" style="animation-delay:-2.2s"></div>
+      </div>
+      <div class="pw p-side p-right">
+        <div class="floater" style="animation-delay:-4.1s"><div class="tilt">
+          <img class="prod" src="/Brand/string-baby-blue.webp" alt="Baby Blue brow mapping string" onerror="this.style.visibility='hidden'">
+        </div></div>
+        <div class="ground" aria-hidden="true" style="animation-delay:-4.1s"></div>
+      </div>
+      <div class="pw p-main">
+        <div class="floater"><div class="tilt">
+          <img class="prod" src="/Brand/string-white.webp" alt="White brow mapping string" onerror="this.style.visibility='hidden'">
+        </div></div>
+        <div class="ground" aria-hidden="true"></div>
       </div>
     </div>
-
-    <header class="hero reveal">
-      <h1 class="en">The tools I map with</h1>
-      <h1 class="es">Mis herramientas de mapping</h1>
-      <p class="en">Nine years of brows, kept to a short list. The exact professional tools I reach for — and the ones I teach with inside Brow Mapping Mastery.</p>
-      <p class="es">Nueve años de cejas, resumidos en una lista corta. Las herramientas profesionales exactas que uso — y con las que enseño dentro de Brow Mapping Mastery.</p>
-    </header>
+    <div class="pick"><b class="en">#1 pick</b><b class="es">Mi #1</b><span class="en">Mariel's everyday string</span><span class="es">Mi hilo de todos los días</span></div>
   </div>
+</section>
 
-  <div class="marquee" aria-hidden="true">
-    <div class="marquee-track">
-      <span>Mariels Brow Academy<span class="dot">—</span>The Tools I Map With<span class="dot">—</span>Brow Mapping Mastery<span class="dot">—</span>English &amp; Español<span class="dot">—</span></span>
-      <span>Mariels Brow Academy<span class="dot">—</span>The Tools I Map With<span class="dot">—</span>Brow Mapping Mastery<span class="dot">—</span>English &amp; Español<span class="dot">—</span></span>
-      <span>Mariels Brow Academy<span class="dot">—</span>The Tools I Map With<span class="dot">—</span>Brow Mapping Mastery<span class="dot">—</span>English &amp; Español<span class="dot">—</span></span>
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="mq-row"><div class="mq-track">
+    <span>The tools I map with <em>•</em> Mariels Brow Academy <em>•</em> Shop my kit <em>•</em> English &amp; Español <em>•</em> </span><span>The tools I map with <em>•</em> Mariels Brow Academy <em>•</em> Shop my kit <em>•</em> English &amp; Español <em>•</em> </span><span>The tools I map with <em>•</em> Mariels Brow Academy <em>•</em> Shop my kit <em>•</em> English &amp; Español <em>•</em> </span>
+  </div></div>
+  <div class="mq-row mq-outline"><div class="mq-track mq-reverse">
+    <span>White <em>•</em> Lilac <em>•</em> Baby Blue <em>•</em> Map any face <em>•</em> </span><span>White <em>•</em> Lilac <em>•</em> Baby Blue <em>•</em> Map any face <em>•</em> </span><span>White <em>•</em> Lilac <em>•</em> Baby Blue <em>•</em> Map any face <em>•</em> </span>
+  </div></div>
+</div>
+
+<!-- 01 WHITE STRING -->
+<section class="feature" id="kit">
+  <div class="panel" data-reveal>
+    <div class="bigword" aria-hidden="true" style="font-size:clamp(260px,34vw,500px)">01</div>
+    <div class="stage">
+      <div class="pw">
+        <div class="floater" style="animation-delay:-2s"><div class="tilt">
+          <img class="prod" src="/Brand/string-white.webp" alt="White brow mapping string" loading="lazy" onerror="this.style.visibility='hidden'">
+        </div></div>
+        <div class="ground" aria-hidden="true" style="animation-delay:-2s"></div>
+      </div>
     </div>
   </div>
+  <div data-reveal>
+    <span class="num">01 · <span class="en">Mapping string</span><span class="es">Hilo de mapping</span></span>
+    <h2 class="display en">White<br><span class="txt-stroke">Mapping String</span></h2>
+    <h2 class="display es">Hilo de Mapping<br><span class="txt-stroke">Blanco</span></h2>
+    <p class="desc en">My everyday string. Pre-inked, it snaps a crisp, clean guideline every time and reads beautifully on most skin tones. If you buy one thing on this page, start here.</p>
+    <p class="desc es">Mi hilo de todos los días. Pre-entintado, marca una línea guía limpia y precisa siempre, y se ve hermoso en la mayoría de los tonos de piel. Si compras una sola cosa en esta página, empieza aquí.</p>
+    <ul class="points en">
+      <li>Pre-inked and ready to snap</li>
+      <li>A crisp, clean guideline every time</li>
+      <li>Reads on most skin tones</li>
+    </ul>
+    <ul class="points es">
+      <li>Pre-entintado y listo para marcar</li>
+      <li>Una línea guía limpia y precisa siempre</li>
+      <li>Se ve en la mayoría de los tonos de piel</li>
+    </ul>
+    <div class="buy">
+      <a class="btn en" href="https://www.amazon.com/dp/B0C5GC2P4G?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Shop on Amazon <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="btn es" href="https://www.amazon.com/dp/B0C5GC2P4G?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Comprar en Amazon <span class="arrow" aria-hidden="true">→</span></a>
+    </div>
+    <p class="disclose-inline en">As an Amazon Associate, I earn from qualifying purchases.</p>
+    <p class="disclose-inline es">Como Afiliada de Amazon, gano con las compras que califican.</p>
+  </div>
+</section>
 
-  <div class="wrap">
-    <section aria-labelledby="mapping-label">
-      <p class="label en" id="mapping-label">Mapping String</p>
-      <p class="label es">Hilo de Mapping</p>
-
-      <div class="item">
-        <h2 class="en">White Mapping String</h2>
-        <h2 class="es">Hilo de Mapping Blanco</h2>
-        <p class="en">My everyday string. Pre-inked, it snaps a crisp, clean guideline every time and reads beautifully on most skin tones. If you buy one thing on this page, start here.</p>
-        <p class="es">Mi hilo de todos los días. Pre-entintado, marca una línea guía limpia y precisa siempre, y se ve hermoso en la mayoría de los tonos de piel. Si compras una sola cosa en esta página, empieza aquí.</p>
-        <a class="btn en" href="https://www.amazon.com/dp/B0C5GC2P4G?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Shop the white string</a>
-        <a class="btn es" href="https://www.amazon.com/dp/B0C5GC2P4G?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Comprar el hilo blanco</a>
+<!-- SHADES -->
+<section class="shades">
+  <div data-reveal>
+    <span class="kicker en">Also in two more colors</span>
+    <span class="kicker es">También en dos colores más</span>
+    <h2 class="display en">Contrast for<br><span class="txt-stroke-w">every skin tone.</span></h2>
+    <h2 class="display es">Contraste para<br><span class="txt-stroke-w">cada tono de piel.</span></h2>
+    <p class="sub en">The same pre-inked string, in two more colors, for a crisp guideline on lighter and deeper skin tones.</p>
+    <p class="sub es">El mismo hilo pre-entintado, en dos colores más, para una línea guía nítida en pieles más claras y más profundas.</p>
+  </div>
+  <div class="shade-grid">
+    <article class="shade" id="lilac" style="--tone:#C7B1EE" data-reveal>
+      <div class="stage">
+      <div class="pw">
+        <div class="floater" style="animation-delay:-1s"><div class="tilt">
+          <img class="prod" src="/Brand/string-lilac.webp" alt="Lilac brow mapping string" loading="lazy" onerror="this.style.visibility='hidden'">
+        </div></div>
+        <div class="ground" aria-hidden="true" style="animation-delay:-1s"></div>
       </div>
-
-      <div class="shades">
-        <p class="en">Also in two more shades — for crisp contrast on lighter and deeper skin tones.</p>
-        <p class="es">También en dos tonos más — para un contraste nítido en pieles más claras y más profundas.</p>
-        <div class="row">
-          <a class="btn ghost en" href="https://www.amazon.com/dp/B0HFM2S6DN?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Shop this shade</a>
-          <a class="btn ghost es" href="https://www.amazon.com/dp/B0HFM2S6DN?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Comprar este tono</a>
-          <a class="btn ghost en" href="https://www.amazon.com/dp/B0HFQ6KGD3?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Shop this shade</a>
-          <a class="btn ghost es" href="https://www.amazon.com/dp/B0HFQ6KGD3?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Comprar este tono</a>
-        </div>
-        <p class="disclose-inline en">As an Amazon Associate, I earn from qualifying purchases.</p>
-        <p class="disclose-inline es">Como Afiliada de Amazon, gano con las compras que califican.</p>
       </div>
-    </section>
+      <div class="shade-body">
+        <p class="tone"><i></i>02 · <span class="en">Mapping string</span><span class="es">Hilo de mapping</span></p>
+        <h3 class="en">Lilac<br>Mapping String</h3>
+        <h3 class="es">Hilo de Mapping<br>Lila</h3>
+        <p class="en">The same crisp, pre-inked line in a soft lilac. Easy to see, easy to follow, and beautiful on your tray.</p>
+        <p class="es">La misma línea nítida y pre-entintada en un lila suave. Fácil de ver, fácil de seguir y hermosa en tu mesa de trabajo.</p>
+        <a class="btn btn-w en" href="https://www.amazon.com/dp/B0CMVXGV2D?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Shop Lilac <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn btn-w es" href="https://www.amazon.com/dp/B0CMVXGV2D?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Comprar Lila <span class="arrow" aria-hidden="true">→</span></a>
+      </div>
+    </article>
+    <article class="shade" id="baby-blue" style="--tone:#9FD3F5" data-reveal>
+      <div class="stage">
+      <div class="pw">
+        <div class="floater" style="animation-delay:-4s"><div class="tilt">
+          <img class="prod" src="/Brand/string-baby-blue.webp" alt="Baby Blue brow mapping string" loading="lazy" onerror="this.style.visibility='hidden'">
+        </div></div>
+        <div class="ground" aria-hidden="true" style="animation-delay:-4s"></div>
+      </div>
+      </div>
+      <div class="shade-body">
+        <p class="tone"><i></i>03 · <span class="en">Mapping string</span><span class="es">Hilo de mapping</span></p>
+        <h3 class="en">Baby Blue<br>Mapping String</h3>
+        <h3 class="es">Hilo de Mapping<br>Azul Bebé</h3>
+        <p class="en">The same crisp line in baby blue, so your map shows up clearly on every client.</p>
+        <p class="es">La misma línea nítida en azul bebé, para que tu mapeo se vea claro en cada clienta.</p>
+        <a class="btn btn-w en" href="https://www.amazon.com/dp/B0HFM2S6DN?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Shop Baby Blue <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn btn-w es" href="https://www.amazon.com/dp/B0HFM2S6DN?tag=marielsbrowac-20" target="_blank" rel="nofollow sponsored noopener">Comprar Azul Bebé <span class="arrow" aria-hidden="true">→</span></a>
+      </div>
+    </article>
   </div>
+</section>
 
-  <div class="course-panel">
-    <div class="wrap"><div class="inner">
-      <h2 class="en">Learn the full method</h2>
-      <h2 class="es">Aprende el método completo</h2>
-      <p class="en">The rest of my kit — brow paste, aftercare, brushes — I walk through step by step inside the course. Brow Mapping Mastery teaches the exact system behind these tools, in English and Spanish.</p>
-      <p class="es">El resto de mi kit — brow paste, aftercare, brochas — lo enseño paso a paso dentro del curso. Brow Mapping Mastery enseña el sistema exacto detrás de estas herramientas, en inglés y español.</p>
-      <a class="btn en" href="https://marielsbrowacademy.com" target="_blank" rel="noopener">Enroll now</a>
-      <a class="btn es" href="https://marielsbrowacademy.com" target="_blank" rel="noopener">Inscríbete ahora</a>
-    </div></div>
+<!-- COURSE -->
+<section class="course">
+  <div data-reveal>
+    <span class="kicker en">The method behind the tools</span>
+    <span class="kicker es">El método detrás de las herramientas</span>
+    <h2 class="display en">Tools are half of it.<br><span class="txt-stroke">The map is the rest.</span></h2>
+    <h2 class="display es">Las herramientas son la mitad.<br><span class="txt-stroke">El mapeo es el resto.</span></h2>
+    <p class="en">The rest of my kit, from brow paste to aftercare, I walk through step by step inside Brow Mapping Mastery. Start with the free class: watch me map a real client, start to finish.</p>
+    <p class="es">El resto de mi kit, desde el brow paste hasta el aftercare, lo enseño paso a paso dentro de Brow Mapping Mastery. Empieza con la clase gratis: mírame mapear a una clienta real, de principio a fin.</p>
+    <div class="course-cta">
+      <a class="btn en" href="/signup">Watch the free class <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="btn es" href="/signup?lang=es">Ver la clase gratis <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="text-link en" href="/">See the certification</a>
+      <a class="text-link es" href="/?lang=es">Ver la certificación</a>
+    </div>
   </div>
+  <div class="course-img" data-reveal>
+    <img src="/Brand/work-2.jpg" alt="" loading="lazy">
+    <span class="en">Free class · 5 lessons</span>
+    <span class="es">Clase gratis · 5 lecciones</span>
+  </div>
+</section>
 
-  <div class="wrap">
-    <footer>
-      <p class="disclose en">As an Amazon Associate, I earn from qualifying purchases. The links above are affiliate links, which means I may earn a small commission at no extra cost to you.</p>
-      <p class="disclose es">Como Afiliada de Amazon, gano con las compras que califican. Los enlaces de arriba son enlaces de afiliada, lo que significa que puedo ganar una pequeña comisión sin costo adicional para ti.</p>
-      <p class="foot-meta">© 2026 Mariels Brow Academy &nbsp;·&nbsp; <a href="https://marielsbrowacademy.com" target="_blank" rel="noopener">marielsbrowacademy.com</a></p>
-    </footer>
-  </div>
+<footer>
+  <p class="disclose en">As an Amazon Associate, I earn from qualifying purchases. The links on this page are affiliate links, which means I may earn a small commission at no extra cost to you.</p>
+  <p class="disclose es">Como Afiliada de Amazon, gano con las compras que califican. Los enlaces de esta página son enlaces de afiliada, lo que significa que puedo ganar una pequeña comisión sin costo adicional para ti.</p>
+  <p class="foot-meta">© 2026 Mariels Brow Academy &nbsp;·&nbsp; <a href="/">marielsbrowacademy.com</a></p>
+</footer>
 
 <script>
-  (function(){
-    var body=document.body;
-    var btns=document.querySelectorAll('.toggle button');
-    function set(lang){
-      body.classList.remove('lang-en','lang-es');
-      body.classList.add('lang-'+lang);
-      document.documentElement.lang=lang;
-      btns.forEach(function(b){b.setAttribute('aria-pressed', b.dataset.lang===lang ? 'true':'false');});
-      try{localStorage.setItem('mba-lang',lang);}catch(e){}
+  (function () {
+    var body = document.body;
+    var btns = document.querySelectorAll('.lang button');
+    function set(lang) {
+      body.classList.remove('lang-en', 'lang-es');
+      body.classList.add('lang-' + lang);
+      document.documentElement.lang = lang;
+      btns.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.lang === lang ? 'true' : 'false'); });
+      try { localStorage.setItem('mba-lang', lang); } catch (e) {}
     }
-    var saved='en';
-    try{var s=localStorage.getItem('mba-lang'); if(s==='es'||s==='en'){saved=s;}}catch(e){}
-    set(saved);
-    btns.forEach(function(b){b.addEventListener('click',function(){set(b.dataset.lang);});});
+    var start = 'en';
+    var q = new URLSearchParams(location.search).get('lang');
+    if (q === 'es' || q === 'en') { start = q; }
+    else { try { var s = localStorage.getItem('mba-lang'); if (s === 'es' || s === 'en') start = s; } catch (e) {} }
+    set(start);
+    btns.forEach(function (b) { b.addEventListener('click', function () { set(b.dataset.lang); }); });
+
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Fade sections in as they scroll into view
+    if (!reduce && 'IntersectionObserver' in window) {
+      document.documentElement.classList.add('js');
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+      }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+      document.querySelectorAll('[data-reveal]').forEach(function (el) { io.observe(el); });
+    }
+
+    // Products tilt toward the cursor (desktop only)
+    if (!reduce && window.matchMedia && window.matchMedia('(hover: hover)').matches) {
+      document.querySelectorAll('.stage').forEach(function (stage) {
+        var tilts = stage.querySelectorAll('.tilt');
+        if (!tilts.length) return;
+        stage.addEventListener('mousemove', function (ev) {
+          var r = stage.getBoundingClientRect();
+          var x = (ev.clientX - r.left) / r.width - 0.5;
+          var y = (ev.clientY - r.top) / r.height - 0.5;
+          tilts.forEach(function (t) {
+            var k = t.closest('.p-side') ? 0.55 : 1;
+            t.style.transform = 'translate(' + (x * 14 * k) + 'px,' + (y * 10 * k) + 'px) rotateY(' + (x * 18 * k) + 'deg) rotateX(' + (-y * 12 * k) + 'deg) scale(' + (1 + 0.04 * k) + ')';
+          });
+        });
+        stage.addEventListener('mouseleave', function () { tilts.forEach(function (t) { t.style.transform = ''; }); });
+      });
+    }
   })();
 </script>
 </body>
