@@ -151,10 +151,13 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
 .brow{fill:none; stroke:#FFFFFF; stroke-width:1.8; stroke-linejoin:round; vector-effect:non-scaling-stroke; animation:fadeIn .8s ease both}
 .browhalo{fill:none; stroke:rgba(0,0,0,.35); stroke-width:4.2; stroke-linejoin:round; vector-effect:non-scaling-stroke; animation:fadeIn .8s ease both}
 .draw{stroke-dasharray:1; stroke-dashoffset:1; animation:draw 1s ease forwards}
+
+.xring{fill:none; stroke:#FFFFFF; stroke-width:2; vector-effect:non-scaling-stroke; animation:fadeIn .6s ease both}
+.xhalo{fill:none; stroke:rgba(0,0,0,.35); stroke-width:4.5; vector-effect:non-scaling-stroke; animation:fadeIn .6s ease both}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes draw{to{stroke-dashoffset:0}}
 @media (prefers-reduced-motion: reduce){
-  .brow,.browhalo{animation:none}
+  .brow,.browhalo,.xring,.xhalo{animation:none}
   .draw{animation:none; stroke-dashoffset:0}
 }
 </style>
@@ -193,7 +196,7 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
       sections: {
         key: ['The three key points', 'Anchor, start, arch and tail.'],
         eleven: ['The eleven-point system', 'Build the full string map, line by line.'],
-        cross: ['The center cross', 'Mirror lines 8 to 11 to the other brow and read the X.']
+        cross: ['The center cross', 'Mirror lines 8 to 11 to the other brow to find the X.']
       },
       faceLabel: n => `Practice face ${n}`,
       stepOf: (i, n) => `Step ${i} of ${n}`,
@@ -226,7 +229,8 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
         ]
       },
       cross: {
-        names: ['Center line', 'Line 8, other brow', 'Line 9, other brow', 'Line 10, other brow', 'Line 11, other brow', 'Read the X'],
+        names: ['Center line', 'Line 8, other brow', 'Line 9, other brow', 'Line 10, other brow', 'Line 11, other brow'],
+        resultNote: 'Each circle is where the same line from both brows meets on the center line. When every line meets there, both sides match.',
         mirrorTitle: n => `Mirror line ${n}`,
         mirrorInstr: [
           'One brow is mapped. From the circle where its line 8 meets the center, swing the string out to the tail of the other brow so both sides match.',
@@ -282,7 +286,7 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
       sections: {
         key: ['Los tres puntos clave', 'Ancla, inicio, arco y cola.'],
         eleven: ['El sistema de once puntos', 'Construye el mapeo completo, línea por línea.'],
-        cross: ['El cruce central', 'Refleja las líneas 8 a 11 en la otra ceja y lee la X.']
+        cross: ['El cruce central', 'Refleja las líneas 8 a 11 en la otra ceja para encontrar la X.']
       },
       faceLabel: n => `Rostro de práctica ${n}`,
       stepOf: (i, n) => `Paso ${i} de ${n}`,
@@ -315,7 +319,8 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
         ]
       },
       cross: {
-        names: ['Línea central', 'Línea 8, otra ceja', 'Línea 9, otra ceja', 'Línea 10, otra ceja', 'Línea 11, otra ceja', 'Lee la X'],
+        names: ['Línea central', 'Línea 8, otra ceja', 'Línea 9, otra ceja', 'Línea 10, otra ceja', 'Línea 11, otra ceja'],
+        resultNote: 'Cada círculo marca dónde se encuentra la misma línea de ambas cejas sobre la línea central. Cuando todas se encuentran ahí, los dos lados coinciden.',
         mirrorTitle: n => `Refleja la línea ${n}`,
         mirrorInstr: [
           'Una ceja ya está mapeada. Desde el círculo donde su línea 8 toca el centro, gira el hilo hacia la cola de la otra ceja para que ambos lados coincidan.',
@@ -602,9 +607,18 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
     } else {
       const mine = S.view === 'mine';
       if (S.mode === 'cross') {
-        l += mappedSide(g, d, mine ? S.vals[0] : g.cx);
-        STEPS.forEach((st, k) => { if (k > 0) l += drawStepLine(st, mine ? S.vals[k] : st.target, mine ? '' : 'ideal', k, false); });
-        crossLines(g).forEach(L => { l += pivotAt(L.C, d); });
+        const Ls = crossLines(g), ext = 0.28 * d, cX = mine ? S.vals[0] : g.cx;
+        l += seg({ x: cX, y: Math.min(...Ls.map(q => q.C.y)) - 0.2 * d }, { x: cX, y: g.Hb.y + 0.35 * d }, 'placed');
+        Ls.forEach(q => { l += seg(q.P, endPt(q.C, angleTo(q.P, q.C), ext), 'placed'); });
+        STEPS.forEach((st, k) => {
+          if (k === 0) return;
+          const v = mine ? S.vals[k] : st.target;
+          l += seg(endPt(st.pivot, v + 180, ext), endPt(st.pivot, v, st.reach + 0.12 * d), mine ? '' : 'ideal');
+        });
+        Ls.forEach((q, i) => {
+          const st = ` style="animation-delay:${(.3 + i * .25).toFixed(2)}s"`;
+          l += `<circle class="xhalo" cx="${r1(q.C.x)}" cy="${r1(q.C.y)}" r="${r1(d * 0.055)}"${st}/><circle class="xring" cx="${r1(q.C.x)}" cy="${r1(q.C.y)}" r="${r1(d * 0.055)}"${st}/>`;
+        });
       } else {
         const vals = STEPS.map((st, k) => mine ? S.vals[k] : st.target);
         const rays = S.mode === 'key' ? [1, 2, 3] : [1, 2, 3];
@@ -728,7 +742,7 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
       const hint = step.kind === 'point' ? t.hintPoint : step.kind === 'ray' ? t.hintRay : t.hintSlide;
       const last = S.step === n - 1;
       const actions = S.checked
-        ? `<button type="button" class="btn" data-act="next">${last && S.mode !== 'cross' ? t.seeResult : t.next}</button>
+        ? `<button type="button" class="btn" data-act="next">${last ? t.seeResult : t.next}</button>
            <button type="button" class="btn ghost" data-act="retry">${t.tryAgain}</button>`
         : `<button type="button" class="btn" id="checkBtn" data-act="check" ${S.touched ? '' : 'disabled'}>${t.check}</button>`;
       panel.innerHTML = `
@@ -763,7 +777,7 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
     const rating = total >= 90 ? t.rating.pro : total >= 70 ? t.rating.almost : t.rating.keep;
     const last = S.face === FACES.length - 1;
     let rows;
-    if (S.mode === 'cross') rows = S.scores.map((sc, i) => `<li><span>${t.cross.names[i]}</span><b>${sc}%</b></li>`).join('') + `<li><span>${t.cross.names[5]}</span><b>${t.cross.tally(S.correct, ROUNDS)}</b></li>`;
+    if (S.mode === 'cross') rows = S.scores.map((sc, i) => `<li><span>${t.cross.names[i]}</span><b>${sc}%</b></li>`).join('');
     else {
       const names = S.mode === 'key' ? t.key.names : t.eleven.names;
       rows = names.map((nm, i) => `<li><span>${S.mode === 'eleven' ? (i + 1) + '. ' : ''}${nm}</span><b>${S.scores[i]}%</b></li>`).join('');
@@ -777,6 +791,7 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
       <h1>${t.resultTitle[S.mode]}</h1>
       <div class="score"><b>${total}%</b><span>${t.accuracy}</span></div>
       <p class="instr">${rating}</p>
+      ${S.mode === 'cross' ? `<p class="hint">${t.cross.resultNote}</p>` : ''}
       ${S.best !== null && S.best > total ? `<p class="hint">${t.best(S.best)}</p>` : ''}
       ${toggle}
       <ul class="breakdown">${rows}</ul>
@@ -788,7 +803,6 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
   }
 
   function resultTotal() {
-    if (S.mode === 'cross') return Math.round((S.scores.reduce((a, b) => a + b, 0) / S.scores.length + S.correct / ROUNDS * 100) / 2);
     return Math.round(S.scores.reduce((a, b) => a + b, 0) / S.scores.length);
   }
 
@@ -872,10 +886,6 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
         startStep(S.step + 1);
         if (S.mode === 'cross' && S.step === 1) setView(zoomFor('step'));
         render(); return;
-      }
-      if (S.mode === 'cross') {
-        S.rounds = makeRounds(); S.round = 0; S.answer = null; S.correct = 0; S.screen = 'round';
-        setView(zoomFor('round')); render(); return;
       }
       return toResult();
     }
