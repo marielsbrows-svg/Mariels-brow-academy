@@ -40,6 +40,7 @@ interface Resource {
 interface Course {
   id: string;
   title: string;
+  language?: string;
 }
 
 const DISP_CSS = `
@@ -66,6 +67,34 @@ const DISP_CSS = `
 .mba-celebrate .pop{animation:mbaPop .6s var(--ease) both}
 .mba-celebrate .ring{animation:mbaRing 1s var(--ease) both}
 `;
+
+// ── Practice Embed (interactive brow mapping, served from /public) ─────────
+const PracticeEmbed = ({ src, title }: { src: string; title: string }) => {
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const [height, setHeight] = useState(900);
+
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      if (e.source !== frameRef.current?.contentWindow) return;
+      if (e.data?.type === 'mba-practice-height' && typeof e.data.height === 'number') {
+        setHeight(Math.max(420, Math.ceil(e.data.height)));
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
+
+  const url = src + (src.includes('?') ? '&' : '?') + 'embed=1';
+  return (
+    <iframe
+      ref={frameRef}
+      src={url}
+      title={title}
+      className="w-full block bg-white"
+      style={{ height, border: 0 }}
+    />
+  );
+};
 
 // ── Audio Player Component ──────────────────────────────────────────────────
 const AudioPlayer = ({ src }: { src: string }) => {
@@ -159,7 +188,7 @@ export const LessonViewer = () => {
 
   const fetchCourseContent = async () => {
     try {
-      const { data: courseData } = await supabase.from('courses').select('id, title').eq('id', courseId).single();
+      const { data: courseData } = await supabase.from('courses').select('id, title, language').eq('id', courseId).single();
       setCourse(courseData);
 
       const { data: modulesData } = await supabase.from('course_modules').select('*').eq('course_id', courseId).order('order_index', { ascending: true });
@@ -266,8 +295,8 @@ export const LessonViewer = () => {
   const pct = total ? Math.round((completedCount / total) * 100) : 0;
   const isES = (course?.language || '').toUpperCase() === 'ES';
   const L = isES
-    ? { dashboard:'Panel', current:'Lección Actual', watch:'Mira la Demostración', materials:'Materiales', open:'Abrir', workbook:'Cuaderno', resource:'Recurso', community_t:'Únete a la Conversación', community_s:'Conecta con otras estudiantes y comparte ideas', community_b:'Ir a la Comunidad', finished:'¿Terminaste esta lección?', mark:'Marcar como Completada', prev:'Anterior', next:'Siguiente Lección', lessons:'Lecciones', complete:'completado', none:'No hay lecciones disponibles', celebrate:'¡Completada!' }
-    : { dashboard:'Dashboard', current:'Current Lesson', watch:'Watch the Demo', materials:'Materials', open:'Open', workbook:'Workbook', resource:'Resource', community_t:'Join the Discussion', community_s:'Connect with fellow students and share insights', community_b:'Go to Community', finished:'Finished this lesson?', mark:'Mark as Complete', prev:'Previous', next:'Next Lesson', lessons:'Lessons', complete:'complete', none:'No lessons available', celebrate:'Complete!' };
+    ? { dashboard:'Panel', current:'Lección Actual', watch:'Mira la Demostración', practice:'Práctica', materials:'Materiales', open:'Abrir', workbook:'Cuaderno', resource:'Recurso', community_t:'Únete a la Conversación', community_s:'Conecta con otras estudiantes y comparte ideas', community_b:'Ir a la Comunidad', finished:'¿Terminaste esta lección?', mark:'Marcar como Completada', prev:'Anterior', next:'Siguiente Lección', lessons:'Lecciones', complete:'completado', none:'No hay lecciones disponibles', celebrate:'¡Completada!' }
+    : { dashboard:'Dashboard', current:'Current Lesson', watch:'Watch the Demo', practice:'Practice', materials:'Materials', open:'Open', workbook:'Workbook', resource:'Resource', community_t:'Join the Discussion', community_s:'Connect with fellow students and share insights', community_b:'Go to Community', finished:'Finished this lesson?', mark:'Mark as Complete', prev:'Previous', next:'Next Lesson', lessons:'Lessons', complete:'complete', none:'No lessons available', celebrate:'Complete!' };
 
   const LessonList = ({ onPick }: { onPick?: () => void }) => (
     <div className="p-4">
@@ -414,15 +443,26 @@ export const LessonViewer = () => {
                   </div>
                 )}
 
+                {/* Practice — interactive mapping */}
+                {currentLesson.resources?.filter(r => r.resource_type === 'practice').map((practice) => (
+                  <div key={practice.id}>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-4 h-px bg-white/20" />
+                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/30">{L.practice}</span>
+                    </div>
+                    <PracticeEmbed src={practice.file_url} title={practice.title} />
+                  </div>
+                ))}
+
                 {/* Downloads & links */}
-                {currentLesson.resources && currentLesson.resources.filter(r => !['slides', 'audio'].includes(r.resource_type)).length > 0 && (
+                {currentLesson.resources && currentLesson.resources.filter(r => !['slides', 'audio', 'practice'].includes(r.resource_type)).length > 0 && (
                   <div className="bg-white text-black p-6 lg:p-8">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-4 h-px bg-neutral-400" />
                       <span className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500">{L.materials}</span>
                     </div>
                     <div className="space-y-2">
-                      {currentLesson.resources.filter(r => !['slides', 'audio'].includes(r.resource_type)).map((resource) => (
+                      {currentLesson.resources.filter(r => !['slides', 'audio', 'practice'].includes(r.resource_type)).map((resource) => (
                         <a key={resource.id} href={resource.file_url} target="_blank" rel="noopener noreferrer" download
                           className="flex items-center gap-4 p-4 border border-neutral-200 hover:border-neutral-400 hover:bg-neutral-100 transition-all group">
                           <div className="w-9 h-9 border border-neutral-300 flex items-center justify-center group-hover:bg-black group-hover:border-black transition-all">
