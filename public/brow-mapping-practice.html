@@ -193,7 +193,7 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
       sections: {
         key: ['The three key points', 'Anchor, start, arch and tail.'],
         eleven: ['The eleven-point system', 'Build the full string map, line by line.'],
-        cross: ['The center cross', 'Find the center and read the X.']
+        cross: ['The center cross', 'Mirror lines 8 to 11 to the other brow and read the X.']
       },
       faceLabel: n => `Practice face ${n}`,
       stepOf: (i, n) => `Step ${i} of ${n}`,
@@ -226,11 +226,19 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
         ]
       },
       cross: {
-        names: ['Center line', 'Read the X'],
+        names: ['Center line', 'Line 8, other brow', 'Line 9, other brow', 'Line 10, other brow', 'Line 11, other brow', 'Read the X'],
+        mirrorTitle: n => `Mirror line ${n}`,
+        mirrorInstr: [
+          'One brow is mapped. From the circle where its line 8 meets the center, swing the string out to the tail of the other brow so both sides match.',
+          'From the circle where line 9 meets the center, swing the string out through the arch peak of the other brow to its tail.',
+          'From the circle where line 10 meets the center, swing the string out across the top of the other brow head to its arch peak.',
+          'From the circle where line 11 meets the center, swing the string out across the bottom of the other brow head to under its arch.'
+        ],
+        offMirror: (n, dir) => `Your line is ${n}° off, so the other brow would sit too ${dir === 'high' ? 'high' : 'low'} and the two sides would not match.`,
         centerTitle: 'Find the center',
         centerInstr: 'Slide the line to the true center of the face, between the brows and down the bridge of the nose. The cross is read against this line.',
         readTitle: 'Read the X',
-        readInstr: 'These are the tail lines from both brows, extended to the center. How do they cross?',
+        readInstr: 'Both brows are mapped. These are line 9 from each side, meeting at the center. How do they cross?',
         options: { clean: 'Clean, centered X', off: 'Off-center X', lop: 'Lopsided X' },
         explain: {
           clean: 'The lines meet on the center line at mirror-matched angles. The brows are balanced, so proceed.',
@@ -274,7 +282,7 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
       sections: {
         key: ['Los tres puntos clave', 'Ancla, inicio, arco y cola.'],
         eleven: ['El sistema de once puntos', 'Construye el mapeo completo, línea por línea.'],
-        cross: ['El cruce central', 'Encuentra el centro y lee la X.']
+        cross: ['El cruce central', 'Refleja las líneas 8 a 11 en la otra ceja y lee la X.']
       },
       faceLabel: n => `Rostro de práctica ${n}`,
       stepOf: (i, n) => `Paso ${i} de ${n}`,
@@ -307,11 +315,19 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
         ]
       },
       cross: {
-        names: ['Línea central', 'Lee la X'],
+        names: ['Línea central', 'Línea 8, otra ceja', 'Línea 9, otra ceja', 'Línea 10, otra ceja', 'Línea 11, otra ceja', 'Lee la X'],
+        mirrorTitle: n => `Refleja la línea ${n}`,
+        mirrorInstr: [
+          'Una ceja ya está mapeada. Desde el círculo donde su línea 8 toca el centro, gira el hilo hacia la cola de la otra ceja para que ambos lados coincidan.',
+          'Desde el círculo donde la línea 9 toca el centro, gira el hilo por el punto más alto del arco de la otra ceja hasta su cola.',
+          'Desde el círculo donde la línea 10 toca el centro, gira el hilo por arriba de la cabeza de la otra ceja hasta el punto más alto del arco.',
+          'Desde el círculo donde la línea 11 toca el centro, gira el hilo por abajo de la cabeza de la otra ceja hasta debajo del arco.'
+        ],
+        offMirror: (n, dir) => `Tu línea está ${n}° desviada: la otra ceja quedaría muy ${dir === 'high' ? 'arriba' : 'abajo'} y los dos lados no coincidirían.`,
         centerTitle: 'Encuentra el centro',
         centerInstr: 'Desliza la línea al centro real del rostro, entre las cejas y por el puente de la nariz. El cruce se lee contra esta línea.',
         readTitle: 'Lee la X',
-        readInstr: 'Estas son las líneas de la cola de ambas cejas, extendidas hasta el centro. ¿Cómo se cruzan?',
+        readInstr: 'Ambas cejas están mapeadas. Esta es la línea 9 de cada lado, encontrándose en el centro. ¿Cómo se cruzan?',
         options: { clean: 'X limpia y centrada', off: 'X descentrada', lop: 'X desigual' },
         explain: {
           clean: 'Las líneas se encuentran en la línea central con ángulos iguales. Las cejas están equilibradas: continúa.',
@@ -425,7 +441,20 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
       tc(8, g.T, g.B, 11 * flip), tc(9, g.T, g.Ap, -12 * flip),
       tc(10, g.Ap, g.Ht, -12 * flip), tc(11, g.B, g.Hb, 12 * flip)
     ];
-    return [{ id: 'center', kind: 'v', target: g.cx, init: g.cx - 0.3 * d }];
+    const mir = p => ({ x: 2 * g.cx - p.x, y: p.y });
+    const mirrors = crossLines(g).map((L, k) => {
+      const end = mir(L.P), t = angleTo(L.C, end);
+      return { id: 8 + k, kind: 'ray', toCenter: true, mirror: true, pivot: L.C, target: t,
+               init: t + (k % 2 ? 10 : -10) * flip, reach: Math.hypot(end.x - L.C.x, end.y - L.C.y), endX: end.x };
+    });
+    return [{ id: 'center', kind: 'v', target: g.cx, init: g.cx - 0.3 * d }, ...mirrors];
+  }
+  // lines 8-11 on the mapped side, and where each meets the center line
+  function crossLines(g) {
+    return [[g.T, g.B], [g.T, g.Ap], [g.Ap, g.Ht], [g.B, g.Hb]].map(([P, Q]) => {
+      const th = angleTo(P, Q);
+      return { P, C: { x: g.cx, y: yAtX(P, th, g.cx) } };
+    });
   }
   let STEPS = [];
 
@@ -442,9 +471,14 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
       const side = Math.max(x1 - x0, y1 - y0) * (screen === 'result' ? 1.08 : 1);
       return [(x0 + x1) / 2 - side / 2, (y0 + y1) / 2 - side / 2, side, side];
     }
-    if (screen === 'step') {
+    if (screen === 'step' && S.step === 0) {
       const side = 2.2 * d, cy = (g.Ht.y + g.A.y) / 2;
       return [g.cx - side / 2, cy - side / 2, side, side];
+    }
+    if (screen === 'step' || screen === 'result') {
+      const y0 = Math.min(...crossLines(g).map(L => L.C.y)) - 0.18 * d, y1 = g.Hb.y + 0.3 * d;
+      const half = Math.max((g.T.x - g.cx) + 0.3 * d, (y1 - y0) / 2), cy = (y0 + y1) / 2;
+      return [g.cx - half, cy - half, 2 * half, 2 * half];
     }
     if (screen === 'round') {
       const meetY = g.top + 0.12 * d, half = (g.T.x - g.cx) + 0.18 * d, cy = (meetY + g.T.y) / 2;
@@ -477,6 +511,9 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
       return { a: { x: x0, y: val }, b: { x: x1, y: val }, lab: { x: x1 + (step.id === 7 ? 0.18 : 0.07) * d, y: val } };
     }
     const pv = step.pivot;
+    if (step.mirror) {
+      return { a: pv, b: endPt(pv, val, step.reach + 0.12 * d), lab: { x: pv.x + 0.09 * d * SIDE, y: pv.y } };
+    }
     if (!step.toCenter) {
       const len = S.mode === 'eleven' ? Math.min(2.6 * d, (pv.y - g.top) / Math.max(0.2, -Math.sin(rad(val)))) : 2.4 * d;
       const e = endPt(pv, val, len);
@@ -512,8 +549,17 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
   function drawStepLine(step, val, cls, i, dim) {
     const f = F(), d = f.d, L = lineGeo(step, val);
     let s = seg(L.a, L.b, cls);
-    if (S.mode === 'eleven') s += label(step.id, L.lab.x, L.lab.y, d, dim);
+    if (S.mode === 'eleven' || step.mirror) s += label(step.id, L.lab.x, L.lab.y, d, dim);
     return s;
+  }
+
+  // the already-mapped side for the center cross: center line, lines 8-11 and their meeting circles
+  function mappedSide(g, d, centerX = g.cx) {
+    const L = crossLines(g);
+    let out = seg({ x: centerX, y: Math.min(...L.map(q => q.C.y)) - 0.15 * d }, { x: centerX, y: g.Hb.y + 0.35 * d }, 'placed');
+    L.forEach(q => { out += seg(q.P, q.C, 'placed'); });
+    L.forEach(q => { out += pivotAt(q.C, d); });
+    return out;
   }
 
   function drawOverlay() {
@@ -529,9 +575,10 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
       l += pivotAt(g.A, d);
     } else if (S.screen === 'step') {
       const step = STEPS[S.step];
+      if (S.mode === 'cross' && S.step > 0) l += mappedSide(g, d);
       for (let k = 0; k < S.step; k++) {
         const st = STEPS[k];
-        if (st.kind === 'point') continue;
+        if (st.kind === 'point' || (S.mode === 'cross' && k === 0)) continue;
         l += drawStepLine(st, S.vals[k], 'placed', k, true);
       }
       if (step.kind === 'point') {
@@ -555,7 +602,9 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
     } else {
       const mine = S.view === 'mine';
       if (S.mode === 'cross') {
-        l += drawStepLine(STEPS[0], STEPS[0].target, 'ideal', 0, true) + drawStepLine(STEPS[0], S.vals[0], '', 0, false);
+        l += mappedSide(g, d, mine ? S.vals[0] : g.cx);
+        STEPS.forEach((st, k) => { if (k > 0) l += drawStepLine(st, mine ? S.vals[k] : st.target, mine ? '' : 'ideal', k, false); });
+        crossLines(g).forEach(L => { l += pivotAt(L.C, d); });
       } else {
         const vals = STEPS.map((st, k) => mine ? S.vals[k] : st.target);
         const rays = S.mode === 'key' ? [1, 2, 3] : [1, 2, 3];
@@ -631,7 +680,8 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
     const t = T[lang], step = STEPS[S.step];
     if (S.mode === 'key') return { meta: t.stepOf(S.step + 1, 4), title: t.key.titles[S.step], instr: t.key.instr[S.step] };
     if (S.mode === 'eleven') return { meta: t.lineOf(S.step + 1), title: `${step.id}. ${t.eleven.names[S.step]}`, instr: t.eleven.instr[S.step] };
-    return { meta: t.stepOf(1, 2), title: t.cross.centerTitle, instr: t.cross.centerInstr };
+    if (S.step === 0) return { meta: t.stepOf(1, STEPS.length), title: t.cross.centerTitle, instr: t.cross.centerInstr };
+    return { meta: t.stepOf(S.step + 1, STEPS.length), title: t.cross.mirrorTitle(step.id), instr: t.cross.mirrorInstr[S.step - 1] };
   }
 
   function feedbackHTML() {
@@ -641,6 +691,7 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
     else if (fb.kind === 'point') msg = t.offPoint(t.dirs[fb.dir]);
     else if (fb.kind === 'v') msg = t.offV(fb.dir);
     else if (fb.kind === 'h') msg = t.offH(fb.dir);
+    else if (fb.mirror) msg = t.cross.offMirror(fb.n, fb.dir);
     else if (fb.toCenter) msg = t.offMeet(fb.n, fb.dir);
     else msg = t.offAngle(fb.n, fb.dir);
     msg += ' ' + (fb.kind === 'point' ? t.showPoint : t.showLine);
@@ -669,7 +720,7 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
     const faceName = `<span>${t.faceLabel(pad(S.face + 1))}</span>`;
     if (S.screen === 'step') {
       const step = STEPS[S.step], tx = stepTexts(), n = STEPS.length;
-      const bars = S.mode === 'cross' ? '' : `<div class="progress" style="grid-template-columns:repeat(${n},1fr)" aria-hidden="true">${STEPS.map((_, k) => `<span class="${k < S.step ? 'done' : k === S.step ? 'now' : ''}"></span>`).join('')}</div>`;
+      const bars = `<div class="progress" style="grid-template-columns:repeat(${n},1fr)" aria-hidden="true">${STEPS.map((_, k) => `<span class="${k < S.step ? 'done' : k === S.step ? 'now' : ''}"></span>`).join('')}</div>`;
       const nudges = step.kind === 'point' ? nbtn('left', t.nudge.left) + nbtn('up', t.nudge.up) + nbtn('down', t.nudge.down) + nbtn('right', t.nudge.right)
         : step.kind === 'v' ? nbtn('left', t.nudge.left) + nbtn('right', t.nudge.right)
         : step.kind === 'h' ? nbtn('up', t.nudge.up) + nbtn('down', t.nudge.down)
@@ -712,12 +763,12 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
     const rating = total >= 90 ? t.rating.pro : total >= 70 ? t.rating.almost : t.rating.keep;
     const last = S.face === FACES.length - 1;
     let rows;
-    if (S.mode === 'cross') rows = `<li><span>${t.cross.names[0]}</span><b>${S.scores[0]}%</b></li><li><span>${t.cross.names[1]}</span><b>${t.cross.tally(S.correct, ROUNDS)}</b></li>`;
+    if (S.mode === 'cross') rows = S.scores.map((sc, i) => `<li><span>${t.cross.names[i]}</span><b>${sc}%</b></li>`).join('') + `<li><span>${t.cross.names[5]}</span><b>${t.cross.tally(S.correct, ROUNDS)}</b></li>`;
     else {
       const names = S.mode === 'key' ? t.key.names : t.eleven.names;
       rows = names.map((nm, i) => `<li><span>${S.mode === 'eleven' ? (i + 1) + '. ' : ''}${nm}</span><b>${S.scores[i]}%</b></li>`).join('');
     }
-    const toggle = S.mode === 'cross' ? '' : `<div class="toggle" role="group">
+    const toggle = `<div class="toggle" role="group">
         <button type="button" data-act="view" data-v="mine" aria-pressed="${S.view === 'mine'}">${t.viewMine}</button>
         <button type="button" data-act="view" data-v="ideal" aria-pressed="${S.view === 'ideal'}">${t.viewIdeal}</button>
       </div>`;
@@ -737,7 +788,7 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
   }
 
   function resultTotal() {
-    if (S.mode === 'cross') return Math.round((S.scores[0] + S.correct / ROUNDS * 100) / 2);
+    if (S.mode === 'cross') return Math.round((S.scores.reduce((a, b) => a + b, 0) / S.scores.length + S.correct / ROUNDS * 100) / 2);
     return Math.round(S.scores.reduce((a, b) => a + b, 0) / S.scores.length);
   }
 
@@ -789,11 +840,13 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
       S.scores[S.step] = Math.round(clamp(100 - Math.max(0, a - 1) * 7, 0, 100));
       const verdict = a <= 3 ? 'spot' : a <= 7 ? 'close' : 'off';
       let dir;
-      if (st.toCenter) {
+      if (st.mirror) {
+        dir = yAtX(st.pivot, v, st.endX) < yAtX(st.pivot, st.target, st.endX) ? 'high' : 'low';
+      } else if (st.toCenter) {
         const g = geom(f);
         dir = yAtX(st.pivot, v, g.cx) < yAtX(st.pivot, st.target, g.cx) ? 'high' : 'low';
       } else dir = diff * SIDE > 0 ? 'out' : 'in';
-      fb = { kind: 'ray', toCenter: st.toCenter, v: verdict, n: Math.max(1, Math.round(a)), dir };
+      fb = { kind: 'ray', toCenter: st.toCenter, mirror: !!st.mirror, v: verdict, n: Math.max(1, Math.round(a)), dir };
     }
     S.fb = fb; S.checked = true;
     render();
@@ -815,7 +868,11 @@ html.embed h1{font-size:clamp(40px,6vw,64px)}
     if (a === 'check') return check();
     if (a === 'retry') { startStep(S.step); render(); return; }
     if (a === 'next') {
-      if (S.step < STEPS.length - 1) { startStep(S.step + 1); render(); return; }
+      if (S.step < STEPS.length - 1) {
+        startStep(S.step + 1);
+        if (S.mode === 'cross' && S.step === 1) setView(zoomFor('step'));
+        render(); return;
+      }
       if (S.mode === 'cross') {
         S.rounds = makeRounds(); S.round = 0; S.answer = null; S.correct = 0; S.screen = 'round';
         setView(zoomFor('round')); render(); return;
