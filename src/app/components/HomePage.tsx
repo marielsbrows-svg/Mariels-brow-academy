@@ -380,7 +380,7 @@ export const HomePage = () => {
         <div className="hero-visual">
           <div className="bigword" aria-hidden="true">MAP</div>
           <div className="rays" aria-hidden="true"><i /><i /><i /></div>
-          <img className="portrait" src="/Brand/mariel-laptop.webp" alt="Mariel, founder of Mariels Brow Academy" />
+          <img className="portrait" src="/IMG_1421.webp" alt="Mariel, founder of Mariels Brow Academy" />
           <div className="badge badge-a"><b>{t.badgeA[0]}</b>{t.badgeA[1]}</div>
           <div className="badge badge-b"><b>{t.badgeB[0]}</b>{t.badgeB[1]}</div>
         </div>
@@ -409,7 +409,7 @@ export const HomePage = () => {
           <p className="sec-sub" data-reveal style={delay(0.1)}>{t.reachSub}</p>
         </div>
         <figure className="reels" data-reveal>
-          <img src="/Brand/viral-reels.webp" alt={t.reelsAlt} loading="lazy" />
+          <img src="/IMG_1423.webp" alt={t.reelsAlt} loading="lazy" />
         </figure>
         <div className="pgrid">
           {t.problemPoints.map((p, i) => (
@@ -433,7 +433,7 @@ export const HomePage = () => {
           <p className="sec-sub" data-reveal style={delay(0.1)}>{t.methodSub}</p>
         </div>
         <figure className="phones" data-reveal>
-          <img src="/Brand/free-class-phones.webp" alt={t.phonesAlt} loading="lazy" />
+          <img src="/IMG_1424.webp" alt={t.phonesAlt} loading="lazy" />
         </figure>
         <ol className="steps">
           {t.modules.map((m, i) => (
@@ -509,7 +509,7 @@ export const HomePage = () => {
       {/* ───────── ABOUT ───────── */}
       <section className="about">
         <div className="about-media" data-reveal>
-          <img className="headshot" src="/Brand/mariel-headshot.webp" alt="Mariel, founder of Mariels Brow Academy" loading="lazy" />
+          <img className="headshot" src="/IMG_1422.webp" alt="Mariel, founder of Mariels Brow Academy" loading="lazy" />
         </div>
         <div data-reveal style={delay(0.15)}>
           <span className="kicker">{t.aboutKicker}</span>
@@ -543,7 +543,7 @@ export const HomePage = () => {
       {/* ───────── FREE CLASS ───────── */}
       <section className="free" id="free-class">
         <button type="button" className="free-media" data-reveal onClick={() => freeRef.current?.focus()} aria-label={t.freeButton}>
-          <img src="/Brand/free-class-ipad.webp" alt="" loading="lazy" />
+          <img src="/IMG_1425.webp" alt="" loading="lazy" />
           <span className="free-tag">{t.freeTag}</span>
         </button>
         <div data-reveal style={delay(0.15)}>
