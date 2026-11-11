@@ -48,6 +48,19 @@ const DISP_CSS = `
 .mba-dash .disp{font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0.02em;line-height:0.98;}
 `;
 
+// The free class now lives on its own interactive pages
+const FREE_CLASS_PAGES: Record<string, string> = {
+  '1ea01504-3e9d-4eea-95ce-b9bfcdfd4702': '/free-class.html',
+  '9ad4cee5-aadd-4462-b5e5-783022f2280b': '/free-class-es.html',
+};
+
+const CourseLink = ({ courseId, className, children }: { courseId: string; className: string; children: React.ReactNode }) => {
+  const page = FREE_CLASS_PAGES[courseId];
+  return page
+    ? <a href={page} className={className}>{children}</a>
+    : <Link to={`/learn/${courseId}`} className={className}>{children}</Link>;
+};
+
 export const StudentDashboard = () => {
   const { user, profile } = useAuth();
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
@@ -229,13 +242,13 @@ export const StudentDashboard = () => {
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Link
-                          to={`/learn/${enrollment.course_id}`}
+                        <CourseLink
+                          courseId={enrollment.course_id}
                           className="flex items-center gap-2 px-5 py-2.5 bg-white text-black text-[0.58rem] tracking-[0.15em] uppercase"
                         >
                           <Play className="w-3 h-3" />
                           Continue
-                        </Link>
+                        </CourseLink>
                       </div>
                       {enrollment.completed_at && (
                         <div className="absolute top-3 right-3 bg-black text-white px-2.5 py-1 text-[0.5rem] tracking-[0.15em] uppercase flex items-center gap-1">
@@ -257,12 +270,12 @@ export const StudentDashboard = () => {
                           {enrollment.courses.duration_hours} Hours
                         </div>
                       )}
-                      <Link
-                        to={`/learn/${enrollment.course_id}`}
+                      <CourseLink
+                        courseId={enrollment.course_id}
                         className="flex items-center justify-center gap-2 w-full py-3 bg-black text-white text-[0.58rem] tracking-[0.15em] uppercase hover:opacity-80 transition-all"
                       >
                         {enrollment.completed_at ? 'Review Course' : 'Continue Learning'}
-                      </Link>
+                      </CourseLink>
                     </div>
                   </motion.div>
                 ))}
