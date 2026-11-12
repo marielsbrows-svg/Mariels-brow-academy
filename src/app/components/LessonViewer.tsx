@@ -1,78 +1,198 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { ChevronLeft, ChevronRight, CheckCircle, Download, Menu, MessageSquare, ArrowLeft, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { SlideViewer } from './SlideViewer';
 import { QuizComponent } from './QuizComponent';
 
-interface Module {
-  id: string;
-  title: string;
-  order_index: number;
-  lessons: Lesson[];
+// ─────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────
+interface ContentItem { n?: string; t: string; d: string; note?: string }
+interface ContentSection {
+  k?: string; t?: string; s?: string; p?: string;
+  items?: ContentItem[]; list?: string[];
+  table?: { head: string[]; rows: string[][] };
+  callout?: string; outro?: string; quote?: string;
 }
+interface LessonContent { tagline?: string; sections: ContentSection[] }
 
+interface Resource { id: string; title: string; file_url: string; file_type: string | null; resource_type: string }
 interface Lesson {
-  id: string;
-  module_id: string;
-  title: string;
-  description: string;
-  video_url: string | null;
-  duration: number | null;
-  order_index: number;
+  id: string; module_id: string; title: string; description: string;
+  video_url: string | null; duration: number | null; order_index: number;
+  content?: LessonContent | null;
   resources?: Resource[];
-  progress?: {
-    completed: boolean;
-    last_position_seconds: number;
-  };
+  progress?: { completed: boolean; last_position_seconds: number };
 }
+interface Module { id: string; title: string; order_index: number; lessons: Lesson[] }
+interface Course { id: string; title: string; language?: string }
 
-interface Resource {
-  id: string;
-  title: string;
-  file_url: string;
-  file_type: string | null;
-  resource_type: string;
-}
+// ─────────────────────────────────────────────────────────────
+// Styles: same look as the free class (paper, ink, Horizon + Anonymous Pro)
+// ─────────────────────────────────────────────────────────────
+const CSS = `
+.mba-course{--ink:#191a1e;--paper:#f5f4f1;--card:#fff;--panel:#eae7e1;--line:#dedbd6;--line2:#cfcac2;--muted:#847f76;--soft:#5f5b55;--ease:cubic-bezier(.2,.8,.2,1);
+  --display:'Horizon','Arial Black',Arial,sans-serif;--mono:'Anonymous Pro','Courier New',monospace;
+  background:var(--paper);color:var(--ink);font-family:var(--mono);min-height:100vh;padding-top:77px;-webkit-font-smoothing:antialiased;}
+.mba-course *{box-sizing:border-box;}
+.mba-course button{font-family:inherit;}
+.mba-course h1,.mba-course h2,.mba-course h3,.mba-course h4,.mba-course p,.mba-course label{font-family:var(--mono);}
+.mba-course .quizwrap *{font-family:var(--mono)!important;}
+.mba-course .quizwrap h3{text-transform:none!important;letter-spacing:0!important;font-weight:700!important;font-size:18px!important;line-height:1.45!important;}
+.mba-course .quizwrap > div{border:1px solid var(--line)!important;border-left:3px solid var(--ink)!important;}
+.mba-course .disp{font-family:var(--display);font-weight:400;text-transform:uppercase;letter-spacing:0;line-height:1.08;}
+.mba-course .kick{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+.mba-course a:focus-visible,.mba-course button:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
 
-interface Course {
-  id: string;
-  title: string;
-  language?: string;
-}
+.mba-course .wrap{display:flex;align-items:flex-start;}
 
-const DISP_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500&display=swap');
-.mba-lesson{--ease:cubic-bezier(.2,.8,.2,1);font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:300;}
-.mba-lesson .disp{font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0.02em;line-height:0.98;}
-@keyframes mbaUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+/* sidebar */
+.mba-course .side{position:sticky;top:77px;width:340px;flex-shrink:0;height:calc(100vh - 77px);overflow-y:auto;border-right:1px solid var(--line);background:var(--paper);}
+.mba-course .side-head{padding:22px 22px 20px;border-bottom:1px solid var(--line);}
+.mba-course .back{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;}
+.mba-course .back:hover{color:var(--ink);}
+.mba-course .side-title{font-size:17px;margin:16px 0 0;}
+.mba-course .bar{height:3px;background:var(--line);margin-top:16px;}
+.mba-course .bar i{display:block;height:100%;background:var(--ink);transition:width .6s var(--ease);}
+.mba-course .bar-label{margin-top:8px;font-size:11px;letter-spacing:.1em;color:var(--muted);}
+.mba-course .mod{border-bottom:1px solid var(--line);}
+.mba-course .mod-btn{width:100%;display:grid;grid-template-columns:1fr auto 18px;gap:10px;align-items:center;padding:16px 22px;background:none;border:0;text-align:left;cursor:pointer;color:var(--ink);}
+.mba-course .mod-btn:hover{background:var(--panel);}
+.mba-course .mod-num{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.mba-course .mod-name{display:block;font-family:var(--display);text-transform:uppercase;font-size:13px;line-height:1.2;}
+.mba-course .mod-count{font-size:11px;color:var(--muted);}
+.mba-course .chev{width:18px;height:18px;transition:transform .25s var(--ease);}
+.mba-course .mod.open .chev{transform:rotate(180deg);}
+.mba-course .les{list-style:none;margin:0;padding:0 0 10px;}
+.mba-course .les-btn{width:100%;display:grid;grid-template-columns:20px 1fr;gap:12px;align-items:start;padding:11px 22px 11px 19px;background:none;border:0;border-left:3px solid transparent;text-align:left;cursor:pointer;color:var(--soft);}
+.mba-course .les-btn:hover{background:var(--panel);color:var(--ink);}
+.mba-course .les-btn.cur{background:var(--card);border-left-color:var(--ink);color:var(--ink);}
+.mba-course .les-t{display:block;font-size:13px;line-height:1.4;}
+.mba-course .les-btn.cur .les-t{font-weight:700;}
+.mba-course .les-d{display:block;margin-top:3px;font-size:11px;color:var(--muted);}
+.mba-course .dot{width:16px;height:16px;margin-top:1px;border:1px solid var(--line2);border-radius:50%;display:grid;place-items:center;background:var(--card);}
+.mba-course .dot.done{background:var(--ink);border-color:var(--ink);color:#fff;font-size:10px;}
+
+/* main */
+.mba-course .main{flex:1;min-width:0;}
+.mba-course .page{max-width:900px;margin:0 auto;padding:40px clamp(16px,4vw,48px) 60px;}
+.mba-course .crumb{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 20px;}
+.mba-course .l-title{font-size:clamp(26px,3.4vw,42px);margin:14px 0 0;}
+.mba-course .tagline{margin:14px 0 0;font-size:16px;line-height:1.6;color:var(--soft);}
+.mba-course .desc{margin:12px 0 0;font-size:14px;line-height:1.75;color:var(--muted);max-width:62ch;}
+.mba-course .meta{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;margin-top:22px;padding-top:20px;border-top:1px solid var(--line);}
+.mba-course .meta span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+
+.mba-course .listen{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line2);background:var(--card);color:var(--ink);font:700 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;}
+.mba-course .listen:hover,.mba-course .listen.on{background:var(--ink);border-color:var(--ink);color:#fff;}
+
+.mba-course .sec{margin-top:22px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--ink);padding:clamp(22px,3.4vw,36px);}
+.mba-course .sec-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.mba-course .sec-t{font-size:clamp(20px,2.3vw,28px);margin:14px 0 0;}
+.mba-course .sec-s{display:block;color:var(--muted);font-size:.72em;margin-top:6px;}
+.mba-course .sec-p{margin:16px 0 0;font-size:15px;line-height:1.75;color:#3d3a36;max-width:66ch;}
+.mba-course .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:22px;}
+.mba-course .card{background:#f9f8f4;border:1px solid var(--line);padding:18px 18px 20px;}
+.mba-course .card h4{margin:0;font-size:15px;line-height:1.35;font-weight:700;}
+.mba-course .card p{margin:8px 0 0;font-size:13.5px;line-height:1.7;color:var(--soft);}
+.mba-course .rows{margin-top:22px;border-top:1px solid var(--line);}
+.mba-course .row{display:grid;grid-template-columns:72px 1fr;gap:14px;padding:18px 0;border-bottom:1px solid var(--line);}
+.mba-course .row-n{font-family:var(--display);font-size:20px;line-height:1;color:var(--muted);padding-top:2px;}
+.mba-course .row-n.small{font-family:var(--mono);font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding-top:4px;}
+.mba-course .row h4{margin:0;font-size:15px;line-height:1.35;font-weight:700;}
+.mba-course .row p{margin:6px 0 0;font-size:14px;line-height:1.7;color:var(--soft);}
+.mba-course .note{display:block;margin-top:8px;font-size:12.5px;line-height:1.6;color:var(--muted);}
+.mba-course .checks{list-style:none;margin:20px 0 0;padding:0;}
+.mba-course .checks li{display:flex;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px;line-height:1.6;}
+.mba-course .checks li::before{content:'◉';font-size:12px;}
+.mba-course .tbl{margin-top:22px;overflow-x:auto;}
+.mba-course table{width:100%;min-width:520px;border-collapse:collapse;font-size:13.5px;}
+.mba-course th{text-align:left;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:400;padding:0 12px 10px 0;border-bottom:1px solid var(--ink);}
+.mba-course td{padding:12px 12px 12px 0;border-bottom:1px solid var(--line);color:var(--soft);}
+.mba-course td:first-child{color:var(--ink);font-weight:700;}
+.mba-course .callout{margin-top:22px;background:var(--ink);color:#fff;padding:14px 18px;font-size:14px;line-height:1.6;}
+.mba-course .outro{margin:20px 0 0;font-size:14.5px;line-height:1.75;color:#3d3a36;max-width:66ch;}
+
+.mba-course .quote{margin-top:22px;background:var(--ink);color:#fff;padding:clamp(28px,5vw,56px);}
+.mba-course .quote p{margin:0;font-family:var(--display);text-transform:uppercase;font-size:clamp(18px,2.4vw,28px);line-height:1.25;}
+.mba-course .quote .by{display:block;margin-top:20px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#bdb7ad;}
+.mba-course .quote .listen{background:transparent;color:#fff;border-color:rgba(255,255,255,.35);margin-top:20px;}
+.mba-course .quote .listen:hover,.mba-course .quote .listen.on{background:#fff;color:var(--ink);}
+
+.mba-course .blk{margin-top:36px;}
+.mba-course .blk-h{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.mba-course .video{aspect-ratio:16/9;background:#000;}
+.mba-course .video iframe,.mba-course .video video{width:100%;height:100%;border:0;display:block;}
+.mba-course .files a{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--card);border:1px solid var(--line);margin-top:8px;color:var(--ink);text-decoration:none;}
+.mba-course .files a:hover{border-color:var(--ink);}
+.mba-course .files b{flex:1;font-size:14px;}
+.mba-course .files span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+
+.mba-course .next{margin-top:36px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;background:var(--panel);border:1px solid var(--line);padding:clamp(20px,3vw,30px);}
+.mba-course .next h4{margin:8px 0 0;font-size:clamp(16px,1.8vw,20px);}
+.mba-course .next p{margin:8px 0 0;font-size:13.5px;line-height:1.65;color:var(--soft);}
+.mba-course .btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:50px;padding:14px 20px;background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:2px;font:700 12px/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-decoration:none;white-space:nowrap;}
+.mba-course .btn:hover{filter:brightness(1.25);}
+.mba-course .btn.ghost{background:var(--card);color:var(--ink);border-color:var(--line2);}
+.mba-course .btn.ghost:hover{border-color:var(--ink);filter:none;}
+.mba-course .btn:disabled{opacity:.35;cursor:default;}
+.mba-course .done-row{margin-top:36px;text-align:center;background:var(--card);border:1px solid var(--line);padding:28px 20px;}
+.mba-course .done-row h4{margin:0 0 16px;font-size:18px;}
+.mba-course .pn{display:flex;justify-content:space-between;gap:16px;margin-top:36px;padding-top:22px;border-top:1px solid var(--line2);}
+.mba-course .pn button{background:none;border:0;padding:0;cursor:pointer;color:var(--ink);text-align:left;max-width:46%;}
+.mba-course .pn button:last-child{text-align:right;}
+.mba-course .pn button:disabled{opacity:.3;cursor:default;}
+.mba-course .pn small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.mba-course .pn b{display:block;margin-top:6px;font-size:14px;line-height:1.4;}
+
+.mba-course .celebrate{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(245,244,241,.86);pointer-events:none;animation:mbaFade .3s ease both;}
+.mba-course .celebrate div{background:var(--ink);color:#fff;padding:22px 30px;font-family:var(--display);text-transform:uppercase;font-size:22px;animation:mbaPop .5s var(--ease) both;}
 @keyframes mbaFade{from{opacity:0}to{opacity:1}}
-.mba-reveal>*{animation:mbaUp .7s var(--ease) both;}
-.mba-reveal>*:nth-child(1){animation-delay:.03s}.mba-reveal>*:nth-child(2){animation-delay:.09s}.mba-reveal>*:nth-child(3){animation-delay:.15s}.mba-reveal>*:nth-child(4){animation-delay:.21s}.mba-reveal>*:nth-child(5){animation-delay:.27s}.mba-reveal>*:nth-child(6){animation-delay:.33s}.mba-reveal>*:nth-child(n+7){animation-delay:.38s}
-.mba-btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;border:0;transition:transform .25s var(--ease),opacity .25s var(--ease);}
-.mba-btn:hover{transform:translateY(-2px)}
-.mba-btn .ar{transition:transform .25s var(--ease)}
-.mba-btn:hover .ar{transform:translateX(4px)}
-.mba-btn::after{content:'';position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);animation:mbaSheen 4s ease-in-out infinite;}
-@keyframes mbaSheen{0%{left:-60%}55%{left:130%}100%{left:130%}}
-.mba-prog{position:relative;overflow:hidden;transition:width .8s var(--ease)}
-.mba-prog::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);animation:mbaSheen 3s ease-in-out infinite;}
-.mba-row{transition:background .2s var(--ease),border-color .2s var(--ease),transform .2s var(--ease)}
-.mba-row:hover{transform:translateX(3px)}
-@keyframes mbaPop{0%{transform:scale(.4);opacity:0}45%{transform:scale(1.08);opacity:1}70%{transform:scale(.97)}100%{transform:scale(1)}}
-@keyframes mbaRing{0%{transform:scale(.6);opacity:0}40%{opacity:.6}100%{transform:scale(1.9);opacity:0}}
-.mba-celebrate{animation:mbaFade .3s ease both}
-.mba-celebrate .pop{animation:mbaPop .6s var(--ease) both}
-.mba-celebrate .ring{animation:mbaRing 1s var(--ease) both}
+@keyframes mbaPop{0%{transform:scale(.8);opacity:0}100%{transform:none;opacity:1}}
+@keyframes mbaUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.mba-course .page>*{animation:mbaUp .6s var(--ease) both;}
+
+/* mobile */
+.mba-course .mtop,.mba-course .mbar,.mba-course .sheet,.mba-course .shade{display:none;}
+@media (max-width:1023px){
+  .mba-course{padding-top:63px;}
+  .mba-course .side{display:none;}
+  .mba-course .mtop{display:block;position:sticky;top:63px;z-index:20;background:var(--paper);border-bottom:1px solid var(--line);}
+  .mba-course .mtop-row{display:flex;align-items:center;gap:12px;padding:12px 16px;}
+  .mba-course .mtop-row b{flex:1;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mba-course .mtop-row span{font-size:11px;color:var(--muted);}
+  .mba-course .mtop .bar{margin:0;}
+  .mba-course .page{padding:26px 16px 120px;}
+  .mba-course .grid{grid-template-columns:1fr;}
+  .mba-course .row{grid-template-columns:52px 1fr;}
+  .mba-course .next{grid-template-columns:1fr;}
+  .mba-course .next .btn{width:100%;}
+  .mba-course .pn{display:none;}
+  .mba-course .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:1px solid var(--line);}
+  .mba-course .mbar button{height:48px;border:1px solid var(--line2);background:var(--card);color:var(--ink);font:700 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;}
+  .mba-course .mbar .sq{width:52px;flex-shrink:0;font-size:18px;}
+  .mba-course .mbar .mid{flex:1;}
+  .mba-course .mbar .go{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .mba-course .mbar button:disabled{opacity:.3;}
+  .mba-course .shade{display:block;position:fixed;inset:0;z-index:40;background:rgba(25,26,30,.35);opacity:0;pointer-events:none;transition:opacity .25s;}
+  .mba-course .shade.show{opacity:1;pointer-events:auto;}
+  .mba-course .sheet{display:flex;flex-direction:column;position:fixed;left:0;right:0;bottom:0;z-index:50;max-height:80vh;background:var(--paper);border-top:1px solid var(--line2);transform:translateY(102%);transition:transform .3s var(--ease);padding-bottom:env(safe-area-inset-bottom,0px);}
+  .mba-course .sheet.show{transform:none;}
+  .mba-course .sheet-h{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);}
+  .mba-course .sheet-h b{font-family:var(--display);text-transform:uppercase;font-size:15px;}
+  .mba-course .sheet-h button{background:none;border:0;font-size:22px;line-height:1;cursor:pointer;color:var(--ink);}
+  .mba-course .sheet-b{overflow-y:auto;}
+}
+@media (prefers-reduced-motion:reduce){.mba-course *{animation:none!important;transition:none!important;}}
 `;
 
-// ── Practice Embed (interactive brow mapping, served from /public) ─────────
+// ─────────────────────────────────────────────────────────────
+// Small pieces
+// ─────────────────────────────────────────────────────────────
 const PracticeEmbed = ({ src, title }: { src: string; title: string }) => {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const [height, setHeight] = useState(900);
-
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       if (e.source !== frameRef.current?.contentWindow) return;
@@ -83,138 +203,71 @@ const PracticeEmbed = ({ src, title }: { src: string; title: string }) => {
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
   }, []);
-
   const url = src + (src.includes('?') ? '&' : '?') + 'embed=1';
-  return (
-    <iframe
-      ref={frameRef}
-      src={url}
-      title={title}
-      className="w-full block bg-white"
-      style={{ height, border: 0 }}
-    />
-  );
+  return <iframe ref={frameRef} src={url} title={title} style={{ width: '100%', height, border: 0, display: 'block', background: '#fff' }} />;
 };
 
-// ── Audio Player Component ──────────────────────────────────────────────────
-const AudioPlayer = ({ src }: { src: string }) => {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [playing, setPlaying] = useState(false);
-  const [muted, setMuted] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
+const Chevron = () => (
+  <svg className="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+);
 
-  const togglePlay = () => {
-    if (!audioRef.current) return;
-    if (playing) { audioRef.current.pause(); } else { audioRef.current.play(); }
-    setPlaying(!playing);
-  };
-
-  const toggleMute = () => {
-    if (!audioRef.current) return;
-    audioRef.current.muted = !muted;
-    setMuted(!muted);
-  };
-
-  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!audioRef.current) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    audioRef.current.currentTime = ((e.clientX - rect.left) / rect.width) * audioRef.current.duration;
-  };
-
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  };
-
-  return (
-    <div className="bg-black border border-white/10 p-5">
-      <audio
-        ref={audioRef}
-        src={src}
-        onTimeUpdate={() => { if (audioRef.current) { setCurrentTime(audioRef.current.currentTime); setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100); } }}
-        onLoadedMetadata={() => { if (audioRef.current) setDuration(audioRef.current.duration); }}
-        onEnded={() => setPlaying(false)}
-      />
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-4 h-px bg-white/20" />
-        <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/30">Lesson Voiceover</span>
-      </div>
-      <div className="flex items-center gap-4">
-        <button onClick={togglePlay} className="w-10 h-10 bg-white text-black flex items-center justify-center hover:bg-neutral-200 transition-colors flex-shrink-0">
-          {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-        </button>
-        <div className="flex-1">
-          <div className="h-1 bg-white/10 cursor-pointer relative" onClick={handleSeek}>
-            <div className="h-full bg-white transition-all" style={{ width: `${progress}%` }} />
-          </div>
-          <div className="flex justify-between mt-1.5">
-            <span className="text-[0.52rem] text-white/30">{formatTime(currentTime)}</span>
-            <span className="text-[0.52rem] text-white/30">{formatTime(duration)}</span>
-          </div>
-        </div>
-        <button onClick={toggleMute} className="text-white/40 hover:text-white transition-colors flex-shrink-0">
-          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-        </button>
-      </div>
-      <p className="text-[0.55rem] text-white/20 tracking-wide mt-3">
-        Play the voiceover while clicking through the slides above
-      </p>
-    </div>
-  );
+const videoEmbed = (url: string) => {
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    const id = url.split('youtu.be/')[1]?.split(/[?&]/)[0] || url.split('v=')[1]?.split('&')[0] || url.split('/embed/')[1]?.split(/[?&]/)[0];
+    return <iframe src={`https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title="Lesson video" />;
+  }
+  if (url.includes('vimeo.com')) {
+    return <iframe src={url.replace('vimeo.com/', 'player.vimeo.com/video/')} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title="Lesson video" />;
+  }
+  return <video src={url} controls playsInline />;
 };
 
-// ── Main Component ──────────────────────────────────────────────────────────
+// "Module 2 — The Clean Map" → { num: "Module 02", name: "The Clean Map" }
+const splitModule = (title: string) => {
+  const m = title.match(/^(M[oó]dulo?|Module)\s*(\d+)\s*[—–\-:·]\s*(.+)$/i);
+  if (!m) return { num: '', name: title };
+  return { num: `${m[1]} ${m[2].padStart(2, '0')}`, name: m[3] };
+};
+
+// ─────────────────────────────────────────────────────────────
+// Main page
+// ─────────────────────────────────────────────────────────────
 export const LessonViewer = () => {
   const { courseId } = useParams();
   const { user } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [openMods, setOpenMods] = useState<Record<string, boolean>>({});
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [slidesCompleted, setSlidesCompleted] = useState(false);
+  const [audioMap, setAudioMap] = useState<Record<number, string>>({});
+  const [playing, setPlaying] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    if (courseId && user) fetchCourseContent();
-  }, [courseId, user]);
-
-  useEffect(() => {
-    setSlidesCompleted(false);
-  }, [currentLesson?.id]);
+  useEffect(() => { if (courseId && user) fetchCourseContent(); }, [courseId, user]);
 
   const fetchCourseContent = async () => {
     try {
       const { data: courseData } = await supabase.from('courses').select('id, title, language').eq('id', courseId).single();
       setCourse(courseData);
-
       const { data: modulesData } = await supabase.from('course_modules').select('*').eq('course_id', courseId).order('order_index', { ascending: true });
-
       if (modulesData) {
-        const modulesWithLessons = await Promise.all(
-          modulesData.map(async (module) => {
-            const { data: lessonsData } = await supabase.from('lessons').select('*').eq('module_id', module.id).order('order_index', { ascending: true });
-            const lessonsWithProgress = await Promise.all(
-              (lessonsData || []).map(async (lesson) => {
-                const { data: progressData } = await supabase.from('lesson_progress').select('completed, last_position_seconds').eq('user_id', user?.id).eq('lesson_id', lesson.id).single();
-                const { data: resourcesData } = await supabase.from('lesson_resources').select('*').eq('lesson_id', lesson.id);
-                return {
-                  ...lesson,
-                  progress: progressData || { completed: false, last_position_seconds: 0 },
-                  resources: resourcesData || [],
-                };
-              })
-            );
-            return { ...module, lessons: lessonsWithProgress };
-          })
-        );
-        setModules(modulesWithLessons);
-        if (modulesWithLessons.length > 0 && modulesWithLessons[0].lessons.length > 0) {
-          setCurrentLesson(modulesWithLessons[0].lessons[0]);
-        }
+        const withLessons = await Promise.all(modulesData.map(async (module: any) => {
+          const { data: lessonsData } = await supabase.from('lessons').select('*').eq('module_id', module.id).order('order_index', { ascending: true });
+          const lessons = await Promise.all((lessonsData || []).map(async (lesson: any) => {
+            const { data: progressData } = await supabase.from('lesson_progress').select('completed, last_position_seconds').eq('user_id', user?.id).eq('lesson_id', lesson.id).maybeSingle();
+            const { data: resourcesData } = await supabase.from('lesson_resources').select('*').eq('lesson_id', lesson.id);
+            return { ...lesson, progress: progressData || { completed: false, last_position_seconds: 0 }, resources: resourcesData || [] };
+          }));
+          return { ...module, lessons };
+        }));
+        setModules(withLessons);
+        const all = withLessons.flatMap((m: Module) => m.lessons);
+        const wanted = new URLSearchParams(window.location.search).get('lesson');
+        const firstOpen = all.find((l: Lesson) => l.id === wanted) || all.find((l: Lesson) => !l.progress?.completed) || all[0];
+        if (firstOpen) setCurrentLesson(firstOpen);
       }
     } catch (error) {
       console.error('Error fetching course content:', error);
@@ -223,366 +276,328 @@ export const LessonViewer = () => {
     }
   };
 
+  // when the lesson changes: open its module, load its voiceovers, scroll to top, update the link
+  useEffect(() => {
+    if (!currentLesson) return;
+    setOpenMods((o) => ({ ...o, [currentLesson.module_id]: true }));
+    audioRef.current?.pause(); setPlaying(null); setAudioMap({});
+    supabase.from('slide_audio').select('slide_number, audio_url').eq('lesson_id', currentLesson.id)
+      .then(({ data }: any) => {
+        const map: Record<number, string> = {};
+        (data || []).forEach((r: any) => { if (r.audio_url) map[r.slide_number] = r.audio_url; });
+        setAudioMap(map);
+      });
+    window.scrollTo({ top: 0 });
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.set('lesson', currentLesson.id);
+      window.history.replaceState(null, '', u.toString());
+    } catch { /* ignore */ }
+  }, [currentLesson?.id]);
+
+  useEffect(() => () => { audioRef.current?.pause(); }, []);
+
+  const toggleAudio = (slide: number) => {
+    const src = audioMap[slide];
+    if (!src) return;
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.onended = () => setPlaying(null);
+    }
+    const a = audioRef.current;
+    if (playing === slide) { a.pause(); setPlaying(null); return; }
+    a.src = src; a.currentTime = 0;
+    a.play().then(() => setPlaying(slide)).catch(() => setPlaying(null));
+  };
+
   const markLessonComplete = async (lessonId: string) => {
     if (!user) return;
     try {
-      await supabase.from('lesson_progress').upsert({
-        user_id: user.id,
-        lesson_id: lessonId,
-        completed: true,
-        completed_at: new Date().toISOString(),
-      });
-      setModules(prev => prev.map(module => ({
-        ...module,
-        lessons: module.lessons.map(lesson =>
-          lesson.id === lessonId
-            ? { ...lesson, progress: { ...lesson.progress!, completed: true } }
-            : lesson
-        ),
-      })));
+      await supabase.from('lesson_progress').upsert({ user_id: user.id, lesson_id: lessonId, completed: true, completed_at: new Date().toISOString() });
+      setModules((prev) => prev.map((m) => ({ ...m, lessons: m.lessons.map((l) => l.id === lessonId ? { ...l, progress: { ...l.progress!, completed: true } } : l) })));
+      setCurrentLesson((c) => c && c.id === lessonId ? { ...c, progress: { ...c.progress!, completed: true } } : c);
       setJustCompleted(true);
-      setTimeout(() => setJustCompleted(false), 1700);
+      setTimeout(() => setJustCompleted(false), 1500);
     } catch (error) {
       console.error('Error marking lesson complete:', error);
     }
   };
 
-  const getNextLesson = () => {
-    if (!currentLesson) return null;
-    for (let i = 0; i < modules.length; i++) {
-      const lessonIndex = modules[i].lessons.findIndex(l => l.id === currentLesson.id);
-      if (lessonIndex !== -1) {
-        if (lessonIndex < modules[i].lessons.length - 1) return modules[i].lessons[lessonIndex + 1];
-        if (i < modules.length - 1 && modules[i + 1].lessons.length > 0) return modules[i + 1].lessons[0];
-      }
-    }
-    return null;
-  };
-
-  const getPreviousLesson = () => {
-    if (!currentLesson) return null;
-    for (let i = 0; i < modules.length; i++) {
-      const lessonIndex = modules[i].lessons.findIndex(l => l.id === currentLesson.id);
-      if (lessonIndex !== -1) {
-        if (lessonIndex > 0) return modules[i].lessons[lessonIndex - 1];
-        if (i > 0 && modules[i - 1].lessons.length > 0) return modules[i - 1].lessons[modules[i - 1].lessons.length - 1];
-      }
-    }
-    return null;
-  };
+  const allLessons = useMemo(() => modules.flatMap((m) => m.lessons), [modules]);
+  const idx = allLessons.findIndex((l) => l.id === currentLesson?.id);
+  const prevLesson = idx > 0 ? allLessons[idx - 1] : null;
+  const nextLesson = idx >= 0 && idx < allLessons.length - 1 ? allLessons[idx + 1] : null;
+  const total = allLessons.length;
+  const doneCount = allLessons.filter((l) => l.progress?.completed).length;
+  const pct = total ? Math.round((doneCount / total) * 100) : 0;
+  const isES = (course?.language || '').toUpperCase() === 'ES';
+  const go = (l: Lesson | null) => { if (l) { setCurrentLesson(l); setSheetOpen(false); } };
 
   const handleQuizPass = async (lessonId: string) => {
     await markLessonComplete(lessonId);
-    setTimeout(() => {
-      const next = getNextLesson();
-      if (next) setCurrentLesson(next);
-    }, 2500);
+    setTimeout(() => go(nextLesson), 2500);
+  };
+
+  const L = isES ? {
+    back: 'Panel', complete: 'completado', lesson: 'Lección', of: 'de', listen: 'Escuchar', pause: 'Pausa', intro: 'Escuchar la introducción',
+    watch: 'Mira la demostración', practice: 'Práctica', materials: 'Materiales', open: 'Abrir', upNext: 'Siguiente lección', start: 'Empezar',
+    finished: '¿Terminaste esta lección?', mark: 'Marcar como completada', prev: 'Anterior', next: 'Siguiente', lessons: 'Lecciones',
+    celebrate: '¡Completada!', none: 'No hay lecciones disponibles', min: 'min', sections: 'secciones', courseDone: 'Terminaste el curso', dashboard: 'Ir al panel', quiz: 'Prueba',
+  } : {
+    back: 'Dashboard', complete: 'complete', lesson: 'Lesson', of: 'of', listen: 'Listen', pause: 'Pause', intro: 'Listen to the intro',
+    watch: 'Watch the demo', practice: 'Practice', materials: 'Materials', open: 'Open', upNext: 'Up next', start: 'Start',
+    finished: 'Finished this lesson?', mark: 'Mark as complete', prev: 'Previous', next: 'Next', lessons: 'Lessons',
+    celebrate: 'Complete!', none: 'No lessons available', min: 'min', sections: 'sections', courseDone: 'You’ve reached the end of the course', dashboard: 'Go to dashboard', quiz: 'Quiz',
   };
 
   if (loading) {
     return (
-      <div className="mba-lesson min-h-screen bg-black flex items-center justify-center">
-        <style>{DISP_CSS}</style>
-        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+      <div className="mba-course" style={{ display: 'grid', placeItems: 'center' }}>
+        <style>{CSS}</style>
+        <span className="kick">…</span>
       </div>
     );
   }
 
-  const allLessons = modules.flatMap((m) => m.lessons);
-  const total = allLessons.length;
-  const currentIndex = allLessons.findIndex((l) => l.id === currentLesson?.id);
-  const completedCount = allLessons.filter((l) => l.progress?.completed).length;
-  const pct = total ? Math.round((completedCount / total) * 100) : 0;
-  const isES = (course?.language || '').toUpperCase() === 'ES';
-  const L = isES
-    ? { dashboard:'Panel', current:'Lección Actual', watch:'Mira la Demostración', practice:'Práctica', materials:'Materiales', open:'Abrir', workbook:'Cuaderno', resource:'Recurso', community_t:'Únete a la Conversación', community_s:'Conecta con otras estudiantes y comparte ideas', community_b:'Ir a la Comunidad', finished:'¿Terminaste esta lección?', mark:'Marcar como Completada', prev:'Anterior', next:'Siguiente Lección', lessons:'Lecciones', complete:'completado', none:'No hay lecciones disponibles', celebrate:'¡Completada!' }
-    : { dashboard:'Dashboard', current:'Current Lesson', watch:'Watch the Demo', practice:'Practice', materials:'Materials', open:'Open', workbook:'Workbook', resource:'Resource', community_t:'Join the Discussion', community_s:'Connect with fellow students and share insights', community_b:'Go to Community', finished:'Finished this lesson?', mark:'Mark as Complete', prev:'Previous', next:'Next Lesson', lessons:'Lessons', complete:'complete', none:'No lessons available', celebrate:'Complete!' };
+  const ListenBtn = ({ slide, label }: { slide: number; label?: string }) =>
+    audioMap[slide] ? (
+      <button type="button" className={`listen${playing === slide ? ' on' : ''}`} onClick={() => toggleAudio(slide)} aria-pressed={playing === slide}>
+        {playing === slide ? `❚❚ ${L.pause}` : `▶ ${label || L.listen}`}
+      </button>
+    ) : null;
 
-  const LessonList = ({ onPick }: { onPick?: () => void }) => (
-    <div className="p-4">
-      {modules.map((module) => (
-        <div key={module.id} className="mb-8">
-          <div className="flex items-center gap-2 mb-3 px-2">
-            <div className="w-3 h-px bg-white/20" />
-            <h3 className="text-[0.52rem] tracking-[0.2em] uppercase text-white/30">{module.title}</h3>
+  const LessonList = () => (
+    <nav aria-label={L.lessons}>
+      {modules.map((m) => {
+        const { num, name } = splitModule(m.title);
+        const open = !!openMods[m.id];
+        const done = m.lessons.filter((l) => l.progress?.completed).length;
+        return (
+          <div key={m.id} className={`mod${open ? ' open' : ''}`}>
+            <button type="button" className="mod-btn" aria-expanded={open} onClick={() => setOpenMods((o) => ({ ...o, [m.id]: !open }))}>
+              <span>
+                {num && <span className="mod-num">{num}</span>}
+                <span className="mod-name">{name}</span>
+              </span>
+              <span className="mod-count">{done}/{m.lessons.length}</span>
+              <Chevron />
+            </button>
+            {open && (
+              <ul className="les">
+                {m.lessons.map((l) => (
+                  <li key={l.id}>
+                    <button type="button" className={`les-btn${currentLesson?.id === l.id ? ' cur' : ''}`} onClick={() => go(l)} aria-current={currentLesson?.id === l.id ? 'page' : undefined}>
+                      <span className={`dot${l.progress?.completed ? ' done' : ''}`}>{l.progress?.completed ? '✓' : ''}</span>
+                      <span>
+                        <span className="les-t">{l.title.trim()}</span>
+                        {l.duration ? <span className="les-d">{l.duration} {L.min}</span> : null}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-          <div className="space-y-0.5">
-            {module.lessons.map((lesson) => (
-              <button
-                key={lesson.id}
-                onClick={() => { setCurrentLesson(lesson); onPick?.(); }}
-                className={`mba-row w-full text-left px-4 py-3 flex items-center gap-3 ${
-                  currentLesson?.id === lesson.id
-                    ? 'bg-white/10 border-l-2 border-white'
-                    : 'hover:bg-white/5 border-l-2 border-transparent'
-                }`}
-              >
-                <div className="flex-shrink-0">
-                  {lesson.progress?.completed
-                    ? <CheckCircle className="w-4 h-4 text-white/60" />
-                    : <div className="w-4 h-4 border border-white/20 rounded-full" />
-                  }
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs text-white/70 truncate leading-relaxed">{lesson.title}</div>
-                  {lesson.duration && (
-                    <div className="text-[0.52rem] tracking-wide text-white/30 mt-0.5">{lesson.duration} min</div>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
+        );
+      })}
+    </nav>
   );
 
-  return (
-    <div className="mba-lesson min-h-screen bg-black text-white pt-20">
-      <style>{DISP_CSS}</style>
-
-      {justCompleted && (
-        <div className="mba-celebrate fixed inset-0 z-[60] flex items-center justify-center bg-black/70 pointer-events-none">
-          <div className="relative flex flex-col items-center">
-            <span className="ring absolute top-0 w-24 h-24 rounded-full border border-white/40" />
-            <div className="pop w-24 h-24 rounded-full bg-white flex items-center justify-center">
-              <CheckCircle className="w-12 h-12 text-black" />
-            </div>
-            <p className="pop disp text-2xl text-white mt-6">{L.celebrate}</p>
+  const Section = ({ s, slide }: { s: ContentSection; slide: number }) => {
+    if (s.quote) {
+      return (
+        <section className="quote">
+          <p>{s.quote}</p>
+          <span className="by">— Mariel</span>
+          <ListenBtn slide={slide} />
+        </section>
+      );
+    }
+    const numbered = (s.items || []).some((i) => i.n);
+    return (
+      <section className="sec">
+        <div className="sec-top">
+          <span className="kick">{s.k}</span>
+          <ListenBtn slide={slide} />
+        </div>
+        {s.t && <h3 className="disp sec-t">{s.t}{s.s && <span className="sec-s">{s.s}</span>}</h3>}
+        {s.p && <p className="sec-p">{s.p}</p>}
+        {s.items && s.items.length > 0 && (numbered ? (
+          <div className="rows">
+            {s.items.map((it, i) => (
+              <div className="row" key={i}>
+                <span className={`row-n${it.n && it.n.length > 5 ? ' small' : ''}`}>{it.n}</span>
+                <div>
+                  {it.t && <h4>{it.t}</h4>}
+                  <p>{it.d}</p>
+                  {it.note && <span className="note">{it.note}</span>}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="grid">
+            {s.items.map((it, i) => (
+              <div className="card" key={i}>
+                <h4>{it.t}</h4>
+                <p>{it.d}</p>
+                {it.note && <span className="note">{it.note}</span>}
+              </div>
+            ))}
+          </div>
+        ))}
+        {s.list && <ul className="checks">{s.list.map((x, i) => <li key={i}>{x}</li>)}</ul>}
+        {s.table && (
+          <div className="tbl">
+            <table>
+              <thead><tr>{s.table.head.map((h) => <th key={h}>{h}</th>)}</tr></thead>
+              <tbody>{s.table.rows.map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j}>{c}</td>)}</tr>)}</tbody>
+            </table>
+          </div>
+        )}
+        {s.callout && <div className="callout">{s.callout}</div>}
+        {s.outro && <p className="outro">{s.outro}</p>}
+      </section>
+    );
+  };
 
-      {/* MOBILE top bar + progress */}
-      <div className="lg:hidden sticky top-20 z-20 bg-black border-b border-white/10">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <Link to="/dashboard" className="text-white/40"><ArrowLeft className="w-4 h-4" /></Link>
-          <span className="flex-1 text-sm text-white/80 truncate">{currentLesson?.title}</span>
-          <span className="text-[0.6rem] tracking-[0.15em] text-white/40">{total ? currentIndex + 1 : 0} / {total}</span>
+  const cur = currentLesson;
+  const curModule = modules.find((m) => m.id === cur?.module_id);
+  const modInfo = curModule ? splitModule(curModule.title) : { num: '', name: '' };
+  const content = cur?.content && Array.isArray(cur.content.sections) ? cur.content : null;
+  const extraFiles = (cur?.resources || []).filter((r) => !['slides', 'audio', 'practice'].includes(r.resource_type));
+
+  return (
+    <div className="mba-course">
+      <style>{CSS}</style>
+      {justCompleted && <div className="celebrate" aria-live="polite"><div>{L.celebrate}</div></div>}
+
+      {/* phone & small tablet: lesson bar */}
+      <div className="mtop">
+        <div className="mtop-row">
+          <Link to="/dashboard" className="back" aria-label={L.back}>←</Link>
+          <b>{cur?.title}</b>
+          <span>{idx + 1} / {total}</span>
         </div>
-        <div className="h-[3px] bg-white/10">
-          <div className="mba-prog h-full bg-white" style={{ width: `${pct}%` }} />
-        </div>
+        <div className="bar"><i style={{ width: `${pct}%` }} /></div>
       </div>
 
-      <div className="flex lg:h-[calc(100vh-80px)]">
-
-        {/* DESKTOP / iPad SIDEBAR */}
-        <aside className="hidden lg:block w-[320px] flex-shrink-0 bg-black border-r border-white/10 overflow-y-auto">
-          <div className="p-6 border-b border-white/10">
-            <Link to="/dashboard" className="inline-flex items-center gap-2 text-[0.58rem] tracking-[0.2em] uppercase text-white/30 hover:text-white/60 transition-colors mb-5">
-              <ArrowLeft className="w-3 h-3" /> {L.dashboard}
-            </Link>
-            <h2 className="disp text-xl text-white leading-tight">{course?.title}</h2>
-            <div className="mt-4 h-[3px] bg-white/10">
-              <div className="mba-prog h-full bg-white" style={{ width: `${pct}%` }} />
-            </div>
-            <div className="mt-2 text-[0.55rem] tracking-[0.15em] uppercase text-white/30">{pct}% {L.complete}</div>
+      <div className="wrap">
+        <aside className="side">
+          <div className="side-head">
+            <Link to="/dashboard" className="back">← {L.back}</Link>
+            <h2 className="disp side-title">{course?.title}</h2>
+            <div className="bar"><i style={{ width: `${pct}%` }} /></div>
+            <div className="bar-label">{pct}% {L.complete} · {doneCount}/{total}</div>
           </div>
           <LessonList />
         </aside>
 
-        {/* CONTENT */}
-        <div className="flex-1 overflow-y-auto">
-          <div key={currentLesson?.id} className="mba-reveal p-5 lg:p-8 max-w-4xl mx-auto space-y-6 pb-28 lg:pb-10">
-            {currentLesson ? (
-              <>
-                {/* Lesson Info */}
-                <div className="bg-white text-black p-6 lg:p-8">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-4 h-px bg-neutral-400" />
-                    <span className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500">{L.current}</span>
-                  </div>
-                  <h2 className="disp text-2xl lg:text-3xl text-black mb-4">{currentLesson.title}</h2>
-                  <p className="text-sm text-neutral-600 leading-relaxed">{currentLesson.description}</p>
+        <main className="main">
+          {cur ? (
+            <div className="page" key={cur.id}>
+              <header>
+                <div className="crumb">
+                  <span className="kick">{modInfo.num ? `${modInfo.num} · ${modInfo.name}` : modInfo.name}</span>
+                  <span className="kick">{L.lesson} {String(idx + 1).padStart(2, '0')} {L.of} {total}</span>
                 </div>
-
-                {/* 1 — Slides */}
-                <SlideViewer
-                  lessonId={currentLesson.id}
-                  onComplete={() => setSlidesCompleted(true)}
-                />
-
-                {/* Voiceover (audio, if separate) */}
-                {currentLesson.resources?.some(r => r.resource_type === 'audio') && (
-                  <AudioPlayer
-                    src={currentLesson.resources.find(r => r.resource_type === 'audio')!.file_url}
-                  />
-                )}
-
-                {/* 2 — Video */}
-                {currentLesson.video_url && (
-                  <div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-4 h-px bg-white/20" />
-                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/30">{L.watch}</span>
-                    </div>
-                    <div className="aspect-video bg-black overflow-hidden">
-                      {currentLesson.video_url.includes('youtube.com') || currentLesson.video_url.includes('youtu.be') ? (
-                        <iframe
-                          src={currentLesson.video_url
-                            .replace('watch?v=', 'embed/')
-                            .replace('youtu.be/', 'youtube.com/embed/')
-                            .replace('youtube.com/embed/', 'youtube.com/embed/')
-                            + '?rel=0&modestbranding=1'}
-                          className="w-full h-full"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      ) : currentLesson.video_url.includes('vimeo.com') ? (
-                        <iframe
-                          src={currentLesson.video_url.replace('vimeo.com/', 'player.vimeo.com/video/')}
-                          className="w-full h-full"
-                          allow="autoplay; fullscreen; picture-in-picture"
-                          allowFullScreen
-                        />
-                      ) : (
-                        <video src={currentLesson.video_url} controls className="w-full h-full" />
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Practice — interactive mapping */}
-                {currentLesson.resources?.filter(r => r.resource_type === 'practice').map((practice) => (
-                  <div key={practice.id}>
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-4 h-px bg-white/20" />
-                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/30">{L.practice}</span>
-                    </div>
-                    <PracticeEmbed src={practice.file_url} title={practice.title} />
-                  </div>
-                ))}
-
-                {/* Downloads & links */}
-                {currentLesson.resources && currentLesson.resources.filter(r => !['slides', 'audio', 'practice'].includes(r.resource_type)).length > 0 && (
-                  <div className="bg-white text-black p-6 lg:p-8">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-4 h-px bg-neutral-400" />
-                      <span className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500">{L.materials}</span>
-                    </div>
-                    <div className="space-y-2">
-                      {currentLesson.resources.filter(r => !['slides', 'audio', 'practice'].includes(r.resource_type)).map((resource) => (
-                        <a key={resource.id} href={resource.file_url} target="_blank" rel="noopener noreferrer" download
-                          className="flex items-center gap-4 p-4 border border-neutral-200 hover:border-neutral-400 hover:bg-neutral-100 transition-all group">
-                          <div className="w-9 h-9 border border-neutral-300 flex items-center justify-center group-hover:bg-black group-hover:border-black transition-all">
-                            <Download className="w-3.5 h-3.5 text-neutral-600 group-hover:text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm text-black">{resource.title}</div>
-                            <div className="text-[0.55rem] tracking-wide text-neutral-400 uppercase mt-0.5">
-                              {resource.resource_type === 'workbook' ? L.workbook : L.resource}
-                            </div>
-                          </div>
-                          <span className="text-[0.58rem] tracking-[0.15em] uppercase text-neutral-400">{L.open}</span>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 3 — Quiz */}
-                <QuizComponent
-                  key={currentLesson.id}
-                  lessonId={currentLesson.id}
-                  onPass={() => handleQuizPass(currentLesson.id)}
-                />
-
-                {/* Community */}
-                <div className="bg-white text-black p-6 lg:p-8 text-center">
-                  <div className="w-10 h-10 border border-neutral-300 flex items-center justify-center mx-auto mb-4">
-                    <MessageSquare className="w-4 h-4 text-black" />
-                  </div>
-                  <h3 className="disp text-2xl text-black mb-2">{L.community_t}</h3>
-                  <p className="text-xs text-neutral-500 tracking-wide mb-6">{L.community_s}</p>
-                  <Link to={`/community/${courseId}`} className="mba-btn px-6 py-3 bg-black text-white text-[0.58rem] tracking-[0.15em] uppercase">
-                    {L.community_b}
-                  </Link>
+                <h1 className="disp l-title">{cur.title.trim()}</h1>
+                {content?.tagline && <p className="tagline">{content.tagline}</p>}
+                {cur.description && <p className="desc">{cur.description}</p>}
+                <div className="meta">
+                  {cur.duration ? <span>{cur.duration} {L.min}</span> : null}
+                  {content && <span>{content.sections.filter((s) => !s.quote).length} {L.sections}</span>}
+                  {cur.video_url && <span>▶ {L.watch}</span>}
+                  <ListenBtn slide={1} label={L.intro} />
                 </div>
+              </header>
 
-                {/* Mark Complete */}
-                {!currentLesson.progress?.completed && (
-                  <div className="bg-white text-black p-6 lg:p-8 text-center">
-                    <h4 className="disp text-xl text-black mb-5">{L.finished}</h4>
-                    <button
-                      onClick={() => markLessonComplete(currentLesson.id)}
-                      className="mba-btn px-8 py-4 bg-black text-white text-[0.6rem] tracking-[0.2em] uppercase"
-                    >
-                      <CheckCircle className="w-3.5 h-3.5" /> {L.mark}
-                    </button>
-                  </div>
-                )}
+              {content
+                ? content.sections.map((s, i) => <Section key={i} s={s} slide={i + 2} />)
+                : <div className="blk"><SlideViewer lessonId={cur.id} onComplete={() => {}} /></div>}
 
-                {/* DESKTOP prev / next */}
-                <div className="hidden lg:flex justify-between items-center pt-4 border-t border-white/10">
-                  <button
-                    onClick={() => { const prev = getPreviousLesson(); if (prev) setCurrentLesson(prev); }}
-                    disabled={!getPreviousLesson()}
-                    className="mba-btn px-6 py-3 border border-white/20 text-white/60 text-[0.58rem] tracking-[0.15em] uppercase hover:border-white/40 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5 ar" /> {L.prev}
-                  </button>
-                  <button
-                    onClick={() => { const next = getNextLesson(); if (next) setCurrentLesson(next); }}
-                    disabled={!getNextLesson()}
-                    className="mba-btn px-6 py-3 bg-white text-black text-[0.58rem] tracking-[0.15em] uppercase disabled:opacity-20 disabled:cursor-not-allowed"
-                  >
-                    {L.next} <ChevronRight className="w-3.5 h-3.5 ar" />
-                  </button>
+              {cur.video_url && (
+                <div className="blk">
+                  <div className="blk-h"><span className="kick">{L.watch}</span></div>
+                  <div className="video">{videoEmbed(cur.video_url)}</div>
                 </div>
-              </>
-            ) : (
-              <div className="flex items-center justify-center h-64">
-                <p className="text-xs text-white/30 tracking-widest uppercase">{L.none}</p>
+              )}
+
+              {(cur.resources || []).filter((r) => r.resource_type === 'practice').map((p) => (
+                <div className="blk" key={p.id}>
+                  <div className="blk-h"><span className="kick">{L.practice} · {p.title}</span></div>
+                  <PracticeEmbed src={p.file_url} title={p.title} />
+                </div>
+              ))}
+
+              {(cur.resources || []).filter((r) => r.resource_type === 'audio').map((a) => (
+                <div className="blk" key={a.id}><audio src={a.file_url} controls style={{ width: '100%' }} /></div>
+              ))}
+
+              {extraFiles.length > 0 && (
+                <div className="blk files">
+                  <div className="blk-h"><span className="kick">{L.materials}</span></div>
+                  {extraFiles.map((r) => (
+                    <a key={r.id} href={r.file_url} target="_blank" rel="noopener noreferrer">
+                      <b>{r.title}</b><span>{L.open} ↗</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              <div className="blk quizwrap">
+                <QuizComponent key={cur.id} lessonId={cur.id} onPass={() => handleQuizPass(cur.id)} />
               </div>
-            )}
-          </div>
-        </div>
+
+              {!cur.progress?.completed && (
+                <div className="done-row">
+                  <h4 className="disp">{L.finished}</h4>
+                  <button type="button" className="btn" onClick={() => markLessonComplete(cur.id)}>✓ {L.mark}</button>
+                </div>
+              )}
+
+              {nextLesson ? (
+                <div className="next">
+                  <div>
+                    <span className="kick">{L.upNext} · {L.lesson} {String(idx + 2).padStart(2, '0')}</span>
+                    <h4 className="disp">{nextLesson.title.trim()}</h4>
+                    {nextLesson.content?.tagline && <p>{nextLesson.content.tagline}</p>}
+                  </div>
+                  <button type="button" className="btn" onClick={() => go(nextLesson)}>{L.start} →</button>
+                </div>
+              ) : (
+                <div className="next">
+                  <div><span className="kick">{course?.title}</span><h4 className="disp">{L.courseDone}</h4></div>
+                  <Link to="/dashboard" className="btn">{L.dashboard} →</Link>
+                </div>
+              )}
+
+              <div className="pn">
+                <button type="button" onClick={() => go(prevLesson)} disabled={!prevLesson}>
+                  <small>← {L.prev}</small><b>{prevLesson?.title.trim() || ''}</b>
+                </button>
+                <button type="button" onClick={() => go(nextLesson)} disabled={!nextLesson}>
+                  <small>{L.next} →</small><b>{nextLesson?.title.trim() || ''}</b>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="page"><p className="kick">{L.none}</p></div>
+          )}
+        </main>
       </div>
 
-      {/* MOBILE bottom nav: Prev · Lessons · Next */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-black border-t border-white/10 px-3 py-3 flex items-center gap-2" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
-        <button
-          onClick={() => { const prev = getPreviousLesson(); if (prev) setCurrentLesson(prev); }}
-          disabled={!getPreviousLesson()}
-          aria-label="Previous lesson"
-          className="w-12 h-12 flex-shrink-0 rounded-xl bg-white/[0.06] flex items-center justify-center disabled:opacity-25"
-        >
-          <ChevronLeft className="w-5 h-5 text-white" />
-        </button>
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="flex-1 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center gap-2 text-white text-xs tracking-[0.05em]"
-        >
-          <Menu className="w-4 h-4" /> {L.lessons}
-        </button>
-        <button
-          onClick={() => { const next = getNextLesson(); if (next) setCurrentLesson(next); }}
-          disabled={!getNextLesson()}
-          aria-label="Next lesson"
-          className="w-12 h-12 flex-shrink-0 rounded-xl bg-white flex items-center justify-center disabled:opacity-25"
-        >
-          <ChevronRight className="w-5 h-5 text-black" />
-        </button>
+      {/* phone & small tablet: bottom bar + lessons sheet */}
+      <div className="mbar">
+        <button type="button" className="sq" onClick={() => go(prevLesson)} disabled={!prevLesson} aria-label={L.prev}>←</button>
+        <button type="button" className="mid" onClick={() => setSheetOpen(true)}>☰ {L.lessons}</button>
+        <button type="button" className="sq go" onClick={() => go(nextLesson)} disabled={!nextLesson} aria-label={L.next}>→</button>
       </div>
-
-      {/* MOBILE lessons sheet */}
-      {sidebarOpen && (
-        <div onClick={() => setSidebarOpen(false)} className="lg:hidden fixed inset-0 z-30 bg-black/60" />
-      )}
-      <div className={`lg:hidden fixed left-0 right-0 bottom-0 z-40 max-h-[78vh] bg-[#141414] rounded-t-2xl flex flex-col transform transition-transform duration-300 ${sidebarOpen ? 'translate-y-0' : 'translate-y-full'}`}>
-        <div className="pt-3 pb-1 flex justify-center"><span className="w-10 h-1 rounded-full bg-white/25" /></div>
-        <div className="px-5 py-3 flex items-center justify-between border-b border-white/10">
-          <span className="text-sm text-white font-medium tracking-wide">{L.lessons}</span>
-          <button onClick={() => setSidebarOpen(false)} aria-label="Close" className="text-white/50">
-            <ChevronLeft className="w-4 h-4 rotate-90" />
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto pb-6">
-          <LessonList onPick={() => setSidebarOpen(false)} />
-        </div>
+      <div className={`shade${sheetOpen ? ' show' : ''}`} onClick={() => setSheetOpen(false)} />
+      <div className={`sheet${sheetOpen ? ' show' : ''}`} role="dialog" aria-label={L.lessons}>
+        <div className="sheet-h"><b>{L.lessons}</b><button type="button" onClick={() => setSheetOpen(false)} aria-label="Close">×</button></div>
+        <div className="sheet-b"><LessonList /></div>
       </div>
-
     </div>
   );
 };
