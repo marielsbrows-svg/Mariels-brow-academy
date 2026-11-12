@@ -18,13 +18,20 @@ interface Question {
 interface QuizComponentProps {
   lessonId: string;
   onPass: () => void;
+  lang?: string;
 }
+
+const TXT = {
+  EN: { passedTitle: 'Quiz Passed', passedNote: 'You’ve already passed this quiz. Continue to the next lesson!', maxTitle: 'Maximum Attempts Reached', maxNote: 'You’ve used all 3 attempts. Please review the lesson material and contact support if you need help.', congrats: 'Congratulations', youPassed: 'You passed the quiz', notYet: 'Not Quite Yet', review: 'Review the material and try again', score: 'Your Score', required: 'Required', left: 'Attempts Left', correct: 'Correct:', unlocking: 'Unlocking next lesson...', retake: 'Retake Quiz', attemptsLeft: 'attempts left', quiz: 'Lesson Quiz', question: 'Question', of: 'of', next: 'Next Question', submit: 'Submit Quiz' },
+  ES: { passedTitle: 'Prueba aprobada', passedNote: 'Ya aprobaste esta prueba. ¡Continúa con la siguiente lección!', maxTitle: 'Llegaste al máximo de intentos', maxNote: 'Usaste los 3 intentos. Repasa el material de la lección y escríbenos si necesitas ayuda.', congrats: '¡Felicidades!', youPassed: 'Aprobaste la prueba', notYet: 'Todavía no', review: 'Repasa el material e inténtalo de nuevo', score: 'Tu puntaje', required: 'Requerido', left: 'Intentos restantes', correct: 'Correcta:', unlocking: 'Desbloqueando la siguiente lección...', retake: 'Repetir la prueba', attemptsLeft: 'intentos restantes', quiz: 'Prueba de la lección', question: 'Pregunta', of: 'de', next: 'Siguiente pregunta', submit: 'Enviar prueba' },
+};
 
 const PASS_SCORE = 80;
 const MAX_ATTEMPTS = 3;
 const HEAD = { fontFamily: "'Horizon', 'Arial Black', Arial, sans-serif", textTransform: 'uppercase' as const, letterSpacing: '0', lineHeight: 1.1 };
 
-export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
+export const QuizComponent = ({ lessonId, onPass, lang = 'EN' }: QuizComponentProps) => {
+  const T = (lang || '').toUpperCase() === 'ES' ? TXT.ES : TXT.EN;
   const { user } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQ, setCurrentQ] = useState(0);
@@ -155,8 +162,8 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
     return (
       <div className="bg-white p-8 text-center border border-stone-200">
         <CheckCircle className="w-10 h-10 text-[#191a1e] mx-auto mb-4" />
-        <h3 className="text-2xl text-[#191a1e] mb-2" style={HEAD}>Quiz Passed</h3>
-        <p className="text-xs text-stone-500 tracking-wide">You've already passed this quiz. Continue to the next lesson!</p>
+        <h3 className="text-2xl text-[#191a1e] mb-2" style={HEAD}>{T.passedTitle}</h3>
+        <p className="text-xs text-stone-500 tracking-wide">{T.passedNote}</p>
       </div>
     );
   }
@@ -166,9 +173,9 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
     return (
       <div className="bg-white p-8 text-center border border-stone-200">
         <Lock className="w-10 h-10 text-stone-400 mx-auto mb-4" />
-        <h3 className="text-2xl text-[#191a1e] mb-2" style={HEAD}>Maximum Attempts Reached</h3>
+        <h3 className="text-2xl text-[#191a1e] mb-2" style={HEAD}>{T.maxTitle}</h3>
         <p className="text-xs text-stone-500 tracking-wide max-w-xs mx-auto">
-          You've used all 3 attempts. Please review the lesson material and contact support if you need help.
+          {T.maxNote}
         </p>
       </div>
     );
@@ -186,14 +193,14 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
           {passed ? (
             <>
               <CheckCircle className="w-12 h-12 text-white mx-auto mb-4" />
-              <h3 className="text-3xl text-white mb-2" style={HEAD}>Congratulations</h3>
-              <p className="text-white/60 text-sm">You passed the quiz</p>
+              <h3 className="text-3xl text-white mb-2" style={HEAD}>{T.congrats}</h3>
+              <p className="text-white/60 text-sm">{T.youPassed}</p>
             </>
           ) : (
             <>
               <XCircle className="w-12 h-12 text-stone-400 mx-auto mb-4" />
-              <h3 className="text-3xl text-[#191a1e] mb-2" style={HEAD}>Not Quite Yet</h3>
-              <p className="text-stone-500 text-sm">Review the material and try again</p>
+              <h3 className="text-3xl text-[#191a1e] mb-2" style={HEAD}>{T.notYet}</h3>
+              <p className="text-stone-500 text-sm">{T.review}</p>
             </>
           )}
         </div>
@@ -202,17 +209,17 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
           <div className="flex items-center justify-between mb-6 pb-6 border-b border-stone-200">
             <div className="text-center flex-1">
               <div className="text-5xl text-[#191a1e] mb-1" style={HEAD}>{score}%</div>
-              <div className="text-[0.55rem] tracking-[0.2em] uppercase text-stone-400">Your Score</div>
+              <div className="text-[0.55rem] tracking-[0.2em] uppercase text-stone-400">{T.score}</div>
             </div>
             <div className="w-px h-12 bg-stone-200" />
             <div className="text-center flex-1">
               <div className="text-5xl text-[#191a1e] mb-1" style={HEAD}>{PASS_SCORE}%</div>
-              <div className="text-[0.55rem] tracking-[0.2em] uppercase text-stone-400">Required</div>
+              <div className="text-[0.55rem] tracking-[0.2em] uppercase text-stone-400">{T.required}</div>
             </div>
             <div className="w-px h-12 bg-stone-200" />
             <div className="text-center flex-1">
               <div className="text-5xl text-[#191a1e] mb-1" style={HEAD}>{Math.max(0, MAX_ATTEMPTS - (attempts + 1))}</div>
-              <div className="text-[0.55rem] tracking-[0.2em] uppercase text-stone-400">Attempts Left</div>
+              <div className="text-[0.55rem] tracking-[0.2em] uppercase text-stone-400">{T.left}</div>
             </div>
           </div>
 
@@ -228,7 +235,7 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
                       <p className="text-xs text-[#191a1e] mb-1">{i + 1}. {q.question}</p>
                       {!isCorrect && (
                         <p className="text-[0.6rem] text-stone-500">
-                          Correct: <span className="text-[#191a1e] font-medium">{q[`option_${q.correct_answer.toLowerCase()}` as keyof Question]}</span>
+                          {T.correct} <span className="text-[#191a1e] font-medium">{q[`option_${q.correct_answer.toLowerCase()}` as keyof Question]}</span>
                         </p>
                       )}
                     </div>
@@ -240,13 +247,13 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
 
           {passed ? (
             <div className="text-center">
-              <p className="text-xs text-stone-400 tracking-wide mb-4">Unlocking next lesson...</p>
+              <p className="text-xs text-stone-400 tracking-wide mb-4">{T.unlocking}</p>
               <div className="w-8 h-8 border-2 border-stone-200 border-t-black rounded-full animate-spin mx-auto" />
             </div>
           ) : attempts + 1 < MAX_ATTEMPTS && (
             <button onClick={retakeQuiz} className="flex items-center justify-center gap-2 w-full py-4 border border-[#191a1e] text-[#191a1e] text-[0.62rem] tracking-[0.2em] uppercase hover:bg-[#191a1e] hover:text-white transition-all">
               <RotateCcw className="w-3.5 h-3.5" />
-              Retake Quiz ({MAX_ATTEMPTS - (attempts + 1)} attempts left)
+              {T.retake} ({MAX_ATTEMPTS - (attempts + 1)} {T.attemptsLeft})
             </button>
           )}
         </div>
@@ -268,9 +275,9 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
       <div className="bg-[#191a1e] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-4 h-px bg-white/20" />
-          <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/40">Lesson Quiz</span>
+          <span className="text-[0.55rem] tracking-[0.2em] uppercase text-white/40">{T.quiz}</span>
         </div>
-        <span className="text-[0.55rem] tracking-[0.15em] uppercase text-white/30">Question {currentQ + 1} of {questions.length}</span>
+        <span className="text-[0.55rem] tracking-[0.15em] uppercase text-white/30">{T.question} {currentQ + 1} {T.of} {questions.length}</span>
       </div>
 
       <div className="h-0.5 bg-stone-200">
@@ -298,7 +305,7 @@ export const QuizComponent = ({ lessonId, onPass }: QuizComponentProps) => {
             </div>
 
             <button onClick={handleNext} disabled={!selected} className="flex items-center justify-center gap-2 w-full py-4 bg-[#191a1e] text-white text-[0.62rem] tracking-[0.2em] uppercase hover:opacity-80 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-              {currentQ < questions.length - 1 ? 'Next Question' : 'Submit Quiz'}
+              {currentQ < questions.length - 1 ? T.next : T.submit}
             </button>
           </motion.div>
         </AnimatePresence>
