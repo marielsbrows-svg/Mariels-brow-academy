@@ -17,9 +17,12 @@ interface Course {
 }
 
 const DISP_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500&display=swap');
-.mba-courses{font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:300;}
-.mba-courses .disp{font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0.02em;line-height:0.95;}
+.mba-courses .disp,.mba-courses .display{overflow-wrap:break-word;}
+@media (max-width:640px){.mba-courses h1.disp,.mba-courses h1.display{font-size:clamp(24px,7.4vw,40px)!important;}.mba-courses h2.disp,.mba-courses h2.display{font-size:clamp(17px,5.2vw,28px)!important;}.mba-courses h3.disp,.mba-courses h3.display{font-size:clamp(16px,5vw,22px)!important;}.mba-courses .grid-cols-3:not(.cards){grid-template-columns:1fr!important;}}
+.mba-courses h1,.mba-courses h2,.mba-courses h3,.mba-courses h4,.mba-courses p,.mba-courses label,.mba-courses input,.mba-courses textarea,.mba-courses select,.mba-courses button{font-family:inherit;}
+.mba-courses .cards>*{border:1px solid #dedbd6;border-left:3px solid #191a1e;background:#fff;}
+.mba-courses{background:#f5f4f1;font-family:'Anonymous Pro','Courier New',monospace;font-weight:400;color:#191a1e;-webkit-font-smoothing:antialiased;}
+.mba-courses .disp{font-family:'Horizon','Arial Black',Arial,sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0;line-height:1.08;line-height:0.95;}
 `;
 
 // Struck-through "regular" price shown next to the founding price.
@@ -107,18 +110,18 @@ export const CoursesPage = () => {
 
           {/* Language Badge */}
           <div className={`absolute top-3 left-3 px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase font-semibold text-white ${
-            course.language === 'EN' ? 'bg-black' : 'bg-neutral-500'
+            course.language === 'EN' ? 'bg-[#191a1e]' : 'bg-stone-500'
           }`}>
             {course.language}
           </div>
 
           {/* Free / Level Badge */}
           {isFree ? (
-            <div className="absolute top-3 right-3 bg-white px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase text-black">
+            <div className="absolute top-3 right-3 bg-white px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase text-[#191a1e]">
               Free
             </div>
           ) : course.level ? (
-            <div className="absolute top-3 right-3 bg-white px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase text-black">
+            <div className="absolute top-3 right-3 bg-white px-2.5 py-1 text-[0.52rem] tracking-[0.15em] uppercase text-[#191a1e]">
               {course.level}
             </div>
           ) : null}
@@ -126,26 +129,26 @@ export const CoursesPage = () => {
 
         {/* Content */}
         <div className="p-8">
-          <h3 className="disp text-2xl text-black mb-3">
+          <h3 className="disp text-xl text-[#191a1e] mb-3">
             {course.title}
           </h3>
 
-          <p className="text-xs text-neutral-600 leading-relaxed mb-6 line-clamp-3">
+          <p className="text-xs text-stone-600 leading-relaxed mb-6 line-clamp-3">
             {course.description}
           </p>
 
           {/* Meta */}
-          <div className="flex items-center gap-4 mb-6 pb-6 border-b border-neutral-200">
+          <div className="flex items-center gap-4 mb-6 pb-6 border-b border-stone-200">
             {course.duration_hours && (
-              <div className="flex items-center gap-1.5 text-[0.6rem] tracking-widest uppercase text-neutral-400">
+              <div className="flex items-center gap-1.5 text-[0.6rem] tracking-widest uppercase text-stone-400">
                 <Clock className="w-3 h-3" />
                 {course.duration_hours}h
               </div>
             )}
-            <div className="text-[0.6rem] tracking-widest uppercase text-neutral-400">
+            <div className="text-[0.6rem] tracking-widest uppercase text-stone-400">
               {isFree ? 'Limited Time' : 'Lifetime Access'}
             </div>
-            <div className="text-[0.6rem] tracking-widest uppercase text-neutral-400">
+            <div className="text-[0.6rem] tracking-widest uppercase text-stone-400">
               {course.language === 'EN' ? 'English' : 'Español'}
             </div>
           </div>
@@ -155,8 +158,8 @@ export const CoursesPage = () => {
             <div>
               {isFree ? (
                 <>
-                  <div className="disp text-3xl text-black">Free</div>
-                  <div className="text-[0.55rem] tracking-widest uppercase text-neutral-400 mt-0.5">
+                  <div className="disp text-2xl text-[#191a1e]">Free</div>
+                  <div className="text-[0.55rem] tracking-widest uppercase text-stone-400 mt-0.5">
                     Available for a limited time
                   </div>
                 </>
@@ -164,11 +167,11 @@ export const CoursesPage = () => {
                 <>
                   <div className="flex items-baseline gap-2">
                     {ANCHOR_PRICE > course.price && (
-                      <span className="text-neutral-400 line-through text-lg">${ANCHOR_PRICE}</span>
+                      <span className="text-stone-400 line-through text-lg">${ANCHOR_PRICE}</span>
                     )}
-                    <span className="disp text-3xl text-black">${course.price}</span>
+                    <span className="disp text-2xl text-[#191a1e]">${course.price}</span>
                   </div>
-                  <div className="text-[0.55rem] tracking-widest uppercase text-neutral-400 mt-0.5">
+                  <div className="text-[0.55rem] tracking-widest uppercase text-stone-400 mt-0.5">
                     {isLocked ? 'Founding price · September 24' : 'Founding price · going up soon'}
                   </div>
                 </>
@@ -176,14 +179,14 @@ export const CoursesPage = () => {
             </div>
 
             {isLocked ? (
-              <div className="inline-flex items-center gap-2 px-6 py-3 border border-neutral-300 text-neutral-400 text-[0.58rem] tracking-[0.15em] uppercase cursor-default">
+              <div className="inline-flex items-center gap-2 px-6 py-3 border border-stone-300 text-stone-400 text-[0.58rem] tracking-[0.15em] uppercase cursor-default">
                 <Lock className="w-3 h-3" />
                 {course.language === 'ES' ? 'Abre Sept 24' : 'Opens Sept 24'}
               </div>
             ) : (
               <Link
                 to={`/course/${course.id}`}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[0.58rem] tracking-[0.15em] uppercase hover:opacity-80 transition-opacity duration-300"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#191a1e] text-white text-[0.58rem] tracking-[0.15em] uppercase hover:opacity-80 transition-opacity duration-300"
               >
                 {isFree
                   ? (course.language === 'ES' ? 'Empezar Gratis' : 'Start Free')
@@ -198,40 +201,40 @@ export const CoursesPage = () => {
 
   const SectionDivider = ({ label }: { label: string }) => (
     <div className="flex items-center gap-4 mb-8">
-      <span className="text-[0.6rem] tracking-[0.25em] uppercase text-neutral-400 whitespace-nowrap">{label}</span>
-      <div className="flex-1 h-px bg-neutral-200" />
+      <span className="text-[0.6rem] tracking-[0.25em] uppercase text-stone-400 whitespace-nowrap">{label}</span>
+      <div className="flex-1 h-px bg-stone-200" />
     </div>
   );
 
   return (
-    <div className="mba-courses min-h-screen bg-white pt-24">
+    <div className="mba-courses min-h-screen bg-[#f5f4f1] pt-24">
       <style>{DISP_CSS}</style>
 
       {/* Header */}
-      <div className="max-w-7xl mx-auto px-8 py-20 border-b border-neutral-200">
+      <div className="max-w-7xl mx-auto px-8 py-20 border-b border-stone-200">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-px bg-neutral-400" />
-            <span className="text-[0.58rem] tracking-[0.3em] uppercase text-neutral-400">
+            <div className="w-8 h-px bg-stone-400" />
+            <span className="text-[0.58rem] tracking-[0.3em] uppercase text-stone-400">
               Mariels Brow Academy
             </span>
           </div>
-          <h1 className="disp text-6xl md:text-7xl text-black mb-6">
+          <h1 className="disp text-4xl md:text-5xl text-[#191a1e] mb-6">
             Our Courses
           </h1>
-          <p className="text-sm text-neutral-600 max-w-lg leading-relaxed">
+          <p className="text-sm text-stone-600 max-w-lg leading-relaxed">
             Professional brow certification programs available in English and Spanish. Lifetime access included with every paid course.
           </p>
         </motion.div>
       </div>
 
       {/* Filter Bar */}
-      <div className="max-w-7xl mx-auto px-8 py-8 flex items-center gap-3 border-b border-neutral-200">
-        <span className="text-[0.58rem] tracking-[0.2em] uppercase text-neutral-400 mr-2">Filter:</span>
+      <div className="max-w-7xl mx-auto px-8 py-8 flex items-center gap-3 border-b border-stone-200">
+        <span className="text-[0.58rem] tracking-[0.2em] uppercase text-stone-400 mr-2">Filter:</span>
         {[
           { key: 'ALL', label: 'All Courses' },
           { key: 'EN', label: 'English' },
@@ -242,14 +245,14 @@ export const CoursesPage = () => {
             onClick={() => setFilter(key as typeof filter)}
             className={`px-5 py-2 text-[0.62rem] tracking-[0.15em] uppercase transition-all ${
               filter === key
-                ? 'bg-black text-white'
-                : 'border border-neutral-300 text-neutral-500 hover:border-black hover:text-black'
+                ? 'bg-[#191a1e] text-white'
+                : 'border border-stone-300 text-stone-500 hover:border-[#191a1e] hover:text-[#191a1e]'
             }`}
           >
             {label}
           </button>
         ))}
-        <span className="ml-auto text-[0.58rem] tracking-wide text-neutral-400">
+        <span className="ml-auto text-[0.58rem] tracking-wide text-stone-400">
           {filteredCourses.length} {filteredCourses.length === 1 ? 'course' : 'courses'} available
         </span>
       </div>
@@ -258,14 +261,14 @@ export const CoursesPage = () => {
       <div className="max-w-7xl mx-auto px-8 py-16">
         {loading ? (
           <div className="flex items-center justify-center py-32">
-            <div className="w-8 h-8 border-2 border-neutral-200 border-t-black rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-stone-200 border-t-black rounded-full animate-spin" />
           </div>
         ) : filteredCourses.length === 0 ? (
           <div className="text-center py-32">
-            <div className="disp text-3xl text-black mb-4">
+            <div className="disp text-2xl text-[#191a1e] mb-4">
               No Courses Found
             </div>
-            <p className="text-sm text-neutral-500 tracking-wide">
+            <p className="text-sm text-stone-500 tracking-wide">
               {filter === 'ES' ? 'Los cursos en español estarán disponibles pronto.' : 'Courses coming soon.'}
             </p>
           </div>
@@ -276,7 +279,7 @@ export const CoursesPage = () => {
             {(filter === 'ALL' || filter === 'EN') && enCourses.length > 0 && (
               <div>
                 {filter === 'ALL' && <SectionDivider label="English Programs" />}
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-neutral-200">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 cards">
                   {enCourses.map((course, i) => (
                     <CourseCard key={course.id} course={course} index={i} />
                   ))}
@@ -288,7 +291,7 @@ export const CoursesPage = () => {
             {(filter === 'ALL' || filter === 'ES') && esCourses.length > 0 && (
               <div>
                 {filter === 'ALL' && <SectionDivider label="Programas en Español" />}
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-neutral-200">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 cards">
                   {esCourses.map((course, i) => (
                     <CourseCard key={course.id} course={course} index={i} />
                   ))}
