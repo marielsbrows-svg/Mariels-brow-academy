@@ -76,7 +76,7 @@ const EN = {
   offerKicker: 'Everything included',
   offerTitle: 'Your certification, start to finish.',
   offerItems: [
-    '21 lessons across 5 modules',
+    '22 lessons across 5 modules',
     'Video demos on real faces',
     '10 printable practice faces',
     'Written exam + practical certification',
@@ -170,7 +170,7 @@ const ES: Copy = {
   offerKicker: 'Todo incluido',
   offerTitle: 'Tu certificación, de principio a fin.',
   offerItems: [
-    '21 lecciones en 5 módulos',
+    '22 lecciones en 5 módulos',
     'Demostraciones en video con rostros reales',
     '10 rostros imprimibles para practicar',
     'Examen escrito + certificación práctica',
@@ -372,7 +372,7 @@ export const HomePage = () => {
 
           <div className="stats">
             <div className="stat"><b><CountUp to={9} /></b><span className="sl">{t.statYears}</span></div>
-            <div className="stat"><b><CountUp to={21} /></b><span className="sl">{t.statLessons}</span></div>
+            <div className="stat"><b><CountUp to={22} /></b><span className="sl">{t.statLessons}</span></div>
             <div className="stat"><b>EN·ES</b><span className="sl">{t.statLangs}</span></div>
           </div>
         </div>
