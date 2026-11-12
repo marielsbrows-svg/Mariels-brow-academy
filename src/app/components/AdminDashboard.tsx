@@ -7,9 +7,11 @@ import { useNavigate } from 'react-router-dom';
 import { CourseManagement } from './CourseManagement';
 
 const DISP_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500&display=swap');
-.mba-admin{font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:300;}
-.mba-admin .disp{font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0.02em;line-height:0.98;}
+.mba-admin .disp,.mba-admin .display{overflow-wrap:break-word;}
+@media (max-width:640px){.mba-admin h1.disp,.mba-admin h1.display{font-size:clamp(24px,7.4vw,40px)!important;}.mba-admin h2.disp,.mba-admin h2.display{font-size:clamp(17px,5.2vw,28px)!important;}.mba-admin h3.disp,.mba-admin h3.display{font-size:clamp(16px,5vw,22px)!important;}.mba-admin .grid-cols-3:not(.cards){grid-template-columns:1fr!important;}}
+.mba-admin h1,.mba-admin h2,.mba-admin h3,.mba-admin h4,.mba-admin p,.mba-admin label,.mba-admin input,.mba-admin textarea,.mba-admin select,.mba-admin button{font-family:inherit;}
+.mba-admin{background:#f5f4f1;font-family:'Anonymous Pro','Courier New',monospace;font-weight:400;color:#191a1e;-webkit-font-smoothing:antialiased;}
+.mba-admin .disp{font-family:'Horizon','Arial Black',Arial,sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0;line-height:1.08;line-height:0.98;}
 `;
 
 export const AdminDashboard = () => {
@@ -75,7 +77,7 @@ export const AdminDashboard = () => {
   ] as const;
 
   return (
-    <div className="mba-admin min-h-screen bg-white pt-24 pb-20">
+    <div className="mba-admin min-h-screen bg-[#f5f4f1] pt-24 pb-20">
       <style>{DISP_CSS}</style>
       <div className="max-w-7xl mx-auto px-8">
 
@@ -84,19 +86,19 @@ export const AdminDashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-16 pb-12 border-b border-neutral-200"
+          className="mb-16 pb-12 border-b border-stone-200"
         >
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-5 h-px bg-neutral-400" />
-            <span className="text-[0.58rem] tracking-[0.25em] uppercase text-neutral-500">Admin Portal</span>
+            <div className="w-5 h-px bg-stone-400" />
+            <span className="text-[0.58rem] tracking-[0.25em] uppercase text-stone-500">Admin Portal</span>
           </div>
-          <h1 className="disp text-5xl md:text-6xl text-black leading-none">
+          <h1 className="disp text-3xl md:text-4xl text-[#191a1e] leading-none">
             Admin Dashboard
           </h1>
         </motion.div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-neutral-200 mb-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-stone-200 mb-16">
           {statCards.map(({ icon: Icon, value, label, format }, i) => (
             <motion.div
               key={label}
@@ -105,31 +107,31 @@ export const AdminDashboard = () => {
               transition={{ delay: i * 0.1 }}
               className="bg-white px-8 py-6 flex items-center gap-5"
             >
-              <div className="w-10 h-10 border border-neutral-300 flex items-center justify-center flex-shrink-0">
-                <Icon className="w-4 h-4 text-black" />
+              <div className="w-10 h-10 border border-stone-300 flex items-center justify-center flex-shrink-0">
+                <Icon className="w-4 h-4 text-[#191a1e]" />
               </div>
               <div>
-                <div className="disp text-3xl text-black">
+                <div className="disp text-2xl text-[#191a1e]">
                   {loading ? '—' : format(value)}
                 </div>
-                <div className="text-[0.55rem] tracking-[0.2em] uppercase text-neutral-500 mt-0.5">{label}</div>
+                <div className="text-[0.55rem] tracking-[0.2em] uppercase text-stone-500 mt-0.5">{label}</div>
               </div>
             </motion.div>
           ))}
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-0 border-b border-neutral-200 mb-12">
+        <div className="flex gap-0 border-b border-stone-200 mb-12">
           {tabs.map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`px-6 py-4 text-[0.6rem] tracking-[0.2em] uppercase transition-all relative ${
-                activeTab === tab.key ? 'text-black' : 'text-neutral-400 hover:text-neutral-700'
+                activeTab === tab.key ? 'text-[#191a1e]' : 'text-stone-400 hover:text-stone-700'
               }`}
             >
               {tab.label}
-              {activeTab === tab.key && <div className="absolute bottom-0 left-0 right-0 h-px bg-black" />}
+              {activeTab === tab.key && <div className="absolute bottom-0 left-0 right-0 h-px bg-[#191a1e]" />}
             </button>
           ))}
         </div>
@@ -149,37 +151,37 @@ export const AdminDashboard = () => {
         {activeTab === 'submissions' && (
           <div>
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-5 h-px bg-neutral-400" />
-              <span className="text-[0.58rem] tracking-[0.25em] uppercase text-neutral-500">Student Submissions</span>
+              <div className="w-5 h-px bg-stone-400" />
+              <span className="text-[0.58rem] tracking-[0.25em] uppercase text-stone-500">Student Submissions</span>
             </div>
 
             {submissions.length > 0 ? (
-              <div className="space-y-px bg-neutral-200">
+              <div className="space-y-px bg-stone-200">
                 {submissions.map((submission) => (
                   <div key={submission.id} className="bg-white p-8">
 
                     {/* Header */}
-                    <div className="flex items-start justify-between gap-4 mb-6 pb-6 border-b border-neutral-200">
+                    <div className="flex items-start justify-between gap-4 mb-6 pb-6 border-b border-stone-200">
                       <div>
-                        <h3 className="disp text-xl text-black mb-1">
+                        <h3 className="disp text-lg text-[#191a1e] mb-1">
                           {submission.assignments?.title || 'Unknown Assignment'}
                         </h3>
                         <div className="space-y-1">
-                          <p className="text-xs text-neutral-500 tracking-wide">
+                          <p className="text-xs text-stone-500 tracking-wide">
                             Lesson: {submission.assignments?.lessons?.title || 'Unknown'}
                           </p>
-                          <p className="text-xs text-neutral-500 tracking-wide">
+                          <p className="text-xs text-stone-500 tracking-wide">
                             Student: {submission.profiles?.full_name || submission.profiles?.email || 'Unknown'}
                           </p>
-                          <p className="text-[0.55rem] text-neutral-400 tracking-wide uppercase">
+                          <p className="text-[0.55rem] text-stone-400 tracking-wide uppercase">
                             {new Date(submission.submitted_at).toLocaleString()}
                           </p>
                         </div>
                       </div>
                       <span className={`px-3 py-1 text-[0.52rem] tracking-[0.15em] uppercase flex-shrink-0 ${
                         submission.status === 'graded'
-                          ? 'bg-black text-white'
-                          : 'border border-neutral-300 text-neutral-500'
+                          ? 'bg-[#191a1e] text-white'
+                          : 'border border-stone-300 text-stone-500'
                       }`}>
                         {submission.status === 'graded' ? 'Graded' : 'Pending Review'}
                       </span>
@@ -187,9 +189,9 @@ export const AdminDashboard = () => {
 
                     {/* Written Response */}
                     {submission.submission_text && (
-                      <div className="bg-neutral-100 px-5 py-4 mb-4">
-                        <p className="text-[0.58rem] tracking-[0.15em] uppercase text-neutral-500 mb-2">Written Response</p>
-                        <p className="text-xs text-black leading-relaxed whitespace-pre-wrap">
+                      <div className="bg-stone-100 px-5 py-4 mb-4">
+                        <p className="text-[0.58rem] tracking-[0.15em] uppercase text-stone-500 mb-2">Written Response</p>
+                        <p className="text-xs text-[#191a1e] leading-relaxed whitespace-pre-wrap">
                           {submission.submission_text}
                         </p>
                       </div>
@@ -202,7 +204,7 @@ export const AdminDashboard = () => {
                           href={submission.file_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-[0.6rem] tracking-[0.15em] uppercase text-neutral-600 hover:text-black transition-colors"
+                          className="inline-flex items-center gap-2 text-[0.6rem] tracking-[0.15em] uppercase text-stone-600 hover:text-[#191a1e] transition-colors"
                         >
                           <FileText className="w-3.5 h-3.5" />
                           View Submitted File
@@ -212,13 +214,13 @@ export const AdminDashboard = () => {
 
                     {/* Grade */}
                     {submission.status === 'graded' && (
-                      <div className="flex items-center gap-3 pt-4 border-t border-neutral-200">
-                        <CheckCircle className="w-4 h-4 text-black" />
-                        <span className="text-xs text-black">
+                      <div className="flex items-center gap-3 pt-4 border-t border-stone-200">
+                        <CheckCircle className="w-4 h-4 text-[#191a1e]" />
+                        <span className="text-xs text-[#191a1e]">
                           Score: {submission.score}/{submission.assignments?.max_score}
                         </span>
                         {submission.feedback && (
-                          <span className="text-xs text-neutral-500">· {submission.feedback}</span>
+                          <span className="text-xs text-stone-500">· {submission.feedback}</span>
                         )}
                       </div>
                     )}
@@ -226,12 +228,12 @@ export const AdminDashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="border border-neutral-200 bg-white p-16 text-center">
-                <FileText className="w-10 h-10 mx-auto mb-5 text-neutral-300" />
-                <h3 className="disp text-2xl text-black mb-3">
+              <div className="border border-stone-200 bg-white p-16 text-center">
+                <FileText className="w-10 h-10 mx-auto mb-5 text-stone-300" />
+                <h3 className="disp text-xl text-[#191a1e] mb-3">
                   No Submissions Yet
                 </h3>
-                <p className="text-xs text-neutral-500 tracking-wide">
+                <p className="text-xs text-stone-500 tracking-wide">
                   Student assignment submissions will appear here
                 </p>
               </div>
