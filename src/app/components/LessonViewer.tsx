@@ -546,7 +546,7 @@ export const LessonViewer = () => {
               )}
 
               <div className="blk quizwrap">
-                <QuizComponent key={cur.id} lessonId={cur.id} onPass={() => handleQuizPass(cur.id)} />
+                <QuizComponent key={cur.id} lessonId={cur.id} lang={isES ? 'ES' : 'EN'} onPass={() => handleQuizPass(cur.id)} />
               </div>
 
               {!cur.progress?.completed && (
