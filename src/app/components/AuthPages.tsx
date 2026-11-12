@@ -10,36 +10,38 @@ const FREE_COURSE_ID = '1ea01504-3e9d-4eea-95ce-b9bfcdfd4702';
 const FREE_COURSE_ID_ES = '9ad4cee5-aadd-4462-b5e5-783022f2280b';
 
 const AUTH_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500&display=swap');
-.mba-auth{min-height:100vh;background:#fff;color:#000;font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:300;}
+.mba-auth .disp,.mba-auth .display{overflow-wrap:break-word;}
+@media (max-width:640px){.mba-auth h1.disp,.mba-auth h1.display{font-size:clamp(24px,7.4vw,40px)!important;}.mba-auth h2.disp,.mba-auth h2.display{font-size:clamp(17px,5.2vw,28px)!important;}.mba-auth h3.disp,.mba-auth h3.display{font-size:clamp(16px,5vw,22px)!important;}.mba-auth .grid-cols-3:not(.cards){grid-template-columns:1fr!important;}}
+.mba-auth h1,.mba-auth h2,.mba-auth h3,.mba-auth h4,.mba-auth p,.mba-auth label,.mba-auth input,.mba-auth textarea,.mba-auth select,.mba-auth button{font-family:inherit;}
+.mba-auth{min-height:100vh;background:#f5f4f1;color:#191a1e;font-family:'Anonymous Pro','Courier New',monospace;font-weight:400;}
 .mba-auth *{box-sizing:border-box;}
-.mba-auth .display{font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0.01em;line-height:0.92;}
+.mba-auth .display{font-family:'Horizon','Arial Black',Arial,sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:0;line-height:1.08;line-height:0.92;}
 .mba-auth .auth-grid{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;}
-.mba-auth .auth-panel{background:#000;color:#fff;display:flex;align-items:flex-end;padding:56px;}
+.mba-auth .auth-panel{background:#191a1e;color:#fff;display:flex;align-items:flex-end;padding:56px;}
 .mba-auth .panel-h{font-size:60px;color:#fff;}
 .mba-auth .panel-sub{color:rgba(255,255,255,0.5);font-size:14px;max-width:34ch;margin-top:18px;line-height:1.6;}
 .mba-auth .auth-form-wrap{display:flex;align-items:center;justify-content:center;padding:64px 40px;}
 .mba-auth .auth-form{width:100%;max-width:380px;}
 .mba-auth .auth-logo{text-decoration:none;display:block;margin-bottom:46px;}
-.mba-auth .al-name{font-size:26px;letter-spacing:2px;color:#000;}
+.mba-auth .al-name{font-size:26px;letter-spacing:2px;color:#191a1e;}
 .mba-auth .al-sub{font-size:9px;letter-spacing:6px;text-transform:uppercase;color:#9A9A9A;margin-top:5px;}
 .mba-auth .auth-kicker{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#9A9A9A;margin-bottom:18px;}
-.mba-auth .auth-h1{font-size:42px;color:#000;margin:0 0 30px;}
+.mba-auth .auth-h1{font-size:42px;color:#191a1e;margin:0 0 30px;}
 .mba-auth .auth-msg{padding:12px 14px;font-size:12px;letter-spacing:0.02em;margin-bottom:20px;}
 .mba-auth .auth-error{border:1px solid #E3B7B7;background:#FBEDED;color:#9E3A3A;}
 .mba-auth .auth-success{border:1px solid #C9C9C9;background:#F4F4F4;color:#4F4F4F;}
 .mba-auth .auth-fields{display:flex;flex-direction:column;gap:20px;}
 .mba-auth .fl{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#9A9A9A;margin-bottom:8px;}
-.mba-auth .auth-input{width:100%;border:1px solid #000;background:#fff;padding:14px 16px;font-family:inherit;font-size:16px;color:#000;outline:none;}
+.mba-auth .auth-input{width:100%;border:1px solid #191a1e;background:#fff;padding:14px 16px;font-family:inherit;font-size:16px;color:#191a1e;outline:none;}
 .mba-auth .auth-input::placeholder{color:#BDB8AE;}
 .mba-auth .pw-wrap{position:relative;}
 .mba-auth .pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;color:#9A9A9A;display:flex;padding:0;}
-.mba-auth .pw-toggle:hover{color:#000;}
-.mba-auth .auth-submit{width:100%;margin-top:8px;background:#000;color:#fff;border:0;padding:16px;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:inherit;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.2s;}
+.mba-auth .pw-toggle:hover{color:#191a1e;}
+.mba-auth .auth-submit{width:100%;margin-top:8px;background:#191a1e;color:#fff;border:0;padding:16px;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:inherit;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.2s;}
 .mba-auth .auth-submit:hover{opacity:.85;}
 .mba-auth .auth-submit:disabled{opacity:.5;cursor:default;}
 .mba-auth .auth-alt{text-align:center;font-size:13px;color:#9A9A9A;margin-top:32px;}
-.mba-auth .auth-alt a{color:#000;text-decoration:underline;text-underline-offset:2px;}
+.mba-auth .auth-alt a{color:#191a1e;text-decoration:underline;text-underline-offset:2px;}
 .mba-auth .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:mbaspin 0.7s linear infinite;}
 @keyframes mbaspin{to{transform:rotate(360deg)}}
 @media (max-width:820px){
@@ -85,10 +87,6 @@ export const LoginPage = () => {
 
         <div className="auth-form-wrap">
           <div className="auth-form">
-            <Link to="/" className="auth-logo">
-              <div className="al-name display">MARIELS</div>
-              <div className="al-sub">Brow · Academy</div>
-            </Link>
 
             <div className="auth-kicker">Sign In</div>
             <h1 className="display auth-h1">Good to see<br />you again</h1>
@@ -215,10 +213,6 @@ export const SignUpPage = () => {
 
         <div className="auth-form-wrap">
           <div className="auth-form">
-            <Link to="/" className="auth-logo">
-              <div className="al-name display">MARIELS</div>
-              <div className="al-sub">Brow · Academy</div>
-            </Link>
 
             <div className="auth-kicker">Create Account</div>
             <h1 className="display auth-h1">Start your<br />brow journey</h1>
