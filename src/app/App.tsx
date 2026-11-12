@@ -10,7 +10,6 @@ import { LoginPage, SignUpPage } from './components/AuthPages';
 import { StudentDashboard } from './components/StudentDashboard';
 import { LessonViewer } from './components/LessonViewer';
 import { AdminDashboard } from './components/AdminDashboard';
-import { PaymentPage } from './PaymentPage';
 import { CommunityPage } from './components/CommunityPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -54,7 +53,6 @@ const AppContent = () => {
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/course/:id" element={<CourseDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/payment" element={<PaymentPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route
             path="/dashboard"
