@@ -83,6 +83,13 @@ export const CourseDetailPage = () => {
     }
   };
 
+  // The free class lives on its own interactive page now
+  const freeClassPage = (c: any) => ((c?.language || '').toUpperCase() === 'ES' ? '/free-class-es.html' : '/free-class.html');
+  const isFreeCourse = !!course && (!course.price || course.price === 0);
+  useEffect(() => {
+    if (isFreeCourse) window.location.replace(freeClassPage(course));
+  }, [isFreeCourse]);
+
   const handleEnroll = async () => {
     window.location.href = 'https://buy.stripe.com/8x25kD94m6Khe0cfcAd7q00';
   };
@@ -244,7 +251,7 @@ export const CourseDetailPage = () => {
                       </div>
                     </div>
                     <button
-                      onClick={() => navigate(`/learn/${course.id}`)}
+                      onClick={() => (isFreeCourse ? window.location.assign(freeClassPage(course)) : navigate(`/learn/${course.id}`))}
                       className="w-full py-4 bg-[#191a1e] text-white text-[0.62rem] tracking-[0.2em] uppercase hover:opacity-80 transition-all"
                     >
                       Continue Learning
