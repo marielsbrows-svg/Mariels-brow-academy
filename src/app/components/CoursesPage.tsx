@@ -184,14 +184,21 @@ export const CoursesPage = () => {
                 {course.language === 'ES' ? 'Abre Sept 24' : 'Opens Sept 24'}
               </div>
             ) : (
-              <Link
-                to={`/course/${course.id}`}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#191a1e] text-white text-[0.58rem] tracking-[0.15em] uppercase hover:opacity-80 transition-opacity duration-300"
-              >
-                {isFree
-                  ? (course.language === 'ES' ? 'Empezar Gratis' : 'Start Free')
-                  : (course.language === 'ES' ? 'Ver Curso' : 'View Course')}
-              </Link>
+              isFree ? (
+                <a
+                  href={course.language === 'ES' ? '/free-class-es.html' : '/free-class.html'}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#191a1e] text-white text-[0.58rem] tracking-[0.15em] uppercase hover:opacity-80 transition-opacity duration-300"
+                >
+                  {course.language === 'ES' ? 'Empezar Gratis' : 'Start Free'}
+                </a>
+              ) : (
+                <Link
+                  to={`/course/${course.id}`}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#191a1e] text-white text-[0.58rem] tracking-[0.15em] uppercase hover:opacity-80 transition-opacity duration-300"
+                >
+                  {course.language === 'ES' ? 'Ver Curso' : 'View Course'}
+                </Link>
+              )
             )}
           </div>
         </div>
