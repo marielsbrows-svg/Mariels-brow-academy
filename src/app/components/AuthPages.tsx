@@ -197,7 +197,7 @@ export const SignUpPage = () => {
     }
 
     setSuccess(true);
-    setTimeout(() => navigate(`/learn/${freeCourseId}`), 1500);
+    setTimeout(() => window.location.assign(freeCourseId === FREE_COURSE_ID_ES ? '/free-class-es.html' : '/free-class.html'), 1500);
   };
 
   return (
