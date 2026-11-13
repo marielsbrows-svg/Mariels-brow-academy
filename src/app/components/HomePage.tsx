@@ -377,13 +377,7 @@ export const HomePage = () => {
           </div>
         </div>
 
-        <div className="hero-visual">
-          <div className="bigword" aria-hidden="true">MAP</div>
-          <div className="rays" aria-hidden="true"><i /><i /><i /></div>
-          <img className="portrait" src="/IMG_1421.webp" alt="Mariel, founder of Mariels Brow Academy" />
-          <div className="badge badge-a"><b>{t.badgeA[0]}</b>{t.badgeA[1]}</div>
-          <div className="badge badge-b"><b>{t.badgeB[0]}</b>{t.badgeB[1]}</div>
-        </div>
+        <div className="bigword" aria-hidden="true">MAP</div>
       </section>
 
       {/* ───────── MARQUEE ───────── */}
@@ -637,7 +631,9 @@ const CSS = `
 .mba-home a:focus-visible,.mba-home button:focus-visible,.mba-home summary:focus-visible,.mba-home input:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
 
 /* hero */
-.mba-home .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(20px,3vw,44px);align-items:stretch;min-height:min(92vh,900px);padding:112px 40px 40px;border-bottom:1px solid var(--line);}
+.mba-home .hero{position:relative;overflow:hidden;display:block;padding:clamp(130px,14vw,170px) 40px clamp(56px,6vw,84px);border-bottom:1px solid var(--line);}
+.mba-home .hero-copy{position:relative;z-index:1;max-width:760px;}
+@media (max-width:1100px){.mba-home .bigword{display:none;}}
 .mba-home .hero-copy{padding:20px 0;display:flex;flex-direction:column;justify-content:center;}
 .mba-home .hero-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap;}
 .mba-home .lang{display:inline-flex;border:1px solid var(--line2);background:var(--card);}
@@ -655,7 +651,7 @@ const CSS = `
 .mba-home .stat b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(20px,2vw,28px);line-height:1;}
 .mba-home .stat .sl{display:block;margin-top:8px;font-size:11px;line-height:1.45;color:var(--muted);}
 .mba-home .hero-visual{position:relative;background:var(--panel);border:1px solid #e0dad0;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;min-height:540px;}
-.mba-home .bigword{position:absolute;top:7%;left:0;right:0;text-align:center;font-family:var(--display);font-size:clamp(80px,10.5vw,170px);line-height:.85;color:transparent;-webkit-text-stroke:1px #d3cdc3;white-space:nowrap;user-select:none;animation:mbafade 1.4s ease .2s both;}
+.mba-home .bigword{position:absolute;right:clamp(16px,3vw,48px);top:50%;transform:translateY(-38%);font-family:var(--display);font-size:clamp(110px,12.5vw,230px);line-height:.85;color:transparent;-webkit-text-stroke:1px #d3cdc3;white-space:nowrap;user-select:none;pointer-events:none;animation:mbafade 1.4s ease .2s both;}
 .mba-home .rays{position:absolute;left:50%;bottom:0;width:0;height:100%;}
 .mba-home .rays i{position:absolute;bottom:0;left:0;width:1px;height:96%;background:linear-gradient(to top,rgba(25,26,30,.3),rgba(25,26,30,0));transform-origin:bottom center;animation:mbaray 1.5s var(--ease) both;}
 .mba-home .rays i:nth-child(1){--r:-24deg;animation-delay:.5s;}
@@ -800,14 +796,15 @@ const CSS = `
 
 /* tablet */
 @media (max-width:1080px){
-  .mba-home .hero{padding:104px 28px 32px;}
+  .mba-home .hero{padding:124px 28px 56px;}
   .mba-home .problem,.mba-home .method,.mba-home .about,.mba-home .offer,.mba-home .free,.mba-home .faq,.mba-home .reviews{padding-left:28px;padding-right:28px;}
   .mba-home .proof-head{padding:0 28px;}
 }
 
 /* phone */
 @media (max-width:820px){
-  .mba-home .hero{grid-template-columns:1fr;min-height:0;padding:92px 16px 24px;}
+  .mba-home .hero{padding:96px 16px 36px;}
+  .mba-home .bigword{display:none;}
   .mba-home .hero-copy{padding:8px 0 4px;}
   .mba-home .h-title{font-size:clamp(26px,8.2vw,42px);}
   .mba-home .lede{font-size:14px;}
