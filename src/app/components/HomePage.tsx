@@ -32,6 +32,7 @@ const EN = {
   statYears: 'years behind the chair',
   statLessons: 'lessons in 5 modules',
   statLangs: 'taught in both languages',
+  videoLabel: 'A walk through Mariels Brow Academy on an iPad: the homepage, the interactive free class, and checkout',
   badgeA: ['Certified', 'Written + practical exam'],
   badgeB: ['EN · ES', 'One method, two languages'],
   marquee: ['Map any face', 'Get certified', 'Online', 'En Español', 'Brow Mapping Mastery'],
@@ -126,6 +127,7 @@ const ES: Copy = {
   statYears: 'años detrás de la silla',
   statLessons: 'lecciones en 5 módulos',
   statLangs: 'se enseña en ambos idiomas',
+  videoLabel: 'Un recorrido por Mariels Brow Academy en un iPad: la página principal, la clase gratuita interactiva y el pago',
   badgeA: ['Certificada', 'Examen escrito + práctico'],
   badgeB: ['EN · ES', 'Un método, dos idiomas'],
   marquee: ['Mapea cualquier rostro', 'Certifícate', 'En línea', 'In English', 'Brow Mapping Mastery'],
@@ -262,6 +264,11 @@ export const HomePage = () => {
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
+  const heroVideo = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    // Respect visitors who turn off motion: show the still frame instead of playing
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) heroVideo.current?.pause();
+  }, []);
   const finalRef = useRef<HTMLElement>(null);
   const freeRef = useRef<HTMLInputElement>(null);
 
@@ -377,7 +384,20 @@ export const HomePage = () => {
           </div>
         </div>
 
-        <div className="bigword" aria-hidden="true">MAP</div>
+        <div className="hero-media">
+          <video
+            ref={heroVideo}
+            className="hero-ipad"
+            src={HERO_VIDEO}
+            poster={HERO_POSTER}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label={t.videoLabel}
+          />
+        </div>
       </section>
 
       {/* ───────── MARQUEE ───────── */}
@@ -600,6 +620,10 @@ export const HomePage = () => {
   );
 };
 
+// Homepage iPad video (file names in the public folder)
+const HERO_VIDEO = '/homepage-ipad.mp4';
+const HERO_POSTER = '/homepage-ipad-poster.webp';
+
 const CSS = `
 .mba-home{--ink:#191a1e;--paper:#f5f4f1;--card:#fff;--panel:#eae7e1;--line:#dedbd6;--line2:#cfcac2;--muted:#847f76;--soft:#5f5b55;--ease:cubic-bezier(.2,.8,.2,1);
   --display:'Horizon','Arial Black',Arial,sans-serif;--mono:'Anonymous Pro','Courier New',monospace;
@@ -631,9 +655,11 @@ const CSS = `
 .mba-home a:focus-visible,.mba-home button:focus-visible,.mba-home summary:focus-visible,.mba-home input:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
 
 /* hero */
-.mba-home .hero{position:relative;overflow:hidden;display:block;padding:clamp(130px,14vw,170px) 40px clamp(56px,6vw,84px);border-bottom:1px solid var(--line);}
-.mba-home .hero-copy{position:relative;z-index:1;max-width:760px;}
-@media (max-width:1100px){.mba-home .bigword{display:none;}}
+.mba-home .hero{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,64px);align-items:center;padding:clamp(120px,12vw,150px) 40px clamp(56px,6vw,84px);border-bottom:1px solid var(--line);}
+.mba-home .hero-copy{position:relative;z-index:1;}
+.mba-home .hero-media{display:flex;justify-content:center;animation:mbafade 1s ease .25s both;}
+.mba-home .hero-ipad{display:block;width:100%;max-width:720px;height:auto;aspect-ratio:1000/722;border-radius:6.2% / 8.6%;clip-path:inset(0.55% 0.25% 0.3% 0.25% round 6.2% / 8.6%);background:#1c1d21;}
+.mba-home .hero-media{filter:drop-shadow(0 26px 30px rgba(25,26,30,.22));}
 .mba-home .hero-copy{padding:20px 0;display:flex;flex-direction:column;justify-content:center;}
 .mba-home .hero-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap;}
 .mba-home .lang{display:inline-flex;border:1px solid var(--line2);background:var(--card);}
@@ -796,15 +822,15 @@ const CSS = `
 
 /* tablet */
 @media (max-width:1080px){
-  .mba-home .hero{padding:124px 28px 56px;}
+  .mba-home .hero{padding:124px 28px 56px;grid-template-columns:1fr;}
+  .mba-home .hero-media{max-width:640px;}
   .mba-home .problem,.mba-home .method,.mba-home .about,.mba-home .offer,.mba-home .free,.mba-home .faq,.mba-home .reviews{padding-left:28px;padding-right:28px;}
   .mba-home .proof-head{padding:0 28px;}
 }
 
 /* phone */
 @media (max-width:820px){
-  .mba-home .hero{padding:96px 16px 36px;}
-  .mba-home .bigword{display:none;}
+  .mba-home .hero{padding:96px 16px 36px;gap:28px;}
   .mba-home .hero-copy{padding:8px 0 4px;}
   .mba-home .h-title{font-size:clamp(26px,8.2vw,42px);}
   .mba-home .lede{font-size:14px;}
