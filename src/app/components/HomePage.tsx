@@ -266,8 +266,31 @@ export const HomePage = () => {
   const heroRef = useRef<HTMLElement>(null);
   const heroVideo = useRef<HTMLVideoElement>(null);
   useEffect(() => {
-    // Respect visitors who turn off motion: show the still frame instead of playing
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) heroVideo.current?.pause();
+    // Start the hero video by itself. Some iPhones/iPads (Low Power Mode) block autoplay,
+    // so if that happens it starts on the visitor's first touch or scroll instead.
+    const v = heroVideo.current;
+    if (!v) return;
+    v.muted = true;
+    v.defaultMuted = true;
+    v.setAttribute('muted', '');
+    v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
+    const events = ['touchstart', 'pointerdown', 'scroll', 'keydown'];
+    const tryPlay = () => {
+      const p = v.play();
+      if (p && typeof p.then === 'function') {
+        p.then(() => events.forEach((e) => window.removeEventListener(e, tryPlay))).catch(() => { /* wait for a touch */ });
+      }
+    };
+    events.forEach((e) => window.addEventListener(e, tryPlay, { passive: true }));
+    if (v.readyState >= 2) tryPlay(); else v.addEventListener('loadeddata', tryPlay, { once: true });
+    tryPlay();
+    const onVisible = () => { if (document.visibilityState === 'visible') tryPlay(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, tryPlay));
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
   const finalRef = useRef<HTMLElement>(null);
   const freeRef = useRef<HTMLInputElement>(null);
@@ -394,7 +417,8 @@ export const HomePage = () => {
             muted
             loop
             playsInline
-            preload="metadata"
+            preload="auto"
+            disablePictureInPicture
             aria-label={t.videoLabel}
           />
         </div>
@@ -658,7 +682,8 @@ const CSS = `
 .mba-home .hero{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,64px);align-items:center;padding:clamp(120px,12vw,150px) 40px clamp(56px,6vw,84px);border-bottom:1px solid var(--line);}
 .mba-home .hero-copy{position:relative;z-index:1;}
 .mba-home .hero-media{display:flex;justify-content:center;animation:mbafade 1s ease .25s both;}
-.mba-home .hero-ipad{display:block;width:100%;max-width:720px;height:auto;aspect-ratio:1000/722;border-radius:6.2% / 8.6%;clip-path:inset(0.55% 0.25% 0.3% 0.25% round 6.2% / 8.6%);background:#1c1d21;}
+.mba-home .hero-ipad::-webkit-media-controls,.mba-home .hero-ipad::-webkit-media-controls-start-playback-button,.mba-home .hero-ipad::-webkit-media-controls-overlay-play-button{display:none!important;-webkit-appearance:none;opacity:0;}
+.mba-home .hero-ipad{pointer-events:none;display:block;width:100%;max-width:720px;height:auto;aspect-ratio:1000/722;border-radius:6.2% / 8.6%;clip-path:inset(0.55% 0.25% 0.3% 0.25% round 6.2% / 8.6%);background:#1c1d21;}
 .mba-home .hero-media{filter:drop-shadow(0 26px 30px rgba(25,26,30,.22));}
 .mba-home .hero-copy{padding:20px 0;display:flex;flex-direction:column;justify-content:center;}
 .mba-home .hero-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap;}
@@ -751,8 +776,8 @@ const CSS = `
 
 /* about */
 .mba-home .about{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(28px,6vw,80px);align-items:center;padding:90px 40px;background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
-.mba-home .about-media{position:relative;aspect-ratio:4/5;max-height:620px;width:100%;background:#f9f8f4;border:1px solid var(--line);overflow:hidden;display:flex;align-items:flex-end;justify-content:center;}
-.mba-home .about-media .headshot{display:block;width:90%;height:auto;max-height:92%;object-fit:contain;object-position:bottom;}
+.mba-home .about-media{position:relative;height:clamp(420px,46vw,620px);width:100%;background:#f9f8f4;border:1px solid var(--line);overflow:hidden;display:flex;align-items:flex-end;justify-content:center;}
+.mba-home .about-media .headshot{display:block;height:94%;width:auto;max-width:92%;object-fit:contain;object-position:bottom;}
 .mba-home .about-p{font-size:15px;line-height:1.8;color:#3d3a36;max-width:54ch;margin:20px 0 0;}
 .mba-home .sign{margin-top:30px;font-size:24px;}
 .mba-home .sign span{display:block;margin-top:8px;font:11px var(--mono);letter-spacing:.18em;color:var(--muted);}
@@ -851,7 +876,7 @@ const CSS = `
   .mba-home .proof-head{display:block;padding:0 16px;margin-bottom:26px;}
   .mba-home .shot{width:210px;}
   .mba-home .viral{grid-template-columns:1fr;padding:48px 16px 0;justify-items:center;text-align:center;}
-  .mba-home .about-media{max-height:520px;}
+  .mba-home .about-media{height:clamp(380px,95vw,520px);}
   .mba-home .incl{grid-template-columns:1fr;}
   .mba-home .free-media{padding-top:52px;}
   .mba-home .free-form{flex-direction:column;}
