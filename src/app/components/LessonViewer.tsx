@@ -49,6 +49,16 @@ const CSS = `
 
 /* sidebar */
 .mba-course .side{position:sticky;top:77px;width:340px;flex-shrink:0;height:calc(100vh - 77px);overflow-y:auto;border-right:1px solid var(--line);background:var(--paper);}
+.mba-course .side{transition:width .3s var(--ease);}
+.mba-course .side.closed{width:58px;overflow:hidden;}
+.mba-course .side.closed .side-inner{display:none;}
+.mba-course .rail{display:none;}
+.mba-course .side.closed .rail{display:flex;flex-direction:column;align-items:center;gap:14px;padding:18px 0;}
+.mba-course .rail-btn,.mba-course .hide-btn{display:grid;place-items:center;width:38px;height:38px;border:1px solid var(--line2);background:var(--card);color:var(--ink);cursor:pointer;border-radius:2px;}
+.mba-course .rail-btn:hover,.mba-course .hide-btn:hover{border-color:var(--ink);}
+.mba-course .rail-btn svg,.mba-course .hide-btn svg{width:18px;height:18px;}
+.mba-course .rail-n{writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+.mba-course .side-top{display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .mba-course .side-head{padding:22px 22px 20px;border-bottom:1px solid var(--line);}
 .mba-course .back{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;}
 .mba-course .back:hover{color:var(--ink);}
@@ -240,6 +250,8 @@ export const LessonViewer = () => {
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [openMods, setOpenMods] = useState<Record<string, boolean>>({});
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [sideOpen, setSideOpen] = useState(() => { try { return localStorage.getItem('mba-course-side') !== 'closed'; } catch { return true; } });
+  const toggleSide = () => setSideOpen((v) => { const n = !v; try { localStorage.setItem('mba-course-side', n ? 'open' : 'closed'); } catch { /* ignore */ } return n; });
   const [justCompleted, setJustCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [audioMap, setAudioMap] = useState<Record<number, string>>({});
@@ -342,12 +354,12 @@ export const LessonViewer = () => {
     back: 'Panel', complete: 'completado', lesson: 'Lección', of: 'de', listen: 'Escuchar', pause: 'Pausa', intro: 'Escuchar la introducción',
     watch: 'Mira la demostración', practice: 'Práctica', materials: 'Materiales', open: 'Abrir', upNext: 'Siguiente lección', start: 'Empezar',
     finished: '¿Terminaste esta lección?', mark: 'Marcar como completada', prev: 'Anterior', next: 'Siguiente', lessons: 'Lecciones',
-    celebrate: '¡Completada!', none: 'No hay lecciones disponibles', min: 'min', sections: 'secciones', courseDone: 'Terminaste el curso', dashboard: 'Ir al panel', quiz: 'Prueba',
+    celebrate: '¡Completada!', hideMenu: 'Ocultar menú', showMenu: 'Mostrar lecciones', none: 'No hay lecciones disponibles', min: 'min', sections: 'secciones', courseDone: 'Terminaste el curso', dashboard: 'Ir al panel', quiz: 'Prueba',
   } : {
     back: 'Dashboard', complete: 'complete', lesson: 'Lesson', of: 'of', listen: 'Listen', pause: 'Pause', intro: 'Listen to the intro',
     watch: 'Watch the demo', practice: 'Practice', materials: 'Materials', open: 'Open', upNext: 'Up next', start: 'Start',
     finished: 'Finished this lesson?', mark: 'Mark as complete', prev: 'Previous', next: 'Next', lessons: 'Lessons',
-    celebrate: 'Complete!', none: 'No lessons available', min: 'min', sections: 'sections', courseDone: 'You’ve reached the end of the course', dashboard: 'Go to dashboard', quiz: 'Quiz',
+    celebrate: 'Complete!', hideMenu: 'Hide menu', showMenu: 'Show lessons', none: 'No lessons available', min: 'min', sections: 'sections', courseDone: 'You’ve reached the end of the course', dashboard: 'Go to dashboard', quiz: 'Quiz',
   };
 
   if (loading) {
@@ -483,14 +495,27 @@ export const LessonViewer = () => {
       </div>
 
       <div className="wrap">
-        <aside className="side">
+        <aside className={`side${sideOpen ? '' : ' closed'}`} aria-label={L.lessons}>
+          <div className="rail">
+            <button type="button" className="rail-btn" onClick={toggleSide} aria-label={L.showMenu} title={L.showMenu}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+            <span className="rail-n">{L.lesson} {idx + 1} / {total}</span>
+          </div>
+          <div className="side-inner">
           <div className="side-head">
-            <Link to="/dashboard" className="back">← {L.back}</Link>
+            <div className="side-top">
+              <Link to="/dashboard" className="back">← {L.back}</Link>
+              <button type="button" className="hide-btn" onClick={toggleSide} aria-label={L.hideMenu} title={L.hideMenu}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+              </button>
+            </div>
             <h2 className="disp side-title">{course?.title}</h2>
             <div className="bar"><i style={{ width: `${pct}%` }} /></div>
             <div className="bar-label">{pct}% {L.complete} · {doneCount}/{total}</div>
           </div>
           <LessonList />
+          </div>
         </aside>
 
         <main className="main">
