@@ -119,9 +119,30 @@ h1,h2,h3{font-family:var(--mba-display);font-weight:900;text-transform:uppercase
 .gap-line{stroke:#ffe2cf;stroke-width:2;stroke-dasharray:4 4;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.8))}
 .svg-label{font:700 13px var(--mba-mono);letter-spacing:.08em;fill:#fff;paint-order:stroke;stroke:#191a1ecc;stroke-width:4px}
 
-@media(max-width:850px){
-  .lesson{grid-template-columns:1fr;gap:18px}.photo-col{width:min(650px,100%);margin:auto}.panel{min-height:0}
-  .inner{width:min(690px,calc(100% - 30px));padding-top:24px}
+/* tablets and the course page: keep the face and the guide side by side so the string is always in view */
+@media(max-width:1000px){
+  .lesson{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:16px}
+  .inner{width:calc(100% - 28px);padding-top:24px}
+  .panel{min-height:0;padding:20px 18px}
+  .panel h2{font-size:clamp(16px,2.4vw,20px);margin:12px 0 8px}
+  .eyebrow,.counter{font-size:10px;letter-spacing:.12em}
+  .excerpt{font-size:13.5px;line-height:1.5;margin-bottom:14px}
+  .rule{margin-bottom:14px}
+  .copyblock{margin-bottom:11px}.copyblock strong{font-size:10px;margin-bottom:4px}.copyblock p{font-size:12.5px;line-height:1.55}
+  .action{padding:11px 12px;font-size:12px}
+  .choice{padding:10px 11px;font-size:12.5px}.choices{gap:6px;margin-bottom:14px}
+  .tip{padding:11px;margin-bottom:12px}.tip span{font-size:12px}.tip strong{font-size:10px;margin-bottom:5px}
+  .feedback{font-size:12.5px;padding:10px 12px;margin-bottom:12px}
+  .micro{font-size:10px;margin-bottom:7px}
+  .helper{font-size:11px}
+  .tiny-progress{margin-bottom:12px}
+  .subtitle{font-size:13.5px;margin:12px 0 18px}
+  .lt{font-size:clamp(20px,3.2vw,28px)}
+  .photo-tag{font-size:8.5px;padding:7px 8px;top:10px;left:10px}
+  .photo-caption{bottom:9px;left:10px;right:10px}.photo-caption span{font-size:9px;padding:6px 8px}
+}
+@media(max-width:560px){
+  .lesson{grid-template-columns:1fr;gap:16px}.photo-col{width:100%;margin:auto}
 }
 @media(max-width:680px){
   .wrap{width:calc(100% - 22px)}.header{padding:14px 0}.brand-logo{height:34px}.top{padding:26px 5px 12px}
