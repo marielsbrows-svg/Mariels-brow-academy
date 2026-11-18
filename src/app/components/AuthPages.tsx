@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -42,6 +42,8 @@ const AUTH_CSS = `
 .mba-auth .auth-submit:disabled{opacity:.5;cursor:default;}
 .mba-auth .auth-alt{text-align:center;font-size:13px;color:#9A9A9A;margin-top:32px;}
 .mba-auth .auth-alt a{color:#191a1e;text-decoration:underline;text-underline-offset:2px;}
+.mba-auth .auth-forgot{display:block;text-align:right;margin-top:10px;font-size:11px;letter-spacing:1px;color:#9A9A9A;text-decoration:underline;text-underline-offset:2px;}
+.mba-auth .auth-forgot:hover{color:#191a1e;}
 .mba-auth .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:mbaspin 0.7s linear infinite;}
 @keyframes mbaspin{to{transform:rotate(360deg)}}
 @media (max-width:820px){
@@ -108,6 +110,7 @@ export const LoginPage = () => {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                <Link to="/forgot-password" className="auth-forgot">Forgot password?</Link>
               </div>
               <button type="submit" className="auth-submit" disabled={loading}>
                 {loading ? <span className="spin" /> : 'Sign In'}
@@ -249,6 +252,185 @@ export const SignUpPage = () => {
             <p className="auth-alt">
               Already have an account? <Link to="/login">Sign in</Link>
             </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Step 1 of a password reset: student enters her email and gets a reset link.
+export const ForgotPasswordPage = () => {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+    } else {
+      setSent(true);
+    }
+  };
+
+  return (
+    <div className="mba-auth">
+      <style>{AUTH_CSS}</style>
+      <div className="auth-grid">
+        <div className="auth-panel">
+          <div>
+            <div className="display panel-h">Locked<br />out?</div>
+            <p className="panel-sub">It happens. We'll email you a secure link to set a new password.</p>
+          </div>
+        </div>
+
+        <div className="auth-form-wrap">
+          <div className="auth-form">
+
+            <div className="auth-kicker">Reset Password</div>
+            <h1 className="display auth-h1">Forgot your<br />password?</h1>
+
+            {error && <div className="auth-msg auth-error">{error}</div>}
+            {sent ? (
+              <div className="auth-msg auth-success">
+                If an account exists for {email}, a reset link is on its way. Check your inbox (and spam folder), then tap the link to choose a new password.
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="auth-fields">
+                <div>
+                  <span className="fl">Email address</span>
+                  <input type="email" className="auth-input" value={email}
+                    onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+                </div>
+                <button type="submit" className="auth-submit" disabled={loading}>
+                  {loading ? <span className="spin" /> : 'Send Reset Link'}
+                </button>
+              </form>
+            )}
+
+            <p className="auth-alt">
+              Remembered it? <Link to="/login">Back to sign in</Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Step 2 of a password reset: student arrives from the email link and sets a new password.
+export const ResetPasswordPage = () => {
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const navigate = useNavigate();
+
+  // The email link signs the student in with a temporary recovery session.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || session) {
+        setReady(true);
+        setChecked(true);
+      }
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setReady(true);
+      // Give the link a moment to be processed before saying it's invalid.
+      setTimeout(() => setChecked(true), 2500);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    if (password !== confirm) {
+      setError('Passwords do not match');
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    setDone(true);
+    setTimeout(() => navigate('/dashboard'), 1500);
+  };
+
+  return (
+    <div className="mba-auth">
+      <style>{AUTH_CSS}</style>
+      <div className="auth-grid">
+        <div className="auth-panel">
+          <div>
+            <div className="display panel-h">Fresh<br />start</div>
+            <p className="panel-sub">Choose a new password and pick up right where you left off.</p>
+          </div>
+        </div>
+
+        <div className="auth-form-wrap">
+          <div className="auth-form">
+
+            <div className="auth-kicker">New Password</div>
+            <h1 className="display auth-h1">Set a new<br />password</h1>
+
+            {error && <div className="auth-msg auth-error">{error}</div>}
+            {done && <div className="auth-msg auth-success">Password updated — taking you to your dashboard…</div>}
+
+            {!ready && checked ? (
+              <>
+                <div className="auth-msg auth-error">
+                  This reset link has expired or was already used. Please request a new one.
+                </div>
+                <p className="auth-alt">
+                  <Link to="/forgot-password">Send a new reset link</Link>
+                </p>
+              </>
+            ) : !ready ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
+                <span className="spin" style={{ borderColor: 'rgba(25,26,30,0.2)', borderTopColor: '#191a1e' }} />
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="auth-fields">
+                <div>
+                  <span className="fl">New password</span>
+                  <div className="pw-wrap">
+                    <input type={showPassword ? 'text' : 'password'} className="auth-input" style={{ paddingRight: 44 }}
+                      value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" required />
+                    <button type="button" className="pw-toggle" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <span className="fl">Confirm new password</span>
+                  <input type={showPassword ? 'text' : 'password'} className="auth-input"
+                    value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Type it again" required />
+                </div>
+                <button type="submit" className="auth-submit" disabled={loading || done}>
+                  {loading ? <span className="spin" /> : 'Save New Password'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>
