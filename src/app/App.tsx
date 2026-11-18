@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
@@ -6,7 +7,12 @@ import { SetupNotice } from './components/SetupNotice';
 import { HomePage } from './components/HomePage';
 import { CoursesPage } from './components/CoursesPage';
 import { CourseDetailPage } from './components/CourseDetailPage';
-import { LoginPage, SignUpPage } from './components/AuthPages';
+import { LoginPage, SignUpPage, ForgotPasswordPage, ResetPasswordPage } from './components/AuthPages';
+
+// If a password-reset email link drops the student anywhere other than the
+// reset page, remember it here (before Supabase clears the link from the URL).
+const cameFromRecoveryLink =
+  typeof window !== 'undefined' && window.location.hash.includes('type=recovery');
 import { StudentDashboard } from './components/StudentDashboard';
 import { LessonViewer } from './components/LessonViewer';
 import { AdminDashboard } from './components/AdminDashboard';
@@ -42,6 +48,15 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppContent = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (cameFromRecoveryLink && location.pathname !== '/reset-password') {
+      navigate('/reset-password', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const hideFooter = location.pathname.startsWith('/learn');
 
   return (
@@ -54,6 +69,8 @@ const AppContent = () => {
           <Route path="/course/:id" element={<CourseDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route
             path="/dashboard"
             element={
