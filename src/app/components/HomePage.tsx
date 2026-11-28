@@ -6,10 +6,10 @@ import { supabase } from '../../lib/supabase';
 // ============================================================
 // SETTINGS: the only lines you should need to edit
 // ============================================================
-const ENROLL_URL = 'https://buy.stripe.com/8x25kD94m6Khe0cfcAd7q00'; // English checkout (Stripe)
+const ENROLL_URL = 'https://buy.stripe.com/8x25kD94m6Khe0cfcAd7q00?prefilled_promo_code=BLACKFRIDAY'; // English checkout (Stripe)
 const ENROLL_URL_ES = ENROLL_URL; // Spanish checkout: paste the Spanish Stripe link here once it exists
-const PRICE = 47; // founding price
-const NEXT_PRICE = 297; // price after the founding class closes. Only show it if you will really raise it (0 hides it)
+const PRICE = 27; // Black Friday – Cyber Monday price (back to 47 after Monday)
+const NEXT_PRICE = 47; // price after the founding class closes. Only show it if you will really raise it (0 hides it)
 const VIRAL_VIDEO_URL = ''; // optional: direct .mp4 link (e.g. Supabase Storage). Adds a video section when filled in
 const WORK = [1, 2, 3, 4, 5, 6, 7]; // /public/Brand/work-1.jpg … work-7.jpg
 
@@ -28,7 +28,7 @@ const EN = {
   lede: 'The exact mapping method Mariel uses on every client. Learn it online, practice on real faces, and earn your certification.',
   ctaMain: 'Start my certification',
   ctaFree: 'Watch the free class first',
-  priceNote: (next: number) => `Founding price. Rises to $${next} when the founding class closes.`,
+  priceNote: (next: number) => `Black Friday – Cyber Monday price. Goes back to $${next} after Monday.`,
   statYears: 'years behind the chair',
   statLessons: 'lessons in 5 modules',
   statLangs: 'taught in both languages',
@@ -85,7 +85,7 @@ const EN = {
     'Lifetime access on phone or desktop',
   ],
   cardKicker: 'Founding price',
-  cardNote: (next: number) => `Rises to $${next} when the founding class closes.`,
+  cardNote: (next: number) => `Goes back to $${next} after Cyber Monday.`,
   cardFine: 'One payment · Lifetime access',
   freeKicker: 'Free class',
   freeTitle: 'Learn the map. Free.',
@@ -108,7 +108,7 @@ const EN = {
   final1: 'Stop guessing.',
   final2: 'Start mapping.',
   finalSub: (price: number, next: number) =>
-    next > price ? `Founding price $${price}. Rises to $${next} when the founding class closes.` : `$${price} · One payment · Lifetime access`,
+    next > price ? `Black Friday – Cyber Monday: $${price}. Goes back to $${next} after Monday.` : `$${price} · One payment · Lifetime access`,
   barLabel: 'Brow Mapping Mastery',
   barCta: 'Enroll',
 };
@@ -123,7 +123,7 @@ const ES: Copy = {
   lede: 'El método exacto de mapeo que Mariel usa con cada clienta. Apréndelo en línea, practica con rostros reales y obtén tu certificación.',
   ctaMain: 'Empezar mi certificación',
   ctaFree: 'Ver primero la clase gratis',
-  priceNote: (next: number) => `Precio fundador. Sube a $${next} cuando cierre la clase fundadora.`,
+  priceNote: (next: number) => `Precio de Black Friday – Cyber Monday. Vuelve a $${next} después del lunes.`,
   statYears: 'años detrás de la silla',
   statLessons: 'lecciones en 5 módulos',
   statLangs: 'se enseña en ambos idiomas',
@@ -180,7 +180,7 @@ const ES: Copy = {
     'Acceso de por vida en celular o computadora',
   ],
   cardKicker: 'Precio fundador',
-  cardNote: (next: number) => `Sube a $${next} cuando cierre la clase fundadora.`,
+  cardNote: (next: number) => `Vuelve a $${next} después de Cyber Monday.`,
   cardFine: 'Un solo pago · Acceso de por vida',
   freeKicker: 'Clase gratis',
   freeTitle: 'Aprende el mapeo. Gratis.',
@@ -203,7 +203,7 @@ const ES: Copy = {
   final1: 'Deja de adivinar.',
   final2: 'Empieza a mapear.',
   finalSub: (price: number, next: number) =>
-    next > price ? `Precio fundador $${price}. Sube a $${next} cuando cierre la clase fundadora.` : `$${price} · Un solo pago · Acceso de por vida`,
+    next > price ? `Black Friday – Cyber Monday: $${price}. Vuelve a $${next} después del lunes.` : `$${price} · Un solo pago · Acceso de por vida`,
   barLabel: 'Brow Mapping Mastery',
   barCta: 'Inscribirme',
 };
