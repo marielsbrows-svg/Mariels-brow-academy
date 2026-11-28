@@ -108,7 +108,7 @@ export function BlackFridayHero({ lang, onLang, enrollUrl, price, regular, secti
 const BF_CSS = `
 .bfcm{--bf-ink:#0a0a0a;--bf-white:#f5f5f5;--bf-gray:#c8c8c8;
   --display:'Horizon','Arial Black',Arial,sans-serif;--mono:'Anonymous Pro','Courier New',monospace;
-  position:relative;background:var(--bf-ink);color:var(--bf-white);padding-top:77px;overflow:hidden;}
+  position:relative;background:var(--bf-ink);color:var(--bf-white);padding-top:81px;overflow:hidden;}
 .bfcm *{box-sizing:border-box;}
 .bfcm .bf-top{display:flex;justify-content:space-between;align-items:center;padding:18px 40px 0;position:relative;z-index:3;}
 .bfcm .bf-kicker{font:11px/1.5 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:#9a9a9a;}
@@ -116,7 +116,7 @@ const BF_CSS = `
 .bfcm .bf-lang button{font:11px/1 var(--mono);letter-spacing:.12em;padding:7px 10px;background:transparent;color:#9a9a9a;border:1px solid #3a3a3a;cursor:pointer;}
 .bfcm .bf-lang button[aria-pressed="true"]{color:var(--bf-ink);background:var(--bf-white);border-color:var(--bf-white);}
 
-.bfcm .bf-stage{position:relative;height:min(calc(100vh - 77px - 56px - 44px), 860px);min-height:560px;}
+.bfcm .bf-stage{position:relative;height:min(calc(100vh - 81px - 56px - 44px), 860px);min-height:560px;}
 .bfcm .bf-video{position:absolute;left:50%;top:0;height:100%;width:auto;aspect-ratio:720/1048;transform:translateX(-50%);object-fit:cover;display:block;background:var(--bf-ink);z-index:1;pointer-events:none;}
 .bfcm .bf-video::-webkit-media-controls,.bfcm .bf-video::-webkit-media-controls-start-playback-button{display:none!important;-webkit-appearance:none;}
 
@@ -153,13 +153,13 @@ const BF_CSS = `
   .bfcm .bf-sub-l{bottom:150px;}
   .bfcm .bf-sub-r{bottom:96px;}
   .bfcm .bf-btn{bottom:28px;}
-  .bfcm .bf-stage{height:calc(100svh - 77px - 44px - 40px);min-height:600px;}
+  .bfcm .bf-stage{height:calc(100svh - 81px - 44px - 40px);min-height:600px;}
   .bfcm .bf-video{height:100%;width:100%;aspect-ratio:auto;object-fit:cover;object-position:center 30%;}
 }
 @media (max-width: 640px){
-  .bfcm{padding-top:63px;}
+  .bfcm{padding-top:69px;}
   .bfcm .bf-top{padding:14px 16px 0;}
-  .bfcm .bf-stage{height:calc(100svh - 63px - 44px - 36px);min-height:560px;}
+  .bfcm .bf-stage{height:calc(100svh - 69px - 44px - 36px);min-height:560px;}
 }
 @media (prefers-reduced-motion: reduce){
   .bfcm .bf-track{animation:none;}
