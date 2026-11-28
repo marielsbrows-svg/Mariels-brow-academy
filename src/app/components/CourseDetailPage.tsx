@@ -33,7 +33,7 @@ const DISP_CSS = `
 
 // Struck-through "regular" price shown above the founding price.
 // Set to 0 to hide, or update when the price rises.
-const ANCHOR_PRICE = 297;
+const ANCHOR_PRICE = 47;
 
 export const CourseDetailPage = () => {
   const { id } = useParams();
@@ -91,7 +91,7 @@ export const CourseDetailPage = () => {
   }, [isFreeCourse]);
 
   const handleEnroll = async () => {
-    window.location.href = 'https://buy.stripe.com/8x25kD94m6Khe0cfcAd7q00';
+    window.location.href = 'https://buy.stripe.com/8x25kD94m6Khe0cfcAd7q00?prefilled_promo_code=BLACKFRIDAY';
   };
 
   if (loading) {
