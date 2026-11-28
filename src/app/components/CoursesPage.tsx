@@ -27,7 +27,7 @@ const DISP_CSS = `
 
 // Struck-through "regular" price shown next to the founding price.
 // 0 = no strikethrough. Set to 97 only if you genuinely raise the price after the founding window.
-const ANCHOR_PRICE = 0;
+const ANCHOR_PRICE = 47;
 
 // Doors open for paid courses. Edit this if the hour changes.
 const LAUNCH_DATE = new Date('2026-09-24T00:00:00-04:00');
