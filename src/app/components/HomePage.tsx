@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { BlackFridayHero } from './BlackFridayHero';
 
 // ============================================================
 // SETTINGS: the only lines you should need to edit
@@ -9,7 +10,8 @@ import { supabase } from '../../lib/supabase';
 const ENROLL_URL = 'https://buy.stripe.com/8x25kD94m6Khe0cfcAd7q00?prefilled_promo_code=BLACKFRIDAY'; // English checkout (Stripe)
 const ENROLL_URL_ES = ENROLL_URL; // Spanish checkout: paste the Spanish Stripe link here once it exists
 const PRICE = 27; // Black Friday – Cyber Monday price (back to 47 after Monday)
-const NEXT_PRICE = 47; // price after the founding class closes. Only show it if you will really raise it (0 hides it)
+const NEXT_PRICE = 47;
+const SALE_ON = true; // Black Friday – Cyber Monday homepage. Set to false to bring back the normal top section // price after the founding class closes. Only show it if you will really raise it (0 hides it)
 const VIRAL_VIDEO_URL = ''; // optional: direct .mp4 link (e.g. Supabase Storage). Adds a video section when filled in
 const WORK = [1, 2, 3, 4, 5, 6, 7]; // /public/Brand/work-1.jpg … work-7.jpg
 
@@ -373,6 +375,9 @@ export const HomePage = () => {
       <style>{CSS}</style>
 
       {/* ───────── HERO ───────── */}
+      {SALE_ON ? (
+        <BlackFridayHero lang={lang} onLang={chooseLang} enrollUrl={enrollUrl} price={PRICE} regular={NEXT_PRICE} sectionRef={heroRef} videoRef={heroVideo} />
+      ) : (
       <section className="hero" ref={heroRef}>
         <div className="hero-copy">
           <div className="hero-top">
@@ -423,6 +428,7 @@ export const HomePage = () => {
           />
         </div>
       </section>
+      )}
 
       {/* ───────── MARQUEE ───────── */}
       <section className="marquee" aria-hidden="true">
